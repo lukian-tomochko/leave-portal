@@ -11,7 +11,7 @@
 Для PM це матеріал нотатки «порівняння реалізацій»: де одні вимоги прочитали по-різному.
 -->
 
-Вимоги: mkozlovskyi-ops/course-staff-management-spec · джерело: docs · знімок 2026-10-20 (коміт PM `031e169`)
+Вимоги: mkozlovskyi-ops/course-staff-management-spec · джерело: docs · знімок 2026-10-20 (коміт PM `a7e5940`)
 
 ## Скан за таксономією
 
@@ -21,15 +21,15 @@
 
 | # | Категорія | Статус | Де |
 |---|---|---|---|
-| 1 | Функціональний обсяг | Частково | AC-DECIDE-16: які поля працівник може змінити до рішення (питання вже поставлене: mkozlovskyi-ops/course-staff-management-spec#2) |
-| 2 | Ролі й доступ | Частково | AC-DECIDE-18/19 і матриця прав у `requirements/product.md`: у менеджера «never own records», а чи може адміністратор сам вирішити свій запис, не сказано |
-| 3 | Домен і модель даних | Частково | `requirements/02-leave-decision.md`, Main scenario, крок 2 («employee's comment», якого немає в 01; mkozlovskyi-ops/course-staff-management-spec#1); AC-BALANCE-10: один запис у двох типах (mkozlovskyi-ops/course-staff-management-spec#4) |
-| 4 | Потік взаємодії (UX) | Частково | AC-LEAVE-06 (заявка на кілька дат, на одну з яких немає годин); AC-DECIDE-03 і AC-DECIDE-05 (чи є коментар менеджера до погодження чи відхилення) |
+| 1 | Функціональний обсяг | Ясно | що працівник змінює до рішення визначено: лише години (mkozlovskyi-ops/course-staff-management-spec#2, AC-DECIDE-21) |
+| 2 | Ролі й доступ | Частково | AC-DECIDE-18/19 і матриця прав у `requirements/product.md`: у менеджера «never own records», а чи може адміністратор сам вирішити свій запис, не сказано; видимість балансів для менеджера будь-якої посади вирішено (mkozlovskyi-ops/course-staff-management-spec#6, AC-BALANCE-20) |
+| 3 | Домен і модель даних | Ясно | коментар працівника (mkozlovskyi-ops/course-staff-management-spec#1, AC-LEAVE-17, AC-DECIDE-20); запис після розподілу (mkozlovskyi-ops/course-staff-management-spec#4, AC-BALANCE-18); розклади посад не перетинаються (mkozlovskyi-ops/course-staff-management-spec#8) |
+| 4 | Потік взаємодії (UX) | Частково | AC-LEAVE-06 (заявка на кілька дат, на одну з яких немає годин; mkozlovskyi-ops/course-staff-management-spec#9); AC-DECIDE-03 (чи є коментар менеджера до відхилення чи погодження; mkozlovskyi-ops/course-staff-management-spec#10) |
 | 5 | Нефункціональні вимоги | Ясно | Europe/Kyiv, крок 5 хв, час рішення до хвилини (Assumptions у 01, 02, 03) |
 | 6 | Інтеграції й обмеження платформи | Ясно | листів немає, лише статуси в застосунку (`requirements/product.md`, «Out of scope») |
-| 7 | Граничні випадки й збої | Частково | AC-LEAVE-07/08 і AC-LEAVE-15 (початок чи кінець у проміжку між блоками); AC-BALANCE-08 для кількох дат (mkozlovskyi-ops/course-staff-management-spec#3); овердрафт «Sick leave»: усі AC овердрафту про «Personal leave» |
+| 7 | Граничні випадки й збої | Частково | навчальний рік для запису з датою в минулому (AC-BALANCE-11; mkozlovskyi-ops/course-staff-management-spec#11); овердрафт «Sick leave»: усі AC овердрафту про «Personal leave»; проміжок між блоками (mkozlovskyi-ops/course-staff-management-spec#5) і попередження на кілька дат (mkozlovskyi-ops/course-staff-management-spec#3) вирішено |
 | 8 | Обмеження й компроміси | Ясно | 18 + 18 днів, навчальний рік 01.09–31.08, «підтверджено PM» в Assumptions |
-| 9 | Термінологія | Ясно | глосарій у `requirements/product.md`; «whole day» і «position» визначені |
+| 9 | Термінологія | Ясно | глосарій у `requirements/product.md`; «whole day» і «position» визначені, частка дня — формула (mkozlovskyi-ops/course-staff-management-spec#7) |
 | 10 | Сигнали завершеності | Частково | AC-DECIDE-08 і AC-DECIDE-09: «the decision is not saved», але що бачить користувач, не сказано; решта AC має числа й тексти повідомлень |
 | 11 | Заглушки й розмиті слова | Ясно | «Open questions: None» у всіх трьох вимогах; розмитих слів без межі не знайдено |
 
@@ -49,11 +49,11 @@
 
 ### Відповіді PM на питання інших розробників, що стосуються нашої специфікації
 
-Ці питання ми не дублюємо. У нашому знімку (коміт PM `031e169`) цих відповідей ще немає, тому `add-leave-management` перекладає знімок як є, а відповіді вносимо окремою зміною після нової `/requirements-sync` (PM змінив вимоги комітами `5e95269` і `a7e5940`, 20.10).
+Ці питання ми не дублюємо. PM відповів на них після нашого першого знімка (коміт PM `031e169`) і змінив вимоги комітами `5e95269` і `a7e5940` (20.10). Нова `/requirements-sync` принесла їх у `requirements/`, а відповіді внесено зміною `clarify-leave-management` (archive у цьому ж PR): `add-leave-management` переклав знімок `031e169` як є.
 
 | Issue | AC | Відповідь PM | Що змінилося у вимогах |
 |---|---|---|---|
-| mkozlovskyi-ops/course-staff-management-spec#1 | AC-LEAVE-01, вимога 02 | A: одна необов'язкова примітка до заявки до 500 символів, менеджер бачить її на кожному записі | нові AC-LEAVE-17, AC-LEAVE-18, AC-DECIDE-20 |
+| mkozlovskyi-ops/course-staff-management-spec#1 | AC-LEAVE-01, вимога 02 | A: один необов'язковий коментар до заявки до 500 символів, менеджер бачить його на кожному записі | нові AC-LEAVE-17, AC-LEAVE-18, AC-DECIDE-20 |
 | mkozlovskyi-ops/course-staff-management-spec#2 | AC-DECIDE-16 | A + A1: до рішення можна змінити лише години; запис не перевіряється на перетин із самим собою | нові AC-DECIDE-21, AC-DECIDE-22 |
 | mkozlovskyi-ops/course-staff-management-spec#3 | AC-BALANCE-08 | A: одне попередження на всю заявку за сумою днів | новий AC-BALANCE-17 |
 | mkozlovskyi-ops/course-staff-management-spec#4 | AC-BALANCE-10 | A: запис лишається одним, розподіл показано на ньому; при залишку 0.00 — «0.00 Personal leave + 1.00 Unpaid leave» | нові AC-BALANCE-18, AC-BALANCE-19 |
