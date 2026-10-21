@@ -26,7 +26,11 @@ export default async function NewLeavePage() {
       </Link>
       <h1 className="text-2xl font-semibold">Нова заявка на відпустку</h1>
       <NewLeaveForm
-        positions={positions.map((position) => ({ id: position.id, label: positionLabel(position) }))}
+        positions={positions.map((position) => ({
+          id: position.id,
+          label: positionLabel(position),
+          weekdays: [...new Set(position.blocks.map((block) => block.weekday))],
+        }))}
         leaveTypes={LEAVE_TYPES.map((type) => ({ value: type, label: LEAVE_TYPE_LABELS[type] }))}
       />
     </main>

@@ -26,7 +26,7 @@
 | AC-LEAVE-02 | заявка на дві посади дає два записи main і additional | `src/app/requests/actions.ts` (createRequest) | `tests/requests.test.ts` | реалізовано |
 | AC-LEAVE-04 | заблоковані дні не рахуються | — | — | відкладено (чекаю відповідь PM на Q2, <pm>/<team-slug>-spec#5) |
 | AC-LEAVE-07 | менеджер бачить лише свій відділ | — | — | відкладено (рішення PM: поза зрізом 1, <pm>/<team-slug>-spec#8) |
-| AC-LEAVE-10 | діапазон лише із заблокованих днів | — | — | відкладено (чекає реалізації) |
+| AC-LEAVE-10 | діапазон лише із заблокованих днів | `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/multi.test.ts` | реалізовано |
 -->
 
 Вимоги: https://github.com/mkozlovskyi-ops/course-staff-management-spec · джерело: docs · знімок 2026-10-20
@@ -34,9 +34,9 @@
 | AC | Що перевіряє | Код | Тест | Статус |
 |---|---|---|---|---|
 | AC-LEAVE-01 | Цілий день на одній посаді | `src/lib/leave/request.ts` (planRequest), `src/app/leave/actions.ts` (submitLeaveRequest) | `src/lib/leave/request.test.ts` | реалізовано |
-| AC-LEAVE-02 | Дві посади в одній заявці | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-03 | Додаткова посада виключена | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-05 | Дві дати в одній заявці | — | — | відкладено (чекає реалізації) |
+| AC-LEAVE-02 | Дві посади в одній заявці | `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/multi.test.ts` | реалізовано |
+| AC-LEAVE-03 | Додаткова посада виключена | `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/multi.test.ts` | реалізовано |
+| AC-LEAVE-05 | Дві дати в одній заявці | `src/lib/leave/use-cases.ts` (submitRequest), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/use-cases.test.ts` | реалізовано |
 | AC-LEAVE-04 | Частина дня за годинами | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
 | AC-LEAVE-15 | Заявка через проміжок між блоками | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
 | AC-LEAVE-06 | Субота без розкладу | `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
@@ -46,10 +46,10 @@
 | AC-LEAVE-20 | Початок на кінці першого блоку між блоками | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
 | AC-LEAVE-09 | Кінець раніше за початок | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
 | AC-LEAVE-10 | Усі посади виключені | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-11 | Повернення до редагування без підтвердження | — | — | відкладено (чекає реалізації) |
+| AC-LEAVE-11 | Повернення до редагування без підтвердження | `src/lib/leave/use-cases.ts` (previewRequest), `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/use-cases.test.ts` | реалізовано |
 | AC-LEAVE-12 | "Family celebration" без спорідненості | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-13 | Перетин із записом на розгляді | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-16 | Конфлікт на одній даті скасовує всю заявку | — | — | відкладено (чекає реалізації) |
+| AC-LEAVE-13 | Перетин із записом на розгляді | `src/lib/leave/request.ts` (planRequest), `supabase/migrations/20261021041722_leave_no_overlap.sql` | `src/lib/leave/multi.test.ts` | реалізовано |
+| AC-LEAVE-16 | Конфлікт на одній даті скасовує всю заявку | `src/lib/leave/use-cases.ts` (submitRequest), `supabase/migrations/20261021031910_leave_foundation.sql` (create_leave_request) | `src/lib/leave/use-cases.test.ts` | реалізовано |
 | AC-LEAVE-14 | Список лише власних записів | — | — | відкладено (чекає реалізації) |
 | AC-LEAVE-17 | Коментар на всіх записах заявки | — | — | відкладено (чекає реалізації) |
 | AC-LEAVE-18 | Коментар із 501 символу | — | — | відкладено (чекає реалізації) |

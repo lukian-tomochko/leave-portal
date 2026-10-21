@@ -4,15 +4,20 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { parseRequestForm } from "@/lib/leave/form";
 import { LEAVE_TYPE_LABELS, STATUS_LABELS } from "@/lib/leave/messages";
-import { planRequest } from "@/lib/leave/request";
 import { positionLabel } from "@/lib/leave/schedule";
 import { createSupabaseLeaveRepository } from "@/lib/leave/supabase-repository";
 import { formatDuration } from "@/lib/leave/time";
+import { previewRequest, submitRequest } from "@/lib/leave/use-cases";
 import { createClient } from "@/lib/supabase/server";
 import type { LeaveFormState } from "./state";
 
 // Нейтральна фраза для технічних помилок: PM тексту для них не давав, а деталей користувачу не показуємо.
 const TECHNICAL_ERROR = "Не вдалося обробити заявку. Спробуйте ще раз.";
+
+const errorState = (code: string, message: string): LeaveFormState => ({
+  status: "error",
+  message: code === "INVALID_INPUT" ? TECHNICAL_ERROR : message,
+});
 
 // Автентифікація й авторизація — всередині кожної дії, навіть якщо форма лежить на захищеній сторінці.
 // getClaims() перевіряє JWT; getSession() для авторизації на сервері не використовуємо.
@@ -26,7 +31,7 @@ async function authorize() {
   return { employeeId, repository: createSupabaseLeaveRepository(supabase) };
 }
 
-// Крок 1: перевіряє заявку й показує підсумок. Нічого не записує (AC-LEAVE-11 — задача 3).
+// Крок 1: перевіряє заявку й показує підсумок. Нічого не записує (AC-LEAVE-11).
 export async function previewLeaveRequest(_previous: LeaveFormState, formData: FormData): Promise<LeaveFormState> {
   const { employeeId, repository } = await authorize();
 
@@ -35,24 +40,22 @@ export async function previewLeaveRequest(_previous: LeaveFormState, formData: F
     return { status: "error", message: TECHNICAL_ERROR };
   }
 
-  let positions;
+  let outcome;
   try {
-    positions = await repository.loadPositions(employeeId);
+    outcome = await previewRequest(repository, employeeId, parsed.input);
   } catch {
     return { status: "error", message: TECHNICAL_ERROR };
   }
-
-  const plan = planRequest(parsed.input, { positions });
-  if (!plan.ok) {
-    return { status: "error", message: plan.code === "INVALID_INPUT" ? TECHNICAL_ERROR : plan.message };
+  if (!outcome.ok) {
+    return errorState(outcome.code, outcome.message);
   }
 
   return {
     status: "summary",
     values: parsed.input,
-    leaveTypeLabel: LEAVE_TYPE_LABELS[plan.leaveType],
-    lines: plan.records.map((record) => {
-      const position = positions.find((p) => p.id === record.positionId);
+    leaveTypeLabel: LEAVE_TYPE_LABELS[outcome.leaveType],
+    lines: outcome.records.map((record) => {
+      const position = outcome.positions.find((p) => p.id === record.positionId);
       return {
         date: record.date,
         hours: `${record.startsAt}–${record.endsAt}`,
@@ -64,7 +67,7 @@ export async function previewLeaveRequest(_previous: LeaveFormState, formData: F
   };
 }
 
-// Крок 2: створює заявку. Усе перевіряє наново — значення з форми підтвердження не довіряємо.
+// Крок 2: створює заявку з усіма записами однією транзакцією (AC-LEAVE-05, AC-LEAVE-16).
 export async function submitLeaveRequest(_previous: LeaveFormState, formData: FormData): Promise<LeaveFormState> {
   const { employeeId, repository } = await authorize();
 
@@ -73,15 +76,14 @@ export async function submitLeaveRequest(_previous: LeaveFormState, formData: Fo
     return { status: "error", message: TECHNICAL_ERROR };
   }
 
+  let outcome;
   try {
-    const positions = await repository.loadPositions(employeeId);
-    const plan = planRequest(parsed.input, { positions });
-    if (!plan.ok) {
-      return { status: "error", message: plan.code === "INVALID_INPUT" ? TECHNICAL_ERROR : plan.message };
-    }
-    await repository.createRequest({ leaveType: plan.leaveType, records: plan.records });
+    outcome = await submitRequest(repository, employeeId, parsed.input);
   } catch {
     return { status: "error", message: TECHNICAL_ERROR };
+  }
+  if (!outcome.ok) {
+    return errorState(outcome.code, outcome.message);
   }
 
   // redirect() кидає виняток, тому він поза try/catch.

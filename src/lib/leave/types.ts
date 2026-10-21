@@ -56,8 +56,19 @@ export type RequestInput = {
   hours?: HoursInput;
 };
 
+// Наявний запис працівника, з яким порівнюємо нові записи на перетин у часі.
+export type ExistingRecord = {
+  positionId: string;
+  date: string; // "YYYY-MM-DD"
+  startsAt: string;
+  endsAt: string;
+  status: RecordStatus;
+};
+
 export type PlanContext = {
   positions: Position[];
+  // Записи працівника для перевірки перетинів; без них перетини не перевіряються.
+  existing?: ExistingRecord[];
 };
 
 export type PlanErrorCode =
@@ -66,6 +77,7 @@ export type PlanErrorCode =
   | "HOURS_OUTSIDE_SCHEDULE"
   | "START_AT_BLOCK_END"
   | "END_NOT_AFTER_START"
+  | "TIME_CONFLICT"
   | "INVALID_INPUT";
 
 export type PlanResult =
