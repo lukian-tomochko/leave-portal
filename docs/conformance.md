@@ -37,14 +37,14 @@
 | AC-LEAVE-02 | Дві посади в одній заявці | — | — | відкладено (чекає реалізації) |
 | AC-LEAVE-03 | Додаткова посада виключена | — | — | відкладено (чекає реалізації) |
 | AC-LEAVE-05 | Дві дати в одній заявці | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-04 | Частина дня за годинами | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-15 | Заявка через проміжок між блоками | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-06 | Субота без розкладу | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-07 | Години раніше за початок блоку | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-19 | Години поза розкладом з кількох блоків | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-08 | Початок на кінці блоку | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-20 | Початок на кінці першого блоку між блоками | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-09 | Кінець раніше за початок | — | — | відкладено (чекає реалізації) |
+| AC-LEAVE-04 | Частина дня за годинами | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
+| AC-LEAVE-15 | Заявка через проміжок між блоками | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
+| AC-LEAVE-06 | Субота без розкладу | `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
+| AC-LEAVE-07 | Години раніше за початок блоку | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
+| AC-LEAVE-19 | Години поза розкладом з кількох блоків | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
+| AC-LEAVE-08 | Початок на кінці блоку | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
+| AC-LEAVE-20 | Початок на кінці першого блоку між блоками | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
+| AC-LEAVE-09 | Кінець раніше за початок | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
 | AC-LEAVE-10 | Усі посади виключені | — | — | відкладено (чекає реалізації) |
 | AC-LEAVE-11 | Повернення до редагування без підтвердження | — | — | відкладено (чекає реалізації) |
 | AC-LEAVE-12 | "Family celebration" без спорідненості | — | — | відкладено (чекає реалізації) |

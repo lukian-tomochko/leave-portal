@@ -1,5 +1,5 @@
 // Стан форми подання заявки (useActionState). Лише типи: файл із "use server" не може експортувати нічого, крім дій.
-import type { LeaveType } from "@/lib/leave/types";
+import type { RequestInput } from "@/lib/leave/types";
 
 export type SummaryLine = {
   date: string;
@@ -15,7 +15,7 @@ export type LeaveFormState =
   | {
       status: "summary";
       // Введені значення: форма підтвердження відправляє їх знову, а submitLeaveRequest перевіряє все наново.
-      values: { leaveType: LeaveType; dates: string[]; positionIds: string[] };
+      values: RequestInput;
       leaveTypeLabel: string;
       lines: SummaryLine[];
     };

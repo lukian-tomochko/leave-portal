@@ -8,6 +8,7 @@ function isLeaveType(value: string): value is LeaveType {
 }
 
 // Розбір FormData у вхід planRequest. Значення з форми не довіряємо: усе перевіряє planRequest і база.
+// Режим «години» (mode=hours) вимагає обох полів часу; режим «цілий день» поля часу ігнорує.
 export function parseRequestForm(formData: FormData): FormParse {
   const leaveType = String(formData.get("leaveType") ?? "");
   const dates = formData
@@ -22,5 +23,17 @@ export function parseRequestForm(formData: FormData): FormParse {
   if (!isLeaveType(leaveType)) {
     return { ok: false };
   }
-  return { ok: true, input: { leaveType, dates, positionIds } };
+
+  const input: RequestInput = { leaveType, dates, positionIds };
+
+  if (String(formData.get("mode") ?? "") === "hours") {
+    const startsAt = String(formData.get("startsAt") ?? "").trim();
+    const endsAt = String(formData.get("endsAt") ?? "").trim();
+    if (startsAt === "" || endsAt === "") {
+      return { ok: false };
+    }
+    input.hours = { startsAt, endsAt };
+  }
+
+  return { ok: true, input };
 }
