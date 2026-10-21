@@ -8,7 +8,7 @@
 
 ## 1. Основа й подання заявки на цілий день однієї посади
 
-- [ ] 1.1 ADR `docs/decisions/0001-model-leave-entries.md` (модель D2, атомарний запис D3). Міграція ролей
+- [x] 1.1 ADR `docs/decisions/0001-model-leave-entries.md` (модель D2, атомарний запис D3). Міграція ролей
   (`member` → `employee`; набір `employee`/`manager`/`admin`), таблиці `positions`, `position_managers`, `schedule_blocks`,
   `leave_requests`, `leave_records` з RLS і явними `grant`, функція `create_leave_request`; `supabase/demo-users.json`
   (5 користувачів), ідемпотентний `supabase/seed.sql` (посади й розклад лише для наявних профілів);
