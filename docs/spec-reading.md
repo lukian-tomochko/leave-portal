@@ -11,7 +11,7 @@
 Для PM це матеріал нотатки «порівняння реалізацій»: де одні вимоги прочитали по-різному.
 -->
 
-Вимоги: mkozlovskyi-ops/course-staff-management-spec · джерело: docs · знімок 2026-10-20 (коміт PM `a7e5940`)
+Вимоги: mkozlovskyi-ops/course-staff-management-spec · джерело: docs · знімок 2026-10-21 (коміт PM `ea4bb85`)
 
 ## Скан за таксономією
 
@@ -24,10 +24,10 @@
 | 1 | Функціональний обсяг | Ясно | що працівник змінює до рішення визначено: лише години (mkozlovskyi-ops/course-staff-management-spec#2, AC-DECIDE-21) |
 | 2 | Ролі й доступ | Частково | AC-DECIDE-18/19 і матриця прав у `requirements/product.md`: у менеджера «never own records», а чи може адміністратор сам вирішити свій запис, не сказано; видимість балансів для менеджера будь-якої посади вирішено (mkozlovskyi-ops/course-staff-management-spec#6, AC-BALANCE-20) |
 | 3 | Домен і модель даних | Ясно | коментар працівника (mkozlovskyi-ops/course-staff-management-spec#1, AC-LEAVE-17, AC-DECIDE-20); запис після розподілу (mkozlovskyi-ops/course-staff-management-spec#4, AC-BALANCE-18); розклади посад не перетинаються (mkozlovskyi-ops/course-staff-management-spec#8) |
-| 4 | Потік взаємодії (UX) | Частково | AC-LEAVE-06 (заявка на кілька дат, на одну з яких немає годин; mkozlovskyi-ops/course-staff-management-spec#9); AC-DECIDE-03 (чи є коментар менеджера до відхилення чи погодження; mkozlovskyi-ops/course-staff-management-spec#10) |
+| 4 | Потік взаємодії (UX) | Ясно | заявка на кілька дат, на одну з яких немає годин, вирішена (mkozlovskyi-ops/course-staff-management-spec#9, AC-LEAVE-21); коментар менеджера до відхилення й погодження вирішений (mkozlovskyi-ops/course-staff-management-spec#10, AC-DECIDE-23, AC-DECIDE-24) |
 | 5 | Нефункціональні вимоги | Ясно | Europe/Kyiv, крок 5 хв, час рішення до хвилини (Assumptions у 01, 02, 03) |
 | 6 | Інтеграції й обмеження платформи | Ясно | листів немає, лише статуси в застосунку (`requirements/product.md`, «Out of scope») |
-| 7 | Граничні випадки й збої | Частково | навчальний рік для запису з датою в минулому (AC-BALANCE-11; mkozlovskyi-ops/course-staff-management-spec#11); овердрафт «Sick leave»: усі AC овердрафту про «Personal leave»; проміжок між блоками (mkozlovskyi-ops/course-staff-management-spec#5) і попередження на кілька дат (mkozlovskyi-ops/course-staff-management-spec#3) вирішено |
+| 7 | Граничні випадки й збої | Частково | навчальний рік для запису з датою в минулому вирішено (mkozlovskyi-ops/course-staff-management-spec#11, AC-BALANCE-21, AC-BALANCE-22); овердрафт «Sick leave»: усі AC овердрафту про «Personal leave»; проміжок між блоками (mkozlovskyi-ops/course-staff-management-spec#5) і попередження на кілька дат (mkozlovskyi-ops/course-staff-management-spec#3) вирішено |
 | 8 | Обмеження й компроміси | Ясно | 18 + 18 днів, навчальний рік 01.09–31.08, «підтверджено PM» в Assumptions |
 | 9 | Термінологія | Ясно | глосарій у `requirements/product.md`; «whole day» і «position» визначені, частка дня — формула (mkozlovskyi-ops/course-staff-management-spec#7) |
 | 10 | Сигнали завершеності | Частково | AC-DECIDE-08 і AC-DECIDE-09: «the decision is not saved», але що бачить користувач, не сказано; решта AC має числа й тексти повідомлень |
@@ -43,9 +43,9 @@
 
 | # | AC / вимога | Питання | Рекомендація | Issue в репо PM | Відповідь PM | Рішення (що зробили) |
 |---|---|---|---|---|---|---|
-| Q1 | AC-LEAVE-06 (`requirements/01-leave-request.md`) | Що робить заявка на кілька дат, якщо на одну з них немає робочих годин? | A: цю дату не приймають із повідомленням, інші дати лишаються в заявці | mkozlovskyi-ops/course-staff-management-spec#9 | очікуємо | у специфікації — текст PM, питання в Open questions; робоче припущення — варіант A |
-| Q2 | AC-DECIDE-03 (`requirements/02-leave-decision.md`) | Чи може менеджер залишити коментар при відхиленні чи погодженні, і чи обов'язковий він? | A: необов'язковий, працівник його бачить | mkozlovskyi-ops/course-staff-management-spec#10 | очікуємо | у специфікації — текст PM (коментар лише при поверненні), питання в Open questions |
-| Q3 | AC-BALANCE-11 (`requirements/03-leave-balance.md`) | Залишок якого навчального року зменшує запис з датою в минулому році, погоджений після 01.09? | A: року, до якого належить дата запису | mkozlovskyi-ops/course-staff-management-spec#11 | очікуємо | у специфікації — текст PM, питання в Open questions; робоче припущення — варіант A |
+| Q1 | AC-LEAVE-06 (`requirements/01-leave-request.md`) | Що робить заявка на кілька дат, якщо на одну з них немає робочих годин? | A: цю дату не приймають із повідомленням, інші дати лишаються в заявці | mkozlovskyi-ops/course-staff-management-spec#9 | **A** (21.10): дату без годин не приймають із повідомленням, інші дати лишаються; «все або нічого» діє для прийнятих дат | зміна `clarify-leave-management-2`: MODIFIED «Дата без робочих годин» і «Заявка зберігається цілою», новий AC-LEAVE-21; у матриці «відкладено (чекає реалізації)» |
+| Q2 | AC-DECIDE-03 (`requirements/02-leave-decision.md`) | Чи може менеджер залишити коментар при відхиленні чи погодженні, і чи обов'язковий він? | A: необов'язковий, працівник його бачить | mkozlovskyi-ops/course-staff-management-spec#10 | **A** (21.10): необов'язковий при погодженні й відхиленні, обов'язковий при поверненні; працівник бачить його в «My requests» | зміна `clarify-leave-management-2`: MODIFIED «Погодження запису» і «Відхилення запису», нові AC-DECIDE-23, AC-DECIDE-24; у матриці «відкладено (чекає реалізації)» |
+| Q3 | AC-BALANCE-11 (`requirements/03-leave-balance.md`) | Залишок якого навчального року зменшує запис з датою в минулому році, погоджений після 01.09? | A: року, до якого належить дата запису | mkozlovskyi-ops/course-staff-management-spec#11 | **A** (21.10): року, до якого належить дата запису; заявка на два роки дає записи в кожному | зміна `clarify-leave-management-2`: ADDED «Запис зменшує баланс навчального року своєї дати», нові AC-BALANCE-21, AC-BALANCE-22; у матриці «відкладено (чекає реалізації)» |
 
 ### Відповіді PM на питання інших розробників, що стосуються нашої специфікації
 

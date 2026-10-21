@@ -45,7 +45,7 @@
 | AC-LEAVE-08 | Початок на кінці блоку | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
 | AC-LEAVE-20 | Початок на кінці першого блоку між блоками | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
 | AC-LEAVE-09 | Кінець раніше за початок | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
-| AC-LEAVE-10 | Усі посади виключені | — | — | відкладено (чекає реалізації) |
+| AC-LEAVE-10 | Усі посади виключені | `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/multi.test.ts` | реалізовано |
 | AC-LEAVE-11 | Повернення до редагування без підтвердження | `src/lib/leave/use-cases.ts` (previewRequest), `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/use-cases.test.ts` | реалізовано |
 | AC-LEAVE-12 | "Family celebration" без спорідненості | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/messages.ts` | `src/lib/leave/comment.test.ts` | реалізовано |
 | AC-LEAVE-13 | Перетин із записом на розгляді | `src/lib/leave/request.ts` (planRequest), `supabase/migrations/20261021041722_leave_no_overlap.sql` | `src/lib/leave/multi.test.ts` | реалізовано |
@@ -53,6 +53,7 @@
 | AC-LEAVE-14 | Список лише власних записів | `src/lib/leave/use-cases.ts` (listMyRecords), `src/lib/leave/supabase-repository.ts` (listRecords), `src/app/leave/page.tsx` | `src/lib/leave/use-cases.test.ts` | реалізовано |
 | AC-LEAVE-17 | Коментар на всіх записах заявки | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/use-cases.ts`, `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/comment.test.ts` | реалізовано |
 | AC-LEAVE-18 | Коментар із 501 символу | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/messages.ts` | `src/lib/leave/comment.test.ts` | реалізовано |
+| AC-LEAVE-21 | Дата без годин у заявці на кілька дат | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-01 | Менеджер бачить лише записи своєї посади | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-14 | Порожній список | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-02 | Погодження одного з двох записів | — | — | відкладено (чекає реалізації) |
@@ -75,6 +76,8 @@
 | AC-DECIDE-20 | Менеджер бачить коментар працівника | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-21 | Зміна типу відпустки заборонена | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-22 | Зміна годин із перетином | — | — | відкладено (чекає реалізації) |
+| AC-DECIDE-23 | Відхилення з коментарем | — | — | відкладено (чекає реалізації) |
+| AC-DECIDE-24 | Погодження з коментарем | — | — | відкладено (чекає реалізації) |
 | AC-BALANCE-01 | Початкові баланси | — | — | відкладено (чекає реалізації) |
 | AC-BALANCE-02 | Погоджений цілий день | — | — | відкладено (чекає реалізації) |
 | AC-BALANCE-03 | Частина дня | — | — | відкладено (чекає реалізації) |
@@ -95,3 +98,5 @@
 | AC-BALANCE-12 | Менеджер без посад працівника | — | — | відкладено (чекає реалізації) |
 | AC-BALANCE-13 | Працівник не бачить чужих балансів | — | — | відкладено (чекає реалізації) |
 | AC-BALANCE-20 | Менеджер додаткової посади бачить повний баланс | — | — | відкладено (чекає реалізації) |
+| AC-BALANCE-21 | Пізнє погодження за минулий рік | — | — | відкладено (чекає реалізації) |
+| AC-BALANCE-22 | Заявка на два навчальні роки | — | — | відкладено (чекає реалізації) |
