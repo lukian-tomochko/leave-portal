@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { previewLeaveRequest, submitLeaveRequest } from "../actions";
 import type { LeaveFormState } from "../state";
 
@@ -20,6 +20,7 @@ export function NewLeaveForm({
 }) {
   const [preview, previewAction, previewPending] = useActionState(previewLeaveRequest, IDLE);
   const [submit, submitAction, submitPending] = useActionState(submitLeaveRequest, IDLE);
+  const [mode, setMode] = useState<"whole-day" | "hours">("whole-day");
 
   if (positions.length === 0) {
     return <p role="status">У вас немає посад, тож подати заявку не можна. Зверніться до адміністратора.</p>;
@@ -34,13 +35,37 @@ export function NewLeaveForm({
         </label>
 
         <fieldset className="flex flex-col gap-2 text-sm">
-          <legend className="mb-1">Посада (цілий день)</legend>
+          <legend className="mb-1">Посада</legend>
           {positions.map((position, index) => (
             <label key={position.id} className="flex items-center gap-2">
               <input type="radio" name="positionId" value={position.id} defaultChecked={index === 0} required />
               {position.label}
             </label>
           ))}
+        </fieldset>
+
+        <fieldset className="flex flex-col gap-2 text-sm">
+          <legend className="mb-1">Скільки часу</legend>
+          <label className="flex items-center gap-2">
+            <input type="radio" name="mode" value="whole-day" checked={mode === "whole-day"} onChange={() => setMode("whole-day")} />
+            Цілий день
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="radio" name="mode" value="hours" checked={mode === "hours"} onChange={() => setMode("hours")} />
+            Години
+          </label>
+          {mode === "hours" ? (
+            <div className="flex items-center gap-3">
+              <label className="flex flex-col gap-1">
+                З
+                <input name="startsAt" type="time" step={300} required className={INPUT_CLASS} />
+              </label>
+              <label className="flex flex-col gap-1">
+                До
+                <input name="endsAt" type="time" step={300} required className={INPUT_CLASS} />
+              </label>
+            </div>
+          ) : null}
         </fieldset>
 
         <label className="flex flex-col gap-1 text-sm">
@@ -91,6 +116,15 @@ export function NewLeaveForm({
             {preview.values.positionIds.map((id) => (
               <input key={id} type="hidden" name="positionId" value={id} />
             ))}
+            {preview.values.hours ? (
+              <>
+                <input type="hidden" name="mode" value="hours" />
+                <input type="hidden" name="startsAt" value={preview.values.hours.startsAt} />
+                <input type="hidden" name="endsAt" value={preview.values.hours.endsAt} />
+              </>
+            ) : (
+              <input type="hidden" name="mode" value="whole-day" />
+            )}
 
             {submit.status === "error" ? (
               <p role="alert" className="text-sm text-red-600">

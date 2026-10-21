@@ -42,17 +42,31 @@ export type PlannedRecord = {
   status: RecordStatus;
 };
 
+// Години відпустки в межах розкладу. Без них заявка — «цілий день». Поки що години однакові для всіх обраних
+// дат і посад; окремі години для кожної посади — за потреби в задачі 3.
+export type HoursInput = {
+  startsAt: string; // "HH:MM"
+  endsAt: string; // "HH:MM"
+};
+
 export type RequestInput = {
   leaveType: LeaveType;
   dates: string[];
   positionIds: string[];
+  hours?: HoursInput;
 };
 
 export type PlanContext = {
   positions: Position[];
 };
 
-export type PlanErrorCode = "NO_POSITION_CHOSEN" | "NO_WORKING_HOURS" | "INVALID_INPUT";
+export type PlanErrorCode =
+  | "NO_POSITION_CHOSEN"
+  | "NO_WORKING_HOURS"
+  | "HOURS_OUTSIDE_SCHEDULE"
+  | "START_AT_BLOCK_END"
+  | "END_NOT_AFTER_START"
+  | "INVALID_INPUT";
 
 export type PlanResult =
   | { ok: true; leaveType: LeaveType; records: PlannedRecord[] }
