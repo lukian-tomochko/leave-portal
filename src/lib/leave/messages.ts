@@ -25,6 +25,11 @@ export function startAtBlockEnd(time: string): string {
   return `${time} is the end of working time and can only be chosen as the end of leave`;
 }
 
+// AC-LEAVE-13, AC-LEAVE-16: дата й години наявного запису, з яким є перетин.
+export function alreadyHaveRequest(record: { date: string; startsAt: string; endsAt: string }): string {
+  return `You already have a request for this time: ${record.date} ${record.startsAt}–${record.endsAt}`;
+}
+
 // Підписи статусів і типів — із глосарія PM (requirements/product.md).
 export const STATUS_LABELS: Record<RecordStatus, string> = {
   awaiting_decision: "Awaiting decision",

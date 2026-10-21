@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
-import type { LeaveRepository, NewRequest } from "./repository";
+import { LeaveConflictError, type LeaveRepository, type NewRequest } from "./repository";
 import { positionLabel } from "./schedule";
 import { trimSeconds } from "./time";
 import type { LeaveType, Position, PositionKind, RecordStatus, ScheduleBlock } from "./types";
@@ -53,6 +53,24 @@ export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>
       return positions.sort((a, b) => Number(b.kind === "main") - Number(a.kind === "main"));
     },
 
+    async loadExistingRecords(employeeId) {
+      const { data, error } = await supabase
+        .from("leave_records")
+        .select("position_id, leave_date, starts_at, ends_at, status")
+        .eq("employee_id", employeeId)
+        .in("status", ["awaiting_decision", "returned_for_revision", "approved"]);
+      if (error) {
+        throw new Error(`loadExistingRecords failed: ${error.code ?? "unknown"}`);
+      }
+      return data.map((row) => ({
+        positionId: row.position_id,
+        date: row.leave_date,
+        startsAt: trimSeconds(row.starts_at),
+        endsAt: trimSeconds(row.ends_at),
+        status: row.status as RecordStatus,
+      }));
+    },
+
     async createRequest(request: NewRequest) {
       const { data, error } = await supabase.rpc("create_leave_request", {
         p_leave_type: request.leaveType,
@@ -66,6 +84,10 @@ export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>
         p_comment: request.comment,
       });
       if (error) {
+        // 23P01 — exclusion_violation: обмеження leave_records_no_overlap спрацювало (гонка двох заявок).
+        if (error.code === "23P01") {
+          throw new LeaveConflictError();
+        }
         throw new Error(`createRequest failed: ${error.code ?? "unknown"}`);
       }
       return data;
