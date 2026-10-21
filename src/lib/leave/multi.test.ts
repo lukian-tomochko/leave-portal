@@ -78,6 +78,29 @@ describe("заявка на кілька посад і дат", () => {
     }
   });
 
+  it("AC-LEAVE-21: субота без годин не приймається з повідомленням, а п'ятниця лишається в заявці", () => {
+    // 2026-11-06 — п'ятниця, 2026-11-07 — субота; основна посада працює пн–пт 08:30–15:30.
+    const result = planRequest(
+      { leaveType: "sick", dates: ["2026-11-06", "2026-11-07"], positionIds: ["main"] },
+      { positions: POSITIONS },
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.records.map((r) => r.date)).toEqual(["2026-11-06"]);
+      expect(result.skippedDates).toEqual(["2026-11-07"]);
+    }
+  });
+
+  it("усі обрані дати без годин — заявки немає й повідомлення «No working hours»", () => {
+    const result = planRequest(
+      { leaveType: "sick", dates: ["2026-11-07", "2026-11-08"], positionIds: ["main"] },
+      { positions: POSITIONS },
+    );
+
+    expect(result).toEqual({ ok: false, code: "NO_WORKING_HOURS", message: "You have no working hours on this day" });
+  });
+
   it("жодна з обраних посад не працює в цей день — «No working hours»", () => {
     const result = planRequest({ leaveType: "sick", dates: ["2026-11-03"], positionIds: ["additional"] }, { positions: POSITIONS });
 

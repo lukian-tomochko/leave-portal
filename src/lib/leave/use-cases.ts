@@ -7,7 +7,14 @@ import type { LeaveRecordView, LeaveType, PlanErrorCode, PlannedRecord, Position
 export type Failure = { ok: false; code: PlanErrorCode; message: string };
 
 export type PreviewOutcome =
-  | { ok: true; leaveType: LeaveType; records: PlannedRecord[]; positions: Position[]; comment?: string }
+  | {
+      ok: true;
+      leaveType: LeaveType;
+      records: PlannedRecord[];
+      positions: Position[];
+      comment?: string;
+      skippedDates: string[];
+    }
   | Failure;
 
 export type SubmitOutcome = { ok: true; requestId: string } | Failure;
@@ -26,7 +33,14 @@ export async function previewRequest(
   if (!plan.ok) {
     return plan;
   }
-  return { ok: true, leaveType: plan.leaveType, records: plan.records, positions, comment: plan.comment };
+  return {
+    ok: true,
+    leaveType: plan.leaveType,
+    records: plan.records,
+    positions,
+    comment: plan.comment,
+    skippedDates: plan.skippedDates,
+  };
 }
 
 // «My requests»: записи лише цього працівника. RLS уже обмежує вибірку, але домен не покладається на це сам:

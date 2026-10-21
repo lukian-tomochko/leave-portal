@@ -34,7 +34,8 @@ function findConflict(record: PlannedRecord, existing: ExistingRecord[]): Existi
 // Результат — або всі записи, або помилка без жодного запису («все або нічого», AC-LEAVE-16).
 //
 // Заявка — це дати × посади: на кожну дату береться кожна обрана посада, що має розклад у цей день тижня
-// (Main scenario вимоги 01, крок 2); якщо жодна обрана посада в цей день не працює — «No working hours».
+// (Main scenario вимоги 01, крок 2). Дата, на яку не працює жодна обрана посада, не приймається (повертається в
+// skippedDates, AC-LEAVE-21), а решта дат лишається; якщо не прийнято жодної дати — «No working hours» (AC-LEAVE-06).
 // «Цілий день» (без hours) або години в межах розкладу (з hours).
 // Порядок перевірок — рішення розробника (PM порядок не задав):
 // посади → дата без годин → години → спорідненість → довжина коментаря → перетин із наявними записами.
@@ -54,6 +55,7 @@ export function planRequest(input: RequestInput, context: PlanContext): PlanResu
   }
 
   const records: PlannedRecord[] = [];
+  const skippedDates: string[] = [];
 
   for (const date of [...new Set(input.dates)]) {
     let anyWorking = false;
@@ -94,9 +96,15 @@ export function planRequest(input: RequestInput, context: PlanContext): PlanResu
       }
     }
 
+    // Дата без робочих годин не приймається, а інші дати заявки лишаються (AC-LEAVE-21).
     if (!anyWorking) {
-      return { ok: false, code: "NO_WORKING_HOURS", message: NO_WORKING_HOURS };
+      skippedDates.push(date);
     }
+  }
+
+  // Жодної прийнятої дати — заявки немає (AC-LEAVE-06).
+  if (records.length === 0) {
+    return { ok: false, code: "NO_WORKING_HOURS", message: NO_WORKING_HOURS };
   }
 
   if (input.leaveType === "family" && !(RELATIONSHIPS as readonly string[]).includes(input.relationship ?? "")) {
@@ -125,5 +133,6 @@ export function planRequest(input: RequestInput, context: PlanContext): PlanResu
     records: comment ? records.map((record) => ({ ...record, comment })) : records,
     relationship: input.leaveType === "family" ? input.relationship : undefined,
     comment,
+    skippedDates,
   };
 }

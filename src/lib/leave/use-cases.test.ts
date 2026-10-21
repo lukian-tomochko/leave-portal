@@ -89,6 +89,18 @@ describe("сценарії над репозиторієм", () => {
     expect(created[0].records.map((r) => r.date)).toEqual(["2026-11-02", "2026-11-03"]);
   });
 
+  it("підтвердження заявки на п'ятницю й суботу створює один запис на п'ятницю, а субота в підсумку позначена", async () => {
+    const { repository, created } = fakeRepository({});
+    const input = { leaveType: "sick" as const, dates: ["2026-11-06", "2026-11-07"], positionIds: ["main"] };
+
+    const preview = await previewRequest(repository, "employee-1", input);
+    const outcome = await submitRequest(repository, "employee-1", input);
+
+    expect(preview).toMatchObject({ ok: true, skippedDates: ["2026-11-07"] });
+    expect(outcome).toEqual({ ok: true, requestId: "request-1" });
+    expect(created[0].records.map((record) => record.date)).toEqual(["2026-11-06"]);
+  });
+
   it("AC-LEAVE-11: підсумок нічого не створює, поки заявку не підтверджено", async () => {
     const { repository, created } = fakeRepository({});
 

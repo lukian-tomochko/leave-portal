@@ -94,7 +94,15 @@ export type PlanErrorCode =
   | "INVALID_INPUT";
 
 export type PlanResult =
-  | { ok: true; leaveType: LeaveType; records: PlannedRecord[]; relationship?: Relationship; comment?: string }
+  | {
+      ok: true;
+      leaveType: LeaveType;
+      records: PlannedRecord[];
+      relationship?: Relationship;
+      comment?: string;
+      // Дати без робочих годин, які не прийнято (AC-LEAVE-21); решта дат заявки створюється.
+      skippedDates: string[];
+    }
   | { ok: false; code: PlanErrorCode; message: string };
 
 // Рядок списку «My requests».

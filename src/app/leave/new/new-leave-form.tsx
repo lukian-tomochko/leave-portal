@@ -259,6 +259,11 @@ export function NewLeaveForm({
           </h2>
           <p className="text-sm text-zinc-500">Тип: {summary.leaveTypeLabel}</p>
           {summary.comment ? <p className="text-sm">Коментар: {summary.comment}</p> : null}
+          {summary.skippedDates.map((date) => (
+            <p key={date} role="status" className="text-sm text-red-600">
+              {date}: {NO_WORKING_HOURS}
+            </p>
+          ))}
           <ul className="flex flex-col gap-2 text-sm" data-testid="summary-lines">
             {summary.lines.map((line) => (
               <li key={`${line.date}-${line.position}`} className="rounded border border-zinc-300 p-3 dark:border-zinc-700">
