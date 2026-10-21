@@ -96,7 +96,7 @@ export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>
     async listRecords(employeeId) {
       const { data: records, error } = await supabase
         .from("leave_records")
-        .select("id, request_id, position_id, leave_date, starts_at, ends_at, status")
+        .select("id, request_id, employee_id, position_id, leave_date, starts_at, ends_at, status")
         .eq("employee_id", employeeId)
         .order("leave_date", { ascending: false });
       if (error) {
@@ -111,7 +111,7 @@ export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>
 
       const { data: requests, error: requestsError } = await supabase
         .from("leave_requests")
-        .select("id, leave_type")
+        .select("id, leave_type, comment")
         .in("id", requestIds);
       if (requestsError) {
         throw new Error(`listRecords(requests) failed: ${requestsError.code ?? "unknown"}`);
@@ -124,25 +124,27 @@ export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>
         throw new Error(`listRecords(positions) failed: ${positionsError.code ?? "unknown"}`);
       }
 
-      const typeByRequest = new Map(requests.map((request) => [request.id, request.leave_type as LeaveType]));
+      const requestById = new Map(requests.map((request) => [request.id, request]));
       const labelByPosition = new Map(
         positions.map((position) => [position.id, positionLabel({ division: position.division, jobTitle: position.job_title })]),
       );
 
       return records.map((record) => {
         // Запис без видимої заявки неможливий (FK + RLS): краще впасти, ніж показати хибний тип відпустки.
-        const leaveType = typeByRequest.get(record.request_id);
-        if (!leaveType) {
+        const request = requestById.get(record.request_id);
+        if (!request) {
           throw new Error("listRecords: request of a record is not visible");
         }
         return {
           id: record.id,
+          employeeId: record.employee_id,
           date: record.leave_date,
           startsAt: trimSeconds(record.starts_at),
           endsAt: trimSeconds(record.ends_at),
           status: record.status as RecordStatus,
-          leaveType,
+          leaveType: request.leave_type as LeaveType,
           positionLabel: labelByPosition.get(record.position_id) ?? "—",
+          comment: request.comment,
         };
       });
     },

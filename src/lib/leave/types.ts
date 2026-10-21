@@ -6,6 +6,13 @@
 export const LEAVE_TYPES = ["sick", "personal", "unpaid", "family"] as const;
 export type LeaveType = (typeof LEAVE_TYPES)[number];
 
+// Спорідненість для "Family celebration" (requirements/01-leave-request.md, AC-LEAVE-12).
+export const RELATIONSHIPS = ["sibling", "child", "parent", "grandchild", "grandparent"] as const;
+export type Relationship = (typeof RELATIONSHIPS)[number];
+
+// Найбільша довжина коментаря до заявки, у символах (припущення PM, AC-LEAVE-18).
+export const COMMENT_MAX_LENGTH = 500;
+
 export const RECORD_STATUSES = [
   "awaiting_decision",
   "approved",
@@ -40,6 +47,8 @@ export type PlannedRecord = {
   endsAt: string;
   minutes: number; // тривалість лише в межах блоків розкладу
   status: RecordStatus;
+  // Коментар заявки на кожному її записі (AC-LEAVE-17); у базі він лежить у leave_requests.
+  comment?: string;
 };
 
 // Години відпустки в межах розкладу. Без них заявка — «цілий день». Поки що години однакові для всіх обраних
@@ -54,6 +63,8 @@ export type RequestInput = {
   dates: string[];
   positionIds: string[];
   hours?: HoursInput;
+  relationship?: Relationship; // обов'язкова для "family"
+  comment?: string; // необов'язковий, до 500 символів
 };
 
 // Наявний запис працівника, з яким порівнюємо нові записи на перетин у часі.
@@ -77,20 +88,24 @@ export type PlanErrorCode =
   | "HOURS_OUTSIDE_SCHEDULE"
   | "START_AT_BLOCK_END"
   | "END_NOT_AFTER_START"
+  | "RELATIONSHIP_REQUIRED"
+  | "COMMENT_TOO_LONG"
   | "TIME_CONFLICT"
   | "INVALID_INPUT";
 
 export type PlanResult =
-  | { ok: true; leaveType: LeaveType; records: PlannedRecord[] }
+  | { ok: true; leaveType: LeaveType; records: PlannedRecord[]; relationship?: Relationship; comment?: string }
   | { ok: false; code: PlanErrorCode; message: string };
 
 // Рядок списку «My requests».
 export type LeaveRecordView = {
   id: string;
+  employeeId: string;
   date: string;
   startsAt: string;
   endsAt: string;
   status: RecordStatus;
   leaveType: LeaveType;
   positionLabel: string;
+  comment: string | null;
 };

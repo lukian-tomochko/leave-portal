@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { LeaveConflictError, type LeaveRepository, type NewRequest } from "./repository";
-import type { ExistingRecord, Position } from "./types";
-import { previewRequest, submitRequest } from "./use-cases";
+import type { ExistingRecord, LeaveRecordView, Position } from "./types";
+import { listMyRecords, previewRequest, submitRequest } from "./use-cases";
 
 const MAIN: Position = {
   id: "main",
@@ -16,6 +16,8 @@ function fakeRepository(options: {
   existing?: ExistingRecord[];
   // Для гонки: перший createRequest падає конфліктом, а наступне читання повертає ці записи.
   conflictOnCreate?: { existingAfter: ExistingRecord[] };
+  // Що поверне listRecords (фейк не фільтрує за власником, як це робить RLS).
+  listed?: LeaveRecordView[];
 }) {
   const created: NewRequest[] = [];
   let existing = options.existing ?? [];
@@ -30,12 +32,51 @@ function fakeRepository(options: {
       created.push(request);
       return `request-${created.length}`;
     },
-    listRecords: async () => [],
+    listRecords: async () => options.listed ?? [],
   };
   return { repository, created };
 }
 
 const TWO_DATES = { leaveType: "sick" as const, dates: ["2026-11-02", "2026-11-03"], positionIds: ["main"] };
+
+const view = (id: string, employeeId: string, date: string): LeaveRecordView => ({
+  id,
+  employeeId,
+  date,
+  startsAt: "08:30",
+  endsAt: "15:30",
+  status: "awaiting_decision",
+  leaveType: "sick",
+  positionLabel: "Elementary school / Teacher",
+  comment: null,
+});
+
+describe("My requests", () => {
+  it("AC-LEAVE-14: teacher1 бачить лише свої 2 записи, навіть якщо репозиторій повернув і 3 записи teacher2", async () => {
+    const { repository } = fakeRepository({
+      listed: [
+        view("t1-a", "teacher1", "2026-11-02"),
+        view("t2-a", "teacher2", "2026-11-02"),
+        view("t1-b", "teacher1", "2026-11-03"),
+        view("t2-b", "teacher2", "2026-11-03"),
+        view("t2-c", "teacher2", "2026-11-04"),
+      ],
+    });
+
+    const mine = await listMyRecords(repository, "teacher1");
+
+    expect(mine.map((record) => record.id)).toEqual(["t1-a", "t1-b"]);
+    // Кожен запис несе дату, години, посаду, тип і статус для показу.
+    expect(mine[0]).toMatchObject({
+      date: "2026-11-02",
+      startsAt: "08:30",
+      endsAt: "15:30",
+      positionLabel: "Elementary school / Teacher",
+      leaveType: "sick",
+      status: "awaiting_decision",
+    });
+  });
+});
 
 describe("сценарії над репозиторієм", () => {
   it("AC-LEAVE-05: дві дати створюються однією заявкою з двома записами", async () => {
@@ -72,6 +113,37 @@ describe("сценарії над репозиторієм", () => {
       code: "TIME_CONFLICT",
       message: "You already have a request for this time: 2026-11-03 09:00–11:00",
     });
+    expect(created).toHaveLength(0);
+  });
+
+  it("підтвердження передає коментар і спорідненість у створення заявки, а підсумок показує коментар", async () => {
+    const { repository, created } = fakeRepository({});
+    const input = { ...TWO_DATES, leaveType: "family" as const, relationship: "sibling" as const, comment: "Doctor's appointment" };
+
+    const preview = await previewRequest(repository, "employee-1", input);
+    const outcome = await submitRequest(repository, "employee-1", input);
+
+    expect(preview).toMatchObject({ ok: true, comment: "Doctor's appointment" });
+    expect(outcome).toEqual({ ok: true, requestId: "request-1" });
+    expect(created[0]).toMatchObject({ leaveType: "family", relationship: "sibling", comment: "Doctor's appointment" });
+    expect(created[0].records.map((record) => record.comment)).toEqual(["Doctor's appointment", "Doctor's appointment"]);
+  });
+
+  it("за задовгого коментаря заявка не створюється", async () => {
+    const { repository, created } = fakeRepository({});
+
+    const outcome = await submitRequest(repository, "employee-1", { ...TWO_DATES, comment: "a".repeat(501) });
+
+    expect(outcome).toEqual({ ok: false, code: "COMMENT_TOO_LONG", message: "The comment can be at most 500 characters" });
+    expect(created).toHaveLength(0);
+  });
+
+  it("Family celebration без спорідненості не створює заявки", async () => {
+    const { repository, created } = fakeRepository({});
+
+    const outcome = await submitRequest(repository, "employee-1", { ...TWO_DATES, leaveType: "family" });
+
+    expect(outcome).toMatchObject({ ok: false, code: "RELATIONSHIP_REQUIRED" });
     expect(created).toHaveLength(0);
   });
 

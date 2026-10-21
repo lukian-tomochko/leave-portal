@@ -25,6 +25,12 @@ export function startAtBlockEnd(time: string): string {
   return `${time} is the end of working time and can only be chosen as the end of leave`;
 }
 
+// AC-LEAVE-12
+export const RELATIONSHIP_REQUIRED =
+  "State your relationship to this person: sibling, child, parent, grandchild or grandparent. Not applicable to cousins, friends, neighbours or siblings-in-law";
+// AC-LEAVE-18
+export const COMMENT_TOO_LONG = "The comment can be at most 500 characters";
+
 // AC-LEAVE-13, AC-LEAVE-16: дата й години наявного запису, з яким є перетин.
 export function alreadyHaveRequest(record: { date: string; startsAt: string; endsAt: string }): string {
   return `You already have a request for this time: ${record.date} ${record.startsAt}–${record.endsAt}`;
