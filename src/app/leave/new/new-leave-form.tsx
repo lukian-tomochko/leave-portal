@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type FormEvent, useActionState, useState, useTransition } from "react";
 import { NO_WORKING_HOURS } from "@/lib/leave/messages";
+import { RELATIONSHIPS } from "@/lib/leave/types";
 import { weekdayOf } from "@/lib/leave/time";
 import { previewLeaveRequest, submitLeaveRequest } from "../actions";
 import type { LeaveFormState } from "../state";
@@ -16,7 +17,16 @@ const BUTTON_CLASS = "rounded bg-foreground px-4 py-2 font-medium text-backgroun
 const IDLE: LeaveFormState = { status: "idle" };
 
 // Стабільний ключ значень форми: за ним відрізняємо підсумок для поточних даних від застарілого.
-function keyOf(values: { leaveType: string; dates: string[]; positionIds: string[]; mode: Mode; startsAt: string; endsAt: string }) {
+function keyOf(values: {
+  leaveType: string;
+  dates: string[];
+  positionIds: string[];
+  mode: Mode;
+  startsAt: string;
+  endsAt: string;
+  relationship: string;
+  comment: string;
+}) {
   return JSON.stringify({
     ...values,
     dates: [...new Set(values.dates)].sort(),
@@ -42,6 +52,8 @@ export function NewLeaveForm({
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
   const [leaveType, setLeaveType] = useState(leaveTypes[0]?.value ?? "");
+  const [relationship, setRelationship] = useState("");
+  const [comment, setComment] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
 
   if (positions.length === 0) {
@@ -59,7 +71,17 @@ export function NewLeaveForm({
   };
 
   const acceptedDates = dates.filter((date) => date !== "" && dateError(date) === null);
-  const currentKey = keyOf({ leaveType, dates: acceptedDates, positionIds: selected, mode, startsAt: mode === "hours" ? startsAt : "", endsAt: mode === "hours" ? endsAt : "" });
+  const isFamily = leaveType === "family";
+  const currentKey = keyOf({
+    leaveType,
+    dates: acceptedDates,
+    positionIds: selected,
+    mode,
+    startsAt: mode === "hours" ? startsAt : "",
+    endsAt: mode === "hours" ? endsAt : "",
+    relationship: isFamily ? relationship : "",
+    comment: comment.trim(),
+  });
 
   const onPreview = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -78,6 +100,10 @@ export function NewLeaveForm({
       formData.set("startsAt", startsAt);
       formData.set("endsAt", endsAt);
     }
+    if (isFamily) {
+      formData.set("relationship", relationship);
+    }
+    formData.set("comment", comment);
     startTransition(() => {
       previewAction(formData);
     });
@@ -93,6 +119,8 @@ export function NewLeaveForm({
       mode: preview.values.hours ? "hours" : "whole-day",
       startsAt: preview.values.hours?.startsAt ?? "",
       endsAt: preview.values.hours?.endsAt ?? "",
+      relationship: preview.values.relationship ?? "",
+      comment: (preview.values.comment ?? "").trim(),
     }) === currentKey
       ? preview
       : null;
@@ -188,6 +216,26 @@ export function NewLeaveForm({
           </select>
         </label>
 
+        {isFamily ? (
+          <label className="flex flex-col gap-1 text-sm">
+            Спорідненість
+            <select value={relationship} onChange={(event) => setRelationship(event.target.value)} className={INPUT_CLASS}>
+              <option value="">—</option>
+              {RELATIONSHIPS.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+
+        {/* Без maxLength: довжину перевіряє сервер і повертає повідомлення PM (AC-LEAVE-18). */}
+        <label className="flex flex-col gap-1 text-sm">
+          Коментар (необов&apos;язково)
+          <textarea value={comment} onChange={(event) => setComment(event.target.value)} rows={3} className={INPUT_CLASS} />
+        </label>
+
         {localError ? (
           <p role="alert" className="text-sm text-red-600">
             {localError}
@@ -210,6 +258,7 @@ export function NewLeaveForm({
             Підсумок
           </h2>
           <p className="text-sm text-zinc-500">Тип: {summary.leaveTypeLabel}</p>
+          {summary.comment ? <p className="text-sm">Коментар: {summary.comment}</p> : null}
           <ul className="flex flex-col gap-2 text-sm" data-testid="summary-lines">
             {summary.lines.map((line) => (
               <li key={`${line.date}-${line.position}`} className="rounded border border-zinc-300 p-3 dark:border-zinc-700">
@@ -220,6 +269,8 @@ export function NewLeaveForm({
 
           <form action={submitAction} className="flex flex-col gap-3">
             <input type="hidden" name="leaveType" value={summary.values.leaveType} />
+            {summary.values.relationship ? <input type="hidden" name="relationship" value={summary.values.relationship} /> : null}
+            {summary.values.comment ? <input type="hidden" name="comment" value={summary.values.comment} /> : null}
             {summary.values.dates.map((date) => (
               <input key={date} type="hidden" name="date" value={date} />
             ))}

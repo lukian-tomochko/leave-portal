@@ -47,12 +47,12 @@
 | AC-LEAVE-09 | Кінець раніше за початок | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
 | AC-LEAVE-10 | Усі посади виключені | — | — | відкладено (чекає реалізації) |
 | AC-LEAVE-11 | Повернення до редагування без підтвердження | `src/lib/leave/use-cases.ts` (previewRequest), `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/use-cases.test.ts` | реалізовано |
-| AC-LEAVE-12 | "Family celebration" без спорідненості | — | — | відкладено (чекає реалізації) |
+| AC-LEAVE-12 | "Family celebration" без спорідненості | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/messages.ts` | `src/lib/leave/comment.test.ts` | реалізовано |
 | AC-LEAVE-13 | Перетин із записом на розгляді | `src/lib/leave/request.ts` (planRequest), `supabase/migrations/20261021041722_leave_no_overlap.sql` | `src/lib/leave/multi.test.ts` | реалізовано |
 | AC-LEAVE-16 | Конфлікт на одній даті скасовує всю заявку | `src/lib/leave/use-cases.ts` (submitRequest), `supabase/migrations/20261021031910_leave_foundation.sql` (create_leave_request) | `src/lib/leave/use-cases.test.ts` | реалізовано |
-| AC-LEAVE-14 | Список лише власних записів | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-17 | Коментар на всіх записах заявки | — | — | відкладено (чекає реалізації) |
-| AC-LEAVE-18 | Коментар із 501 символу | — | — | відкладено (чекає реалізації) |
+| AC-LEAVE-14 | Список лише власних записів | `src/lib/leave/use-cases.ts` (listMyRecords), `src/lib/leave/supabase-repository.ts` (listRecords), `src/app/leave/page.tsx` | `src/lib/leave/use-cases.test.ts` | реалізовано |
+| AC-LEAVE-17 | Коментар на всіх записах заявки | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/use-cases.ts`, `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/comment.test.ts` | реалізовано |
+| AC-LEAVE-18 | Коментар із 501 символу | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/messages.ts` | `src/lib/leave/comment.test.ts` | реалізовано |
 | AC-DECIDE-01 | Менеджер бачить лише записи своєї посади | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-14 | Порожній список | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-02 | Погодження одного з двох записів | — | — | відкладено (чекає реалізації) |

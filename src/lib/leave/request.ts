@@ -1,8 +1,14 @@
-import { alreadyHaveRequest, CHOOSE_AT_LEAST_ONE_POSITION, NO_WORKING_HOURS } from "./messages";
+import {
+  alreadyHaveRequest,
+  CHOOSE_AT_LEAST_ONE_POSITION,
+  COMMENT_TOO_LONG,
+  NO_WORKING_HOURS,
+  RELATIONSHIP_REQUIRED,
+} from "./messages";
 import { blocksOn, validateHours, wholeDay } from "./schedule";
 import { isValidDate, parseTime } from "./time";
 import type { ExistingRecord, PlanContext, PlanResult, PlannedRecord, RequestInput } from "./types";
-import { LEAVE_TYPES } from "./types";
+import { COMMENT_MAX_LENGTH, LEAVE_TYPES, RELATIONSHIPS } from "./types";
 
 const INVALID_INPUT = "Invalid request";
 
@@ -29,9 +35,9 @@ function findConflict(record: PlannedRecord, existing: ExistingRecord[]): Existi
 //
 // Заявка — це дати × посади: на кожну дату береться кожна обрана посада, що має розклад у цей день тижня
 // (Main scenario вимоги 01, крок 2); якщо жодна обрана посада в цей день не працює — «No working hours».
-// «Цілий день» (без hours) або години в межах розкладу (з hours). Коментар і спорідненість додає задача 4.
+// «Цілий день» (без hours) або години в межах розкладу (з hours).
 // Порядок перевірок — рішення розробника (PM порядок не задав):
-// посади → дата без годин → години → перетин із наявними записами.
+// посади → дата без годин → години → спорідненість → довжина коментаря → перетин із наявними записами.
 export function planRequest(input: RequestInput, context: PlanContext): PlanResult {
   if (!LEAVE_TYPES.includes(input.leaveType) || input.dates.length === 0 || !input.dates.every(isValidDate)) {
     return { ok: false, code: "INVALID_INPUT", message: INVALID_INPUT };
@@ -93,6 +99,16 @@ export function planRequest(input: RequestInput, context: PlanContext): PlanResu
     }
   }
 
+  if (input.leaveType === "family" && !(RELATIONSHIPS as readonly string[]).includes(input.relationship ?? "")) {
+    return { ok: false, code: "RELATIONSHIP_REQUIRED", message: RELATIONSHIP_REQUIRED };
+  }
+
+  // Довжину рахуємо в символах (кодових точках), а не в UTF-16 одиницях: емодзі — один символ.
+  const comment = input.comment?.trim() || undefined;
+  if (comment && [...comment].length > COMMENT_MAX_LENGTH) {
+    return { ok: false, code: "COMMENT_TOO_LONG", message: COMMENT_TOO_LONG };
+  }
+
   // Перетини перевіряємо після того, як усі записи побудовано: один конфлікт скасовує всю заявку (AC-LEAVE-16).
   const existing = context.existing ?? [];
   for (const record of records) {
@@ -102,5 +118,12 @@ export function planRequest(input: RequestInput, context: PlanContext): PlanResu
     }
   }
 
-  return { ok: true, leaveType: input.leaveType, records };
+  return {
+    ok: true,
+    leaveType: input.leaveType,
+    // Коментар заявки лежить на кожному її записі (AC-LEAVE-17); спорідненість має сенс лише для "family".
+    records: comment ? records.map((record) => ({ ...record, comment })) : records,
+    relationship: input.leaveType === "family" ? input.relationship : undefined,
+    comment,
+  };
 }

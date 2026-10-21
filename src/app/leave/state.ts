@@ -17,5 +17,6 @@ export type LeaveFormState =
       // Введені значення: форма підтвердження відправляє їх знову, а submitLeaveRequest перевіряє все наново.
       values: RequestInput;
       leaveTypeLabel: string;
+      comment?: string; // показується в підсумку (AC-LEAVE-17)
       lines: SummaryLine[];
     };

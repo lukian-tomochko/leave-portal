@@ -1,13 +1,13 @@
 import { LeaveConflictError, type LeaveRepository } from "./repository";
 import { planRequest } from "./request";
-import type { PlanErrorCode, PlannedRecord, Position, RequestInput, LeaveType } from "./types";
+import type { LeaveRecordView, LeaveType, PlanErrorCode, PlannedRecord, Position, RequestInput } from "./types";
 
 // Сценарії над портом LeaveRepository: тестуються без бази (фейк у пам'яті), а server actions лише викликають їх.
 
 export type Failure = { ok: false; code: PlanErrorCode; message: string };
 
 export type PreviewOutcome =
-  | { ok: true; leaveType: LeaveType; records: PlannedRecord[]; positions: Position[] }
+  | { ok: true; leaveType: LeaveType; records: PlannedRecord[]; positions: Position[]; comment?: string }
   | Failure;
 
 export type SubmitOutcome = { ok: true; requestId: string } | Failure;
@@ -26,7 +26,14 @@ export async function previewRequest(
   if (!plan.ok) {
     return plan;
   }
-  return { ok: true, leaveType: plan.leaveType, records: plan.records, positions };
+  return { ok: true, leaveType: plan.leaveType, records: plan.records, positions, comment: plan.comment };
+}
+
+// «My requests»: записи лише цього працівника. RLS уже обмежує вибірку, але домен не покладається на це сам:
+// чужі записи, що випадково потрапили б у відповідь репозиторію, відкидаємо (AC-LEAVE-14).
+export async function listMyRecords(repository: LeaveRepository, employeeId: string): Promise<LeaveRecordView[]> {
+  const records = await repository.listRecords(employeeId);
+  return records.filter((record) => record.employeeId === employeeId);
 }
 
 // Створення заявки: усе перевіряємо наново (значенням із форми підтвердження не довіряємо) і створюємо заявку з
@@ -46,7 +53,12 @@ export async function submitRequest(
   }
 
   try {
-    const requestId = await repository.createRequest({ leaveType: plan.leaveType, records: plan.records });
+    const requestId = await repository.createRequest({
+      leaveType: plan.leaveType,
+      records: plan.records,
+      relationship: plan.relationship,
+      comment: plan.comment,
+    });
     return { ok: true, requestId };
   } catch (error) {
     if (!(error instanceof LeaveConflictError)) {
