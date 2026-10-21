@@ -30,6 +30,7 @@ describe("planRequest: цілий день", () => {
           status: "awaiting_decision",
         },
       ],
+      skippedDates: [],
     });
     if (result.ok) {
       expect(STATUS_LABELS[result.records[0].status]).toBe("Awaiting decision");

@@ -18,5 +18,6 @@ export type LeaveFormState =
       values: RequestInput;
       leaveTypeLabel: string;
       comment?: string; // показується в підсумку (AC-LEAVE-17)
+      skippedDates: string[]; // дати без робочих годин, не прийняті (AC-LEAVE-21)
       lines: SummaryLine[];
     };

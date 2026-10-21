@@ -53,7 +53,7 @@
 | AC-LEAVE-14 | Список лише власних записів | `src/lib/leave/use-cases.ts` (listMyRecords), `src/lib/leave/supabase-repository.ts` (listRecords), `src/app/leave/page.tsx` | `src/lib/leave/use-cases.test.ts` | реалізовано |
 | AC-LEAVE-17 | Коментар на всіх записах заявки | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/use-cases.ts`, `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/comment.test.ts` | реалізовано |
 | AC-LEAVE-18 | Коментар із 501 символу | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/messages.ts` | `src/lib/leave/comment.test.ts` | реалізовано |
-| AC-LEAVE-21 | Дата без годин у заявці на кілька дат | — | — | відкладено (чекає реалізації) |
+| AC-LEAVE-21 | Дата без годин у заявці на кілька дат | `src/lib/leave/request.ts` (planRequest), `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/multi.test.ts` | реалізовано |
 | AC-DECIDE-01 | Менеджер бачить лише записи своєї посади | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-14 | Порожній список | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-02 | Погодження одного з двох записів | — | — | відкладено (чекає реалізації) |
