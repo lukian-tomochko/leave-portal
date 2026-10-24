@@ -2,6 +2,12 @@
 
 import Link from "next/link";
 import { type FormEvent, useActionState, useState, useTransition } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
 import { NO_WORKING_HOURS } from "@/lib/leave/messages";
 import { RELATIONSHIPS } from "@/lib/leave/types";
 import { weekdayOf } from "@/lib/leave/time";
@@ -12,8 +18,7 @@ type PositionOption = { id: string; label: string; weekdays: number[] };
 type LeaveTypeOption = { value: string; label: string };
 type Mode = "whole-day" | "hours";
 
-const INPUT_CLASS = "rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900";
-const BUTTON_CLASS = "rounded bg-foreground px-4 py-2 font-medium text-background disabled:opacity-60";
+const CHOICE_CLASS = "size-4 accent-primary";
 const IDLE: LeaveFormState = { status: "idle" };
 
 // Стабільний ключ значень форми: за ним відрізняємо підсумок для поточних даних від застарілого.
@@ -57,7 +62,7 @@ export function NewLeaveForm({
   const [localError, setLocalError] = useState<string | null>(null);
 
   if (positions.length === 0) {
-    return <p role="status">У вас немає посад, тож подати заявку не можна. Зверніться до адміністратора.</p>;
+    return <p role="status" className="text-muted-foreground">У вас немає посад, тож подати заявку не можна. Зверніться до адміністратора.</p>;
   }
 
   // Дату не приймаємо, якщо жодна з обраних посад не має розкладу в цей день тижня (AC-LEAVE-06).
@@ -135,34 +140,35 @@ export function NewLeaveForm({
             return (
               <div key={index} className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-2">
-                    <span className="w-16">Дата {index + 1}</span>
-                    <input
-                      type="date"
-                      value={date}
-                      required
-                      aria-invalid={error !== null}
-                      onChange={(event) => setDates(dates.map((d, i) => (i === index ? event.target.value : d)))}
-                      className={INPUT_CLASS}
-                    />
-                  </label>
+                  <Label htmlFor={`date-${index}`} className="w-16">
+                    Дата {index + 1}
+                  </Label>
+                  <Input
+                    id={`date-${index}`}
+                    type="date"
+                    value={date}
+                    required
+                    aria-invalid={error !== null}
+                    onChange={(event) => setDates(dates.map((d, i) => (i === index ? event.target.value : d)))}
+                    className="w-auto"
+                  />
                   {dates.length > 1 ? (
-                    <button type="button" className="text-sm underline" onClick={() => setDates(dates.filter((_, i) => i !== index))}>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setDates(dates.filter((_, i) => i !== index))}>
                       Прибрати
-                    </button>
+                    </Button>
                   ) : null}
                 </div>
                 {error ? (
-                  <p role="alert" className="text-sm text-red-600">
+                  <p role="alert" className="text-sm text-destructive">
                     {error}
                   </p>
                 ) : null}
               </div>
             );
           })}
-          <button type="button" className="self-start text-sm underline" onClick={() => setDates([...dates, ""])}>
+          <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => setDates([...dates, ""])}>
             Додати дату
-          </button>
+          </Button>
         </fieldset>
 
         <fieldset className="flex flex-col gap-2 text-sm">
@@ -171,6 +177,7 @@ export function NewLeaveForm({
             <label key={position.id} className="flex items-center gap-2">
               <input
                 type="checkbox"
+                className={CHOICE_CLASS}
                 checked={selected.includes(position.id)}
                 onChange={(event) =>
                   setSelected(event.target.checked ? [...selected, position.id] : selected.filter((id) => id !== position.id))
@@ -184,72 +191,72 @@ export function NewLeaveForm({
         <fieldset className="flex flex-col gap-2 text-sm">
           <legend className="mb-1">Скільки часу</legend>
           <label className="flex items-center gap-2">
-            <input type="radio" name="mode" value="whole-day" checked={mode === "whole-day"} onChange={() => setMode("whole-day")} />
+            <input type="radio" className={CHOICE_CLASS} name="mode" value="whole-day" checked={mode === "whole-day"} onChange={() => setMode("whole-day")} />
             Цілий день
           </label>
           <label className="flex items-center gap-2">
-            <input type="radio" name="mode" value="hours" checked={mode === "hours"} onChange={() => setMode("hours")} />
+            <input type="radio" className={CHOICE_CLASS} name="mode" value="hours" checked={mode === "hours"} onChange={() => setMode("hours")} />
             Години
           </label>
           {mode === "hours" ? (
             <div className="flex items-center gap-3">
-              <label className="flex flex-col gap-1">
-                З
-                <input type="time" step={300} required value={startsAt} onChange={(event) => setStartsAt(event.target.value)} className={INPUT_CLASS} />
-              </label>
-              <label className="flex flex-col gap-1">
-                До
-                <input type="time" step={300} required value={endsAt} onChange={(event) => setEndsAt(event.target.value)} className={INPUT_CLASS} />
-              </label>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="starts-at">З</Label>
+                <Input id="starts-at" type="time" step={300} required value={startsAt} onChange={(event) => setStartsAt(event.target.value)} className="w-auto" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="ends-at">До</Label>
+                <Input id="ends-at" type="time" step={300} required value={endsAt} onChange={(event) => setEndsAt(event.target.value)} className="w-auto" />
+              </div>
             </div>
           ) : null}
         </fieldset>
 
-        <label className="flex flex-col gap-1 text-sm">
-          Тип відпустки
-          <select value={leaveType} onChange={(event) => setLeaveType(event.target.value)} className={INPUT_CLASS}>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="leave-type">Тип відпустки</Label>
+          <NativeSelect id="leave-type" value={leaveType} onChange={(event) => setLeaveType(event.target.value)}>
             {leaveTypes.map((type) => (
               <option key={type.value} value={type.value}>
                 {type.label}
               </option>
             ))}
-          </select>
-        </label>
+          </NativeSelect>
+        </div>
 
         {isFamily ? (
-          <label className="flex flex-col gap-1 text-sm">
-            Спорідненість
-            <select value={relationship} onChange={(event) => setRelationship(event.target.value)} className={INPUT_CLASS}>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="relationship">Спорідненість</Label>
+            <NativeSelect id="relationship" value={relationship} onChange={(event) => setRelationship(event.target.value)}>
               <option value="">—</option>
               {RELATIONSHIPS.map((value) => (
                 <option key={value} value={value}>
                   {value}
                 </option>
               ))}
-            </select>
-          </label>
+            </NativeSelect>
+          </div>
         ) : null}
 
         {/* Без maxLength: довжину перевіряє сервер і повертає повідомлення PM (AC-LEAVE-18). */}
-        <label className="flex flex-col gap-1 text-sm">
-          Коментар (необов&apos;язково)
-          <textarea value={comment} onChange={(event) => setComment(event.target.value)} rows={3} className={INPUT_CLASS} />
-        </label>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="comment">Коментар (необов&apos;язково)</Label>
+          <Textarea id="comment" value={comment} onChange={(event) => setComment(event.target.value)} rows={3} />
+        </div>
 
         {localError ? (
-          <p role="alert" className="text-sm text-red-600">
-            {localError}
-          </p>
+          <Alert variant="destructive">
+            <AlertDescription>{localError}</AlertDescription>
+          </Alert>
         ) : null}
         {preview.status === "error" ? (
-          <p role="alert" className="text-sm text-red-600">
-            {preview.message}
-          </p>
+          <Alert variant="destructive">
+            <AlertDescription>{preview.message}</AlertDescription>
+          </Alert>
         ) : null}
 
-        <button type="submit" disabled={previewPending || isTransition} className={`self-start ${BUTTON_CLASS}`}>
+        <Button type="submit" disabled={previewPending || isTransition} className="self-start">
           Показати підсумок
-        </button>
+        </Button>
       </form>
 
       {summary ? (
@@ -257,16 +264,18 @@ export function NewLeaveForm({
           <h2 id="summary-title" className="text-lg font-semibold">
             Підсумок
           </h2>
-          <p className="text-sm text-zinc-500">Тип: {summary.leaveTypeLabel}</p>
+          <p className="text-sm text-muted-foreground">Тип: {summary.leaveTypeLabel}</p>
           {summary.comment ? <p className="text-sm">Коментар: {summary.comment}</p> : null}
           {summary.skippedDates.map((date) => (
-            <p key={date} role="status" className="text-sm text-red-600">
-              {date}: {NO_WORKING_HOURS}
-            </p>
+            <Alert key={date} variant="warning" role="status">
+              <AlertDescription>
+                {date}: {NO_WORKING_HOURS}
+              </AlertDescription>
+            </Alert>
           ))}
           <ul className="flex flex-col gap-2 text-sm" data-testid="summary-lines">
             {summary.lines.map((line) => (
-              <li key={`${line.date}-${line.position}`} className="rounded border border-zinc-300 p-3 dark:border-zinc-700">
+              <li key={`${line.date}-${line.position}`} className="rounded-lg border border-border bg-card p-3 text-card-foreground">
                 {line.date}, {line.hours} ({line.duration}), {line.position}: {line.status}
               </li>
             ))}
@@ -293,16 +302,16 @@ export function NewLeaveForm({
             )}
 
             {submit.status === "error" ? (
-              <p role="alert" className="text-sm text-red-600">
-                {submit.message}
-              </p>
+              <Alert variant="destructive">
+                <AlertDescription>{submit.message}</AlertDescription>
+              </Alert>
             ) : null}
 
             <div className="flex items-center gap-4">
-              <button type="submit" disabled={submitPending} className={BUTTON_CLASS}>
+              <Button type="submit" disabled={submitPending}>
                 Підтвердити
-              </button>
-              <Link href="/leave/new" className="text-sm underline">
+              </Button>
+              <Link href="/leave/new" className={buttonVariants({ variant: "link" })}>
                 Скасувати
               </Link>
             </div>

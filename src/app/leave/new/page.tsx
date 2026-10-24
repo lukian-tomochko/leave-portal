@@ -20,8 +20,8 @@ export default async function NewLeavePage() {
   const positions = await createSupabaseLeaveRepository(supabase).loadPositions(employeeId);
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-16">
-      <Link href="/leave" className="text-sm underline">
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-10">
+      <Link href="/leave" className="text-sm text-muted-foreground underline">
         ← Мої заявки
       </Link>
       <h1 className="text-2xl font-semibold">Нова заявка на відпустку</h1>
