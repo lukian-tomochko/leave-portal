@@ -15,7 +15,7 @@ export function NavLinks() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Головна навігація" className="flex items-center gap-1">
+    <nav aria-label="Головна навігація" className="flex flex-wrap items-center gap-1">
       {LINKS.map((link) => {
         const active = link.exact ? pathname === link.href : pathname === link.href || pathname.startsWith(`${link.href}/`);
         // «My requests» не активний на /leave/new: у нього свій пункт.

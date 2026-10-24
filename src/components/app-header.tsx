@@ -25,7 +25,7 @@ export async function AppHeader() {
 
   return (
     <header className="bg-header text-header-foreground">
-      <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-6 px-6">
+      <div className="mx-auto flex min-h-14 w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-2">
         <Link href="/" className="flex items-center gap-2 font-semibold outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
           <CalendarDaysIcon aria-hidden="true" className="size-5" />
           Портал відпусток
@@ -33,7 +33,7 @@ export async function AppHeader() {
         {claims ? (
           <>
             <NavLinks />
-            <div className="ml-auto flex items-center gap-3 text-sm">
+            <div className="ml-auto flex flex-wrap items-center gap-3 text-sm">
               <span className="hidden text-header-muted sm:inline">{profile?.email ?? claims.email ?? ""}</span>
               {profile?.role ? <Badge variant="secondary">{profile.role}</Badge> : null}
               <form action={signOut}>
