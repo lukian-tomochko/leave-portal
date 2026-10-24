@@ -1,6 +1,6 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "./actions";
@@ -19,6 +19,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-semibold">Вхід</CardTitle>
+          <CardDescription>Увійдіть, щоб подати заявку на відпустку або ухвалити рішення.</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={login} className="flex flex-col gap-4">
