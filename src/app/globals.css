@@ -1,26 +1,132 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Токени описані в DESIGN.md (розділ 2). Темна тема — лише за системою (prefers-color-scheme). */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-sans);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-status-awaiting: var(--status-awaiting);
+  --color-status-awaiting-foreground: var(--status-awaiting-foreground);
+  --color-status-approved: var(--status-approved);
+  --color-status-approved-foreground: var(--status-approved-foreground);
+  --color-status-rejected: var(--status-rejected);
+  --color-status-rejected-foreground: var(--status-rejected-foreground);
+  --color-status-returned: var(--status-returned);
+  --color-status-returned-foreground: var(--status-returned-foreground);
+  --color-status-cancelled: var(--status-cancelled);
+  --color-status-cancelled-foreground: var(--status-cancelled-foreground);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(0.985 0.004 250);
+  --foreground: oklch(0.22 0.03 255);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 255);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.03 255);
+  --primary: oklch(0.42 0.12 258);
+  --primary-foreground: oklch(0.985 0.004 250);
+  --secondary: oklch(0.94 0.012 255);
+  --secondary-foreground: oklch(0.27 0.04 255);
+  --muted: oklch(0.955 0.008 255);
+  --muted-foreground: oklch(0.46 0.03 255);
+  --accent: oklch(0.93 0.02 255);
+  --accent-foreground: oklch(0.27 0.05 255);
+  --destructive: oklch(0.5 0.2 27);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.9 0.01 255);
+  --input: oklch(0.6 0.02 255);
+  --ring: oklch(0.55 0.15 258);
+  --warning: oklch(0.96 0.06 90);
+  --warning-foreground: oklch(0.38 0.08 70);
+  --status-awaiting: oklch(0.95 0.06 90);
+  --status-awaiting-foreground: oklch(0.38 0.08 70);
+  --status-approved: oklch(0.94 0.06 150);
+  --status-approved-foreground: oklch(0.36 0.09 150);
+  --status-rejected: oklch(0.94 0.05 25);
+  --status-rejected-foreground: oklch(0.42 0.16 27);
+  --status-returned: oklch(0.94 0.05 300);
+  --status-returned-foreground: oklch(0.4 0.13 300);
+  --status-cancelled: oklch(0.94 0.005 255);
+  --status-cancelled-foreground: oklch(0.42 0.02 255);
+  --radius: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: oklch(0.17 0.02 255);
+    --foreground: oklch(0.95 0.008 255);
+    --card: oklch(0.21 0.022 255);
+    --card-foreground: oklch(0.95 0.008 255);
+    --popover: oklch(0.21 0.022 255);
+    --popover-foreground: oklch(0.95 0.008 255);
+    --primary: oklch(0.72 0.12 255);
+    --primary-foreground: oklch(0.17 0.02 255);
+    --secondary: oklch(0.27 0.025 255);
+    --secondary-foreground: oklch(0.93 0.01 255);
+    --muted: oklch(0.25 0.022 255);
+    --muted-foreground: oklch(0.74 0.025 255);
+    --accent: oklch(0.3 0.04 255);
+    --accent-foreground: oklch(0.95 0.01 255);
+    --destructive: oklch(0.72 0.17 25);
+    --destructive-foreground: oklch(0.17 0.02 255);
+    --border: oklch(0.3 0.02 255);
+    --input: oklch(0.55 0.03 255);
+    --ring: oklch(0.68 0.13 255);
+    --warning: oklch(0.3 0.06 85);
+    --warning-foreground: oklch(0.88 0.1 90);
+    --status-awaiting: oklch(0.3 0.06 85);
+    --status-awaiting-foreground: oklch(0.88 0.1 90);
+    --status-approved: oklch(0.3 0.06 150);
+    --status-approved-foreground: oklch(0.86 0.1 150);
+    --status-rejected: oklch(0.3 0.07 25);
+    --status-rejected-foreground: oklch(0.86 0.09 25);
+    --status-returned: oklch(0.3 0.07 300);
+    --status-returned-foreground: oklch(0.86 0.08 300);
+    --status-cancelled: oklch(0.28 0.01 255);
+    --status-cancelled-foreground: oklch(0.8 0.02 255);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

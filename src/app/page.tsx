@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "./login/actions";
 
@@ -26,21 +27,18 @@ export default async function Home() {
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-16">
       <h1 className="text-2xl font-semibold">Проєкт команди</h1>
       <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm">
-        <dt className="text-zinc-500">Email</dt>
+        <dt className="text-muted-foreground">Email</dt>
         <dd data-testid="user-email">{profile?.email ?? claims.email ?? "—"}</dd>
-        <dt className="text-zinc-500">Роль</dt>
+        <dt className="text-muted-foreground">Роль</dt>
         <dd data-testid="user-role">{profile?.role ?? "профіль не знайдено"}</dd>
       </dl>
-      <Link href="/leave" className="self-start text-sm underline">
+      <Link href="/leave" className={buttonVariants({ className: "self-start" })}>
         Мої заявки на відпустку
       </Link>
       <form action={signOut}>
-        <button
-          type="submit"
-          className="rounded border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700"
-        >
+        <Button type="submit" variant="outline">
           Вийти
-        </button>
+        </Button>
       </form>
     </main>
   );
