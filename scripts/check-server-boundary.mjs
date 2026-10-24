@@ -72,7 +72,7 @@ for (const file of BASES.flatMap((b) => walk(join(root, b)))) {
     if (/SUPABASE_SECRET_KEY|SERVICE_ROLE_KEY/.test(line) && rel !== ADMIN_FILE) {
       report(rel, i + 1, `секретний ключ читається поза ${ADMIN_SHOWN}`);
     }
-    if (/from\s+["'](@\/lib\/supabase\/admin|(\.\.\/)+lib\/supabase\/admin|\.\/admin)["']/.test(line) && rel !== ADMIN_FILE) {
+    if (/from\s+["'](@\/lib\/supabase\/admin|(\.\.\/)+lib\/supabase\/admin|(\.{1,2}\/)+supabase\/admin|\.\/admin)["']/.test(line) && rel !== ADMIN_FILE) {
       if (isClient) report(rel, i + 1, 'admin-клієнт імпортовано у файлі з "use client"');
       else if (!isServerFile) {
         report(

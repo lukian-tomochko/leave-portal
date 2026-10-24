@@ -69,7 +69,7 @@ const RULES = [
 const INLINE_STYLE = {
   id: "inline-style-color",
   message: "колір в inline style — використайте клас із токеном",
-  re: /(?:\bcolor|backgroundColor|borderColor|background)\s*:\s*["'`](?!var\(--)[^"'`]+["'`]/g,
+  re: /(?:\bcolor|backgroundColor|borderColor|background)\s*:/g,
 };
 
 // Діапазони тексту всередині style={{ … }}: від другої «{» до парної «}», з урахуванням вкладених дужок і рядків.

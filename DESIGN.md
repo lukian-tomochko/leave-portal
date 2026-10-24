@@ -26,6 +26,7 @@
 | `accent` / `accent-foreground` | наведення, вибраний рядок | `oklch(0.93 0.02 255)` / `oklch(0.27 0.05 255)` | `oklch(0.3 0.04 255)` / `oklch(0.95 0.01 255)` | `bg-accent` |
 | `destructive` / `destructive-foreground` | помилка («не збережено»), небезпечна дія | `oklch(0.5 0.2 27)` / `oklch(0.985 0 0)` | `oklch(0.72 0.17 25)` / `oklch(0.17 0.02 255)` | `text-destructive`, `bg-destructive` |
 | `warning` / `warning-foreground` | попередження («збережено, але зверніть увагу») | `oklch(0.96 0.06 90)` / `oklch(0.38 0.08 70)` | `oklch(0.3 0.06 85)` / `oklch(0.88 0.1 90)` | `bg-warning`, `text-warning-foreground` |
+| `overlay` | затемнення за діалогом | `oklch(0 0 0 / 10%)` | `oklch(0 0 0 / 50%)` | `bg-overlay` |
 | `border` | розділювачі, межі карток і таблиць | `oklch(0.9 0.01 255)` | `oklch(0.3 0.02 255)` | `border-border` |
 | `input` | межа поля вводу | `oklch(0.6 0.02 255)` | `oklch(0.55 0.03 255)` | `border-input` |
 | `ring` | кільце фокусу | `oklch(0.55 0.15 258)` | `oklch(0.68 0.13 255)` | `ring-ring` |
