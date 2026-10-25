@@ -396,3 +396,18 @@ it("AC-LEAVE-19 (зміна годин): працівник не зберіга�
   expect(await hoursOf(record)).toBe("08:30-15:30");
   expect(await statusOf(record)).toBe("awaiting_decision");
 });
+
+it("приймання PM: pm-manager вирішує запис pm-employee, менеджер іншої посади й працівник — ні, адміністратор — так", async () => {
+  const position = "00000000-0000-4000-8000-000000000104"; // посада pm-employee із сиду
+  const first = await makeRecord({ employee: "pm-employee", position });
+  const second = await makeRecord({ employee: "pm-employee", position });
+
+  await expect(decide("manager2", first, "approved")).rejects.toThrow(/forbidden/);
+  await expect(decide("pm-employee", first, "approved")).rejects.toThrow(/forbidden/);
+  expect(await statusOf(first)).toBe("awaiting_decision");
+
+  expect(await decide("pm-manager", first, "approved", "Get well soon")).toEqual({ ok: true, status: "approved" });
+  expect(await decide("pm-admin", second, "rejected")).toEqual({ ok: true, status: "rejected" });
+  expect(await statusOf(first)).toBe("approved");
+  expect(await statusOf(second)).toBe("rejected");
+});
