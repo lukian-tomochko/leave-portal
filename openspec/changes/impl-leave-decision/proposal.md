@@ -13,8 +13,8 @@ WS7 у PM ще немає): менеджер бачить і вирішує ли
 Реалізуємо 24 AC вимоги 02 (`leave-decision`) трьома вертикальними задачами в `tasks.md`:
 
 - **Задача 1** — база й права: журнал рішень, політики читання для менеджерів, функції «вирішити / змінити години /
-  скасувати» з перевіркою ролі, тести бази на PGlite з відмовами: AC-DECIDE-07, AC-DECIDE-08, AC-DECIDE-09,
-  AC-DECIDE-10, AC-DECIDE-18, AC-DECIDE-19, AC-DECIDE-12, AC-DECIDE-17, AC-DECIDE-21.
+  скасувати» з перевіркою ролі, тести бази на PGlite з відмовами: AC-DECIDE-01, AC-DECIDE-04, AC-DECIDE-07, AC-DECIDE-08,
+  AC-DECIDE-09, AC-DECIDE-10, AC-DECIDE-15, AC-DECIDE-18, AC-DECIDE-19, AC-DECIDE-12, AC-DECIDE-17, AC-DECIDE-21.
 - **Задача 2** — інтерфейс менеджера: списки «Awaiting decision» і «History», сторінка запису, три рішення з коментарем:
   AC-DECIDE-01, AC-DECIDE-02, AC-DECIDE-03, AC-DECIDE-04, AC-DECIDE-05, AC-DECIDE-11, AC-DECIDE-14, AC-DECIDE-15,
   AC-DECIDE-20, AC-DECIDE-23, AC-DECIDE-24.
