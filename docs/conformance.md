@@ -54,27 +54,27 @@
 | AC-LEAVE-17 | Коментар на всіх записах заявки | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/use-cases.ts`, `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/comment.test.ts` | реалізовано |
 | AC-LEAVE-18 | Коментар із 501 символу | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/messages.ts` | `src/lib/leave/comment.test.ts` | реалізовано |
 | AC-LEAVE-21 | Дата без годин у заявці на кілька дат | `src/lib/leave/request.ts` (planRequest), `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/multi.test.ts` | реалізовано |
-| AC-DECIDE-01 | Менеджер бачить лише записи своєї посади | — | — | відкладено (чекає реалізації) |
+| AC-DECIDE-01 | RLS: менеджер читає записи лише своїх посад | `supabase/migrations/20261025090000_leave_decisions.sql` (політика leave_records_select) | `tests/db/leave-decision.test.ts` | відкладено (політика й тест бази — у PR task/decision-db; список «Awaiting decision» — у задачі 2) |
 | AC-DECIDE-14 | Порожній список | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-02 | Погодження одного з двох записів | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-03 | Відхилення запису | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-04 | Повернення без коментаря | — | — | відкладено (чекає реалізації) |
+| AC-DECIDE-04 | Повернення без коментаря | `supabase/migrations/20261025090000_leave_decisions.sql` (private.decide_leave_record) | `tests/db/leave-decision.test.ts` | відкладено (правило бази й тест — у PR task/decision-db; повідомлення «Tell the employee what to fix» — у задачі 2) |
 | AC-DECIDE-05 | Повернення з коментарем | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-06 | Виправлення й повторна подача | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-07 | Другий менеджер запізнився | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-08 | Менеджер чужої посади | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-09 | Працівник без ролі менеджера чи адміністратора | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-10 | Адміністратор погоджує чужий запис | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-18 | Менеджер не погоджує власний запис | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-19 | Адміністратор погоджує запис менеджера | — | — | відкладено (чекає реалізації) |
+| AC-DECIDE-07 | Другий менеджер запізнився | `supabase/migrations/20261025090000_leave_decisions.sql` (private.decide_leave_record) | `tests/db/leave-decision.test.ts` | відкладено (правило бази й тест — у PR task/decision-db; повідомлення «Another manager has already decided» — у задачі 2) |
+| AC-DECIDE-08 | Менеджер чужої посади | `supabase/migrations/20261025090000_leave_decisions.sql` (private.decide_leave_record) | `tests/db/leave-decision.test.ts` | реалізовано |
+| AC-DECIDE-09 | Працівник без ролі менеджера чи адміністратора | `supabase/migrations/20261025090000_leave_decisions.sql` (private.decide_leave_record, без grant update) | `tests/db/leave-decision.test.ts` | реалізовано |
+| AC-DECIDE-10 | Адміністратор погоджує чужий запис | `supabase/migrations/20261025090000_leave_decisions.sql` (private.decide_leave_record, leave_decisions) | `tests/db/leave-decision.test.ts` | відкладено (рішення й журнал у базі та тест — у PR task/decision-db; рядок історії — у задачі 2) |
+| AC-DECIDE-18 | Менеджер не погоджує власний запис | `supabase/migrations/20261025090000_leave_decisions.sql` (private.decide_leave_record) | `tests/db/leave-decision.test.ts` | відкладено (правило бази й тест — у PR task/decision-db; повідомлення «Your own record is decided by an administrator» — у задачі 2) |
+| AC-DECIDE-19 | Адміністратор погоджує запис менеджера | `supabase/migrations/20261025090000_leave_decisions.sql` (private.decide_leave_record) | `tests/db/leave-decision.test.ts` | відкладено (правило бази й тест — у PR task/decision-db; сторінка рішення — у задачі 2) |
 | AC-DECIDE-11 | Погоджений запис іде в історію | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-15 | Рядок історії погодженого запису | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-12 | Зміна погодженого запису | — | — | відкладено (чекає реалізації) |
+| AC-DECIDE-12 | Зміна погодженого запису | `supabase/migrations/20261025090000_leave_decisions.sql` (private.update_leave_record_hours) | `tests/db/leave-decision.test.ts` | відкладено (правило бази й тест — у PR task/decision-db; повідомлення «This record is already approved» — у задачі 3) |
 | AC-DECIDE-16 | Працівник змінює години до рішення | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-13 | Скасування запису на розгляді | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-17 | Скасування повернутого запису | — | — | відкладено (чекає реалізації) |
+| AC-DECIDE-17 | Скасування повернутого запису | `supabase/migrations/20261025090000_leave_decisions.sql` (private.cancel_leave_record) | `tests/db/leave-decision.test.ts` | відкладено (правило бази й тест — у PR task/decision-db; кнопка скасування — у задачі 3) |
 | AC-DECIDE-20 | Менеджер бачить коментар працівника | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-21 | Зміна типу відпустки заборонена | — | — | відкладено (чекає реалізації) |
+| AC-DECIDE-21 | Зміна типу відпустки заборонена | `supabase/migrations/20261025090000_leave_decisions.sql` (без grant update на leave_requests) | `tests/db/leave-decision.test.ts` | відкладено (заборона в базі й тест — у PR task/decision-db; повідомлення PM — у задачі 3) |
 | AC-DECIDE-22 | Зміна годин із перетином | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-23 | Відхилення з коментарем | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-24 | Погодження з коментарем | — | — | відкладено (чекає реалізації) |
