@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { NOT_ALLOWED, decideRecord, isDecider, isDecision } from "@/lib/leave/decision";
+import { NOT_ALLOWED, decideRecord, isDecider, isDecision, isRecordId } from "@/lib/leave/decision";
 import { createSupabaseDecisionRepository, loadActor } from "@/lib/leave/supabase-decision-repository";
 import { createClient } from "@/lib/supabase/server";
 import type { DecisionFormState } from "./state";
@@ -33,7 +33,8 @@ export async function decideLeaveRecord(_previous: DecisionFormState, formData: 
     const recordId = String(formData.get("recordId") ?? "");
     const decision = formData.get("decision");
     const comment = formData.get("comment");
-    if (!recordId || !isDecision(decision)) {
+    // id запису з форми перевіряємо як UUID до запиту: не-UUID дав би помилку Postgres замість відмови.
+    if (!isRecordId(recordId) || !isDecision(decision)) {
       return { status: "error", message: TECHNICAL_ERROR };
     }
 

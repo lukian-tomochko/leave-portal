@@ -129,7 +129,7 @@ describe("сторінки списків", () => {
       record({ id: `r${i}`, status, date: `2026-12-${String(i + 1).padStart(2, "0")}` }),
     );
 
-  it("«Awaiting decision» ділиться на сторінки: перша повна з ознакою наступної, друга — решта", async () => {
+  it("AC-DECIDE-01 (сторінки): «Awaiting decision» ділиться на сторінки: перша повна з ознакою наступної, друга — решта", async () => {
     const { repository } = fakeRepository(many(PAGE_SIZE + 5, "awaiting_decision"), MANAGER1);
 
     const first = await listAwaiting(repository, MANAGER1, 1);
@@ -141,7 +141,7 @@ describe("сторінки списків", () => {
     expect(second.hasNext).toBe(false);
   });
 
-  it("«History» на першій сторінці показує найновіші записи, а не найстаріші", async () => {
+  it("AC-DECIDE-11 (сторінки): «History» на першій сторінці показує найновіші записи, а не найстаріші", async () => {
     const { repository } = fakeRepository(many(PAGE_SIZE + 5, "approved"), MANAGER1);
 
     const first = await listHistory(repository, MANAGER1, 1);
