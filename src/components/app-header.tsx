@@ -32,7 +32,7 @@ export async function AppHeader() {
         </Link>
         {claims ? (
           <>
-            <NavLinks />
+            <NavLinks role={profile?.role} />
             <div className="ml-auto flex flex-wrap items-center gap-3 text-sm">
               <span className="hidden text-header-muted sm:inline">{profile?.email ?? claims.email ?? ""}</span>
               {profile?.role ? <Badge variant="secondary">{profile.role}</Badge> : null}

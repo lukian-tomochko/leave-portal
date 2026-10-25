@@ -36,6 +36,19 @@ export function alreadyHaveRequest(record: { date: string; startsAt: string; end
   return `You already have a request for this time: ${record.date} ${record.startsAt}–${record.endsAt}`;
 }
 
+// ── Вимога 02: рішення менеджера (requirements/02-leave-decision.md) ───────────
+// AC-DECIDE-04
+export const TELL_EMPLOYEE_WHAT_TO_FIX = "Tell the employee what to fix";
+// AC-DECIDE-14
+export const NO_RECORDS_AWAITING_DECISION = "No records awaiting decision";
+// AC-DECIDE-18
+export const OWN_RECORD_DECIDED_BY_ADMIN = "Your own record is decided by an administrator";
+
+// AC-DECIDE-07: інший менеджер уже ухвалив рішення; статус — із глосарія PM.
+export function anotherManagerDecided(status: RecordStatus): string {
+  return `Another manager has already decided: ${STATUS_LABELS[status]}`;
+}
+
 // Підписи статусів і типів — із глосарія PM (requirements/product.md).
 export const STATUS_LABELS: Record<RecordStatus, string> = {
   awaiting_decision: "Awaiting decision",
