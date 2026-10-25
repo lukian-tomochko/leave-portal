@@ -176,9 +176,6 @@ begin
     ) then
       raise exception 'forbidden' using errcode = '42501';
     end if;
-    if v_record.employee_id = v_uid then
-      raise exception 'own_record' using errcode = '42501';
-    end if;
   end if;
 
   if v_record.status <> 'awaiting_decision' then
