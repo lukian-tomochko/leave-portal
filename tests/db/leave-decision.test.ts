@@ -23,6 +23,20 @@ afterAll(async () => {
 
 const user = (email: string) => t.users[`${email}@example.test`];
 
+// n-й робочий день після 2027-01-04 (понеділок): записи не потрапляють на вихідні, де в розкладі посад немає блоків
+// (функція зміни годин перевіряє розклад).
+function nthWorkday(n: number): string {
+  const day = new Date(Date.UTC(2027, 0, 4));
+  for (let counted = 0; counted < n; ) {
+    day.setUTCDate(day.getUTCDate() + 1);
+    const weekday = day.getUTCDay();
+    if (weekday !== 0 && weekday !== 6) {
+      counted += 1;
+    }
+  }
+  return day.toISOString().slice(0, 10);
+}
+
 // Створює заявку й запис напряму (обхід RLS). Кожен запис — на власну дату, щоб не перетинатися в часі.
 async function makeRecord(options: {
   employee: string;
@@ -32,7 +46,7 @@ async function makeRecord(options: {
   endsAt?: string;
 }): Promise<string> {
   sequence += 1;
-  const date = new Date(Date.UTC(2027, 0, 1 + sequence)).toISOString().slice(0, 10);
+  const date = nthWorkday(sequence);
   const [request] = await t.asService<{ id: string }>(
     "insert into public.leave_requests (employee_id, leave_type, comment) values ($1, 'sick', 'Doctor''s appointment') returning id",
     [user(options.employee)],
@@ -370,4 +384,15 @@ it("AC-DECIDE-24: працівник бачить коментар менедж�
 
   expect(await statusOf(record)).toBe("approved");
   expect(await employeeSeesDecisionComment(record)).toEqual([{ decision: "approved", comment: "Get well soon" }]);
+});
+
+it("AC-LEAVE-19 (зміна годин): працівник не зберігає години поза розкладом прямим викликом функції, дані не змінюються", async () => {
+  const record = await makeRecord({ employee: "teacher1", position: POSITION_T1_MAIN });
+
+  await expect(updateHours("teacher1", record, "00:00", "23:55")).rejects.toThrow(/hours_outside_schedule/);
+  await expect(updateHours("teacher1", record, "07:30", "09:00")).rejects.toThrow(/hours_outside_schedule/);
+  await expect(updateHours("teacher1", record, "09:00", "16:00")).rejects.toThrow(/hours_outside_schedule/);
+
+  expect(await hoursOf(record)).toBe("08:30-15:30");
+  expect(await statusOf(record)).toBe("awaiting_decision");
 });

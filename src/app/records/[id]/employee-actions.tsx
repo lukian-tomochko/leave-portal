@@ -25,6 +25,8 @@ export function EmployeeActions({ recordId, startsAt, endsAt }: { recordId: stri
   const [hoursState, hoursAction, hoursPending] = useActionState(updateLeaveRecordHours, IDLE);
   const [cancelState, cancelAction, cancelPending] = useActionState(cancelLeaveRecord, IDLE);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Години тримаємо в стані: React 19 скидає неконтрольовані поля форми після дії, і введене пропало б при помилці.
+  const [hours, setHours] = useState({ startsAt, endsAt });
 
   return (
     <div className="flex flex-col gap-6">
@@ -33,11 +35,29 @@ export function EmployeeActions({ recordId, startsAt, endsAt }: { recordId: stri
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="starts-at">З</Label>
-            <Input id="starts-at" name="startsAt" type="time" step={300} required defaultValue={startsAt} className="w-auto" />
+            <Input
+              id="starts-at"
+              name="startsAt"
+              type="time"
+              step={300}
+              required
+              value={hours.startsAt}
+              onChange={(event) => setHours((current) => ({ ...current, startsAt: event.target.value }))}
+              className="w-auto"
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="ends-at">До</Label>
-            <Input id="ends-at" name="endsAt" type="time" step={300} required defaultValue={endsAt} className="w-auto" />
+            <Input
+              id="ends-at"
+              name="endsAt"
+              type="time"
+              step={300}
+              required
+              value={hours.endsAt}
+              onChange={(event) => setHours((current) => ({ ...current, endsAt: event.target.value }))}
+              className="w-auto"
+            />
           </div>
           <Button type="submit" disabled={hoursPending}>
             Зберегти години
