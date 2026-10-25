@@ -170,6 +170,12 @@ begin
   end if;
 
   if v_role <> 'admin' then
+    if not exists (
+      select 1 from public.position_managers as m
+      where m.position_id = v_record.position_id and m.manager_id = v_uid
+    ) then
+      raise exception 'forbidden' using errcode = '42501';
+    end if;
     if v_record.employee_id = v_uid then
       raise exception 'own_record' using errcode = '42501';
     end if;
