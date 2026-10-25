@@ -243,3 +243,28 @@ it("AC-DECIDE-21: працівник не змінює тип відпустки
   );
   expect(row.leave_type).toBe("sick");
 });
+
+it("AC-DECIDE-15: працівник бачить, хто вирішив його запис, а сторонні не бачать автора рішення", async () => {
+  const record = await makeRecord({ employee: "teacher1", position: POSITION_T1_MAIN });
+  await decide("manager1", record, "approved");
+
+  const asEmployee = await t.asUser<{ full_name: string }>(
+    user("teacher1"),
+    "select full_name from public.profiles where id = $1",
+    [user("manager1")],
+  );
+  const asOutsider = await t.asUser<{ full_name: string }>(
+    user("teacher2"),
+    "select full_name from public.profiles where id = $1",
+    [user("manager1")],
+  );
+  const history = await t.asUser<{ decision: string; decided_by: string }>(
+    user("teacher1"),
+    "select decision, decided_by from public.leave_decisions where record_id = $1",
+    [record],
+  );
+
+  expect(asEmployee).toHaveLength(1);
+  expect(history).toEqual([{ decision: "approved", decided_by: user("manager1") }]);
+  expect(asOutsider).toHaveLength(0);
+});

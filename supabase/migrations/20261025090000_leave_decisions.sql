@@ -87,10 +87,26 @@ as $$
   );
 $$;
 
-revoke execute on function private.manages_request(uuid), private.manages_employee(uuid), private.can_see_record(uuid)
-  from public, anon;
-grant execute on function private.manages_request(uuid), private.manages_employee(uuid), private.can_see_record(uuid)
-  to authenticated;
+-- Автор рішення: профіль того, хто вирішив запис, бачать лише ті, хто бачить сам запис (AC-DECIDE-15: «хто вирішив»).
+-- Загального доступу до профілів це не дає: профіль автора видно тільки через рішення, доступне користувачу.
+create or replace function private.sees_decider(p_profile_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.leave_decisions as d
+    where d.decided_by = p_profile_id and private.can_see_record(d.record_id)
+  );
+$$;
+
+revoke execute on function private.manages_request(uuid), private.manages_employee(uuid), private.can_see_record(uuid),
+  private.sees_decider(uuid) from public, anon;
+grant execute on function private.manages_request(uuid), private.manages_employee(uuid), private.can_see_record(uuid),
+  private.sees_decider(uuid) to authenticated;
 
 -- ── 3. Політики читання: менеджер бачить записи лише своїх посад (AC-DECIDE-01, AC-DECIDE-08) ──
 drop policy leave_records_select on public.leave_records;
@@ -116,7 +132,8 @@ create policy leave_requests_select
     or (select private.current_app_role()) = 'admin'
   );
 
--- Менеджер бачить профіль працівника своєї посади (ім'я в списку рішень). Змінювати його не може.
+-- Менеджер бачить профіль працівника своєї посади (ім'я в списку рішень), а працівник і менеджер посади — профіль автора
+-- рішення за записом, який вони бачать. Змінювати чужий профіль не можна нікому.
 drop policy profiles_select_own_or_admin on public.profiles;
 create policy profiles_select_own_or_admin
   on public.profiles
@@ -125,6 +142,7 @@ create policy profiles_select_own_or_admin
   using (
     id = (select auth.uid())
     or private.manages_employee(id)
+    or private.sees_decider(id)
     or (select private.current_app_role()) = 'admin'
   );
 

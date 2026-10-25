@@ -68,7 +68,7 @@
 | AC-DECIDE-18 | Менеджер не погоджує власний запис | `supabase/migrations/20261025090000_leave_decisions.sql` (private.decide_leave_record) | `tests/db/leave-decision.test.ts` | відкладено (правило бази й тест — у PR task/decision-db; повідомлення «Your own record is decided by an administrator» — у задачі 2) |
 | AC-DECIDE-19 | Адміністратор погоджує запис менеджера | `supabase/migrations/20261025090000_leave_decisions.sql` (private.decide_leave_record) | `tests/db/leave-decision.test.ts` | відкладено (правило бази й тест — у PR task/decision-db; сторінка рішення — у задачі 2) |
 | AC-DECIDE-11 | Погоджений запис іде в історію | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-15 | Рядок історії погодженого запису | — | — | відкладено (чекає реалізації) |
+| AC-DECIDE-15 | Історія рішення: дата, хто вирішив, рішення | `supabase/migrations/20261025090000_leave_decisions.sql` (leave_decisions, private.sees_decider) | `tests/db/leave-decision.test.ts` | відкладено (читання журналу й профілю автора рішення в базі та тест — у PR task/decision-db; рядок історії на сторінці запису — у задачі 2) |
 | AC-DECIDE-12 | Зміна погодженого запису | `supabase/migrations/20261025090000_leave_decisions.sql` (private.update_leave_record_hours) | `tests/db/leave-decision.test.ts` | відкладено (правило бази й тест — у PR task/decision-db; повідомлення «This record is already approved» — у задачі 3) |
 | AC-DECIDE-16 | Працівник змінює години до рішення | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-13 | Скасування запису на розгляді | — | — | відкладено (чекає реалізації) |
