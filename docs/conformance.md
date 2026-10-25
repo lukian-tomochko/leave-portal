@@ -59,8 +59,8 @@
 | AC-DECIDE-02 | Погодження одного з двох записів | `src/lib/leave/decision.ts` (decideRecord), `src/app/decisions/actions.ts` (decideLeaveRecord) | `src/lib/leave/decision.test.ts` | реалізовано |
 | AC-DECIDE-03 | Відхилення запису | `src/lib/leave/decision.ts` (decideRecord), `src/app/decisions/actions.ts` (decideLeaveRecord), `src/app/leave/page.tsx` (статус у «My requests») | `src/lib/leave/decision.test.ts` | реалізовано |
 | AC-DECIDE-04 | Повернення без коментаря | `src/lib/leave/decision.ts` (decideRecord), `src/app/records/[id]/decision-form.tsx` | `src/lib/leave/decision.test.ts` | реалізовано |
-| AC-DECIDE-05 | Повернення з коментарем | `src/lib/leave/decision.ts` (decideRecord) | `src/lib/leave/decision.test.ts` | відкладено (рішення з коментарем реалізовано в задачі 2, тест — `src/lib/leave/decision.test.ts`; показ коментаря працівнику в «My requests» — у задачі 3) |
-| AC-DECIDE-06 | Виправлення й повторна подача | — | — | відкладено (чекає реалізації) |
+| AC-DECIDE-05 | Повернення з коментарем | `src/lib/leave/supabase-repository.ts` (listRecords: managerComment), `src/app/leave/page.tsx`, `supabase/migrations/20261025090000_leave_decisions.sql` (leave_decisions_select) | `tests/db/leave-decision.test.ts` | реалізовано |
+| AC-DECIDE-06 | Виправлення й повторна подача | `src/lib/leave/employee-record.ts` (changeHours, cancelRecord), `src/app/records/[id]/actions.ts`, `src/app/records/[id]/employee-actions.tsx` | `src/lib/leave/employee-record.test.ts` | реалізовано |
 | AC-DECIDE-07 | Другий менеджер запізнився | `src/lib/leave/decision.ts` (decideRecord), `src/app/decisions/actions.ts` (decideLeaveRecord) | `src/lib/leave/decision.test.ts` | реалізовано |
 | AC-DECIDE-08 | Менеджер чужої посади | `supabase/migrations/20261025090000_leave_decisions.sql` (private.decide_leave_record) | `tests/db/leave-decision.test.ts` | реалізовано |
 | AC-DECIDE-09 | Працівник без ролі менеджера чи адміністратора | `supabase/migrations/20261025090000_leave_decisions.sql` (private.decide_leave_record, без grant update) | `tests/db/leave-decision.test.ts` | реалізовано |
@@ -69,15 +69,15 @@
 | AC-DECIDE-19 | Адміністратор погоджує запис менеджера | `src/lib/leave/decision.ts` (decideRecord), `src/app/decisions/actions.ts` (decideLeaveRecord) | `src/lib/leave/decision.test.ts` | реалізовано |
 | AC-DECIDE-11 | Погоджений запис іде в історію | `src/lib/leave/decision.ts` (listAwaiting, listHistory), `src/app/decisions/history/page.tsx` | `src/lib/leave/decision.test.ts` | реалізовано |
 | AC-DECIDE-15 | Історія рішення: дата, хто вирішив, рішення | `src/lib/leave/decision.ts` (formatDecisionLine), `src/app/records/[id]/page.tsx` | `src/lib/leave/decision.test.ts` | реалізовано |
-| AC-DECIDE-12 | Зміна погодженого запису | `supabase/migrations/20261025090000_leave_decisions.sql` (private.update_leave_record_hours) | `tests/db/leave-decision.test.ts` | відкладено (правило бази й тест — у PR task/decision-db; повідомлення «This record is already approved» — у задачі 3) |
-| AC-DECIDE-16 | Працівник змінює години до рішення | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-13 | Скасування запису на розгляді | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-17 | Скасування повернутого запису | `supabase/migrations/20261025090000_leave_decisions.sql` (private.cancel_leave_record) | `tests/db/leave-decision.test.ts` | відкладено (правило бази й тест — у PR task/decision-db; кнопка скасування — у задачі 3) |
+| AC-DECIDE-12 | Зміна погодженого запису | `src/lib/leave/employee-record.ts` (changeHours, cancelRecord), `src/app/records/[id]/actions.ts`, `src/app/records/[id]/employee-actions.tsx` | `src/lib/leave/employee-record.test.ts` | реалізовано |
+| AC-DECIDE-16 | Працівник змінює години до рішення | `src/lib/leave/employee-record.ts` (changeHours, cancelRecord), `src/app/records/[id]/actions.ts`, `src/app/records/[id]/employee-actions.tsx` | `src/lib/leave/employee-record.test.ts` | реалізовано |
+| AC-DECIDE-13 | Скасування запису на розгляді | `src/lib/leave/employee-record.ts` (changeHours, cancelRecord), `src/app/records/[id]/actions.ts`, `src/app/records/[id]/employee-actions.tsx` | `src/lib/leave/employee-record.test.ts` | реалізовано |
+| AC-DECIDE-17 | Скасування повернутого запису | `src/lib/leave/employee-record.ts` (changeHours, cancelRecord), `src/app/records/[id]/actions.ts`, `src/app/records/[id]/employee-actions.tsx` | `src/lib/leave/employee-record.test.ts` | реалізовано |
 | AC-DECIDE-20 | Менеджер бачить коментар працівника | `src/lib/leave/decision.ts` (getRecord), `src/app/records/[id]/page.tsx` | `src/lib/leave/decision.test.ts` | реалізовано |
-| AC-DECIDE-21 | Зміна типу відпустки заборонена | `supabase/migrations/20261025090000_leave_decisions.sql` (без grant update на leave_requests) | `tests/db/leave-decision.test.ts` | відкладено (заборона в базі й тест — у PR task/decision-db; повідомлення PM — у задачі 3) |
-| AC-DECIDE-22 | Зміна годин із перетином | — | — | відкладено (чекає реалізації) |
-| AC-DECIDE-23 | Відхилення з коментарем | `src/lib/leave/decision.ts` (decideRecord) | `src/lib/leave/decision.test.ts` | відкладено (відхилення з коментарем реалізовано в задачі 2, тест — `src/lib/leave/decision.test.ts`; показ коментаря працівнику в «My requests» — у задачі 3) |
-| AC-DECIDE-24 | Погодження з коментарем | `src/lib/leave/decision.ts` (decideRecord) | `src/lib/leave/decision.test.ts` | відкладено (схвалення з коментарем реалізовано в задачі 2, тест — `src/lib/leave/decision.test.ts`; показ коментаря працівнику в «My requests» — у задачі 3) |
+| AC-DECIDE-21 | Зміна типу відпустки заборонена | `src/lib/leave/employee-record.ts` (changeHours, cancelRecord), `src/app/records/[id]/actions.ts`, `src/app/records/[id]/employee-actions.tsx` | `src/lib/leave/employee-record.test.ts` | реалізовано |
+| AC-DECIDE-22 | Зміна годин із перетином | `src/lib/leave/employee-record.ts` (changeHours, cancelRecord), `src/app/records/[id]/actions.ts`, `src/app/records/[id]/employee-actions.tsx`, `supabase/migrations/20261021041722_leave_no_overlap.sql` | `src/lib/leave/employee-record.test.ts` | реалізовано |
+| AC-DECIDE-23 | Відхилення з коментарем | `src/lib/leave/supabase-repository.ts` (listRecords: managerComment), `src/app/leave/page.tsx`, `supabase/migrations/20261025090000_leave_decisions.sql` (leave_decisions_select) | `tests/db/leave-decision.test.ts` | реалізовано |
+| AC-DECIDE-24 | Погодження з коментарем | `src/lib/leave/supabase-repository.ts` (listRecords: managerComment), `src/app/leave/page.tsx`, `supabase/migrations/20261025090000_leave_decisions.sql` (leave_decisions_select) | `src/lib/leave/use-cases.test.ts` | реалізовано |
 | AC-BALANCE-01 | Початкові баланси | — | — | відкладено (чекає реалізації) |
 | AC-BALANCE-02 | Погоджений цілий день | — | — | відкладено (чекає реалізації) |
 | AC-BALANCE-03 | Частина дня | — | — | відкладено (чекає реалізації) |

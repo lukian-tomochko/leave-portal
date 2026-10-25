@@ -49,6 +49,12 @@ export function anotherManagerDecided(status: RecordStatus): string {
   return `Another manager has already decided: ${STATUS_LABELS[status]}`;
 }
 
+// AC-DECIDE-12
+export const ALREADY_APPROVED = "This record is already approved and cannot be changed";
+// AC-DECIDE-21
+export const ONLY_HOURS_CAN_BE_CHANGED =
+  "Only the hours can be changed. To change the date, position or leave type, cancel this record and submit a new request";
+
 // Підписи статусів і типів — із глосарія PM (requirements/product.md).
 export const STATUS_LABELS: Record<RecordStatus, string> = {
   awaiting_decision: "Awaiting decision",
