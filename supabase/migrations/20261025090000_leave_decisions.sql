@@ -208,6 +208,17 @@ begin
     end if;
   end if;
 
+  -- Призначення менеджера фіксуємо до кінця транзакції (for share): його не можна зняти між перевіркою права й записом
+  -- рішення. Сюди доходить лише той, хто вже пройшов перевірку вище, тож сторонній нічого не заблокує.
+  if v_role <> 'admin' then
+    perform 1 from public.position_managers as m
+    where m.position_id = v_position and m.manager_id = v_uid
+    for share;
+    if not found then
+      raise exception 'forbidden' using errcode = '42501';
+    end if;
+  end if;
+
   -- Лише тепер блокуємо рядок і перевіряємо статус: два одночасні рішення не пройдуть обидва (AC-DECIDE-07).
   select * into v_record from public.leave_records where id = p_record_id for update;
   if not found then
