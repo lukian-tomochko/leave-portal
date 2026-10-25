@@ -62,3 +62,33 @@ from (values
 ) as v (id, position_id, weekday, starts_at, ends_at)
 join public.positions as pos on pos.id = v.position_id::uuid
 on conflict (id) do nothing;
+
+-- ── Акаунти для приймання PM (вимога 02) ────────────────────────────────────
+-- pm-employee має основну посаду «Elementary school / Teacher» з розкладом пн–пт 08:30–15:30, її менеджер — pm-manager,
+-- pm-admin — адміністратор без посади. PM подає заявку від pm-employee, вирішує її як pm-manager чи pm-admin і перевіряє
+-- відмови (менеджер чужої посади — manager2@example.test). Паролі в репо немає: їх PM передає розробник у чаті команди.
+insert into public.positions (id, employee_id, kind, division, job_title)
+select '00000000-0000-4000-8000-000000000104'::uuid, p.id, 'main', 'Elementary school', 'Teacher'
+from public.profiles as p
+where p.email = 'pm-employee@example.test'
+on conflict (id) do nothing;
+
+insert into public.position_managers (position_id, manager_id)
+select '00000000-0000-4000-8000-000000000104'::uuid, p.id
+from public.profiles as p
+join public.positions as pos on pos.id = '00000000-0000-4000-8000-000000000104'::uuid
+where p.email = 'pm-manager@example.test'
+on conflict (position_id, manager_id) do nothing;
+
+insert into public.schedule_blocks (id, position_id, weekday, starts_at, ends_at)
+select v.id::uuid, '00000000-0000-4000-8000-000000000104'::uuid, v.weekday, '08:30'::time, '15:30'::time
+from (values
+  ('00000000-0000-4000-8000-000000000231', 1),
+  ('00000000-0000-4000-8000-000000000232', 2),
+  ('00000000-0000-4000-8000-000000000233', 3),
+  ('00000000-0000-4000-8000-000000000234', 4),
+  ('00000000-0000-4000-8000-000000000235', 5)
+) as v (id, weekday)
+join public.positions as pos on pos.id = '00000000-0000-4000-8000-000000000104'::uuid
+on conflict (id) do nothing;
+

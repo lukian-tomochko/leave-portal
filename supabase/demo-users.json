@@ -23,5 +23,20 @@
     "email": "teacher2@example.test",
     "full_name": "Марія Демо-Вчитель-Друга",
     "role": "employee"
+  },
+  {
+    "email": "pm-employee@example.test",
+    "full_name": "Приймання PM: Працівник",
+    "role": "employee"
+  },
+  {
+    "email": "pm-manager@example.test",
+    "full_name": "Приймання PM: Менеджер",
+    "role": "manager"
+  },
+  {
+    "email": "pm-admin@example.test",
+    "full_name": "Приймання PM: Адміністратор",
+    "role": "admin"
   }
 ]
