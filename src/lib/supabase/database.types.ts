@@ -228,11 +228,75 @@ export type Database = {
           },
         ];
       };
+      leave_decisions: {
+        Row: {
+          id: string;
+          record_id: string;
+          decided_by: string;
+          decision: string;
+          comment: string | null;
+          decided_at: string;
+        };
+        Insert: {
+          id?: string;
+          record_id: string;
+          decided_by: string;
+          decision: string;
+          comment?: string | null;
+          decided_at?: string;
+        };
+        Update: {
+          id?: string;
+          record_id?: string;
+          decided_by?: string;
+          decision?: string;
+          comment?: string | null;
+          decided_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "leave_decisions_record_id_fkey";
+            columns: ["record_id"];
+            isOneToOne: false;
+            referencedRelation: "leave_records";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "leave_decisions_decided_by_fkey";
+            columns: ["decided_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      cancel_leave_record: {
+        Args: {
+          p_record_id: string;
+        };
+        Returns: Json;
+      };
+      decide_leave_record: {
+        Args: {
+          p_record_id: string;
+          p_decision: string;
+          p_comment?: string;
+        };
+        Returns: Json;
+      };
+      update_leave_record_hours: {
+        Args: {
+          p_record_id: string;
+          p_starts_at: string;
+          p_ends_at: string;
+        };
+        Returns: Json;
+      };
       create_leave_request: {
         Args: {
           p_leave_type: string;
