@@ -52,6 +52,10 @@ export default async function MyRequestsPage() {
               <TableHead>Leave type</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Comment</TableHead>
+              <TableHead>Manager comment</TableHead>
+              <TableHead>
+                <span className="sr-only">Open</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -67,6 +71,14 @@ export default async function MyRequestsPage() {
                   <Badge variant={STATUS_VARIANTS[record.status]}>{STATUS_LABELS[record.status]}</Badge>
                 </TableCell>
                 <TableCell className="whitespace-normal">{record.comment ?? ""}</TableCell>
+                <TableCell className="whitespace-normal" data-testid="manager-comment">
+                  {record.managerComment ?? ""}
+                </TableCell>
+                <TableCell>
+                  <Link href={`/records/${record.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                    Відкрити
+                  </Link>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

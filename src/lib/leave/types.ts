@@ -116,4 +116,6 @@ export type LeaveRecordView = {
   leaveType: LeaveType;
   positionLabel: string;
   comment: string | null;
+  // Коментар менеджера з останнього рішення, де він був (AC-DECIDE-05, AC-DECIDE-23, AC-DECIDE-24).
+  managerComment: string | null;
 };

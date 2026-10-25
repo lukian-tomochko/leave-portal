@@ -8,6 +8,7 @@ import { createSupabaseDecisionRepository, loadActor } from "@/lib/leave/supabas
 import type { RecordStatus } from "@/lib/leave/types";
 import { createClient } from "@/lib/supabase/server";
 import { DecisionForm } from "./decision-form";
+import { EmployeeActions } from "./employee-actions";
 
 const STATUS_VARIANTS = {
   awaiting_decision: "awaiting",
@@ -43,6 +44,9 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
   }
 
   const canDecide = isDecider(actor.role) && record.status === "awaiting_decision";
+  // Власник змінює лише години й скасовує, поки запис чекає рішення чи повернутий на доопрацювання (AC-DECIDE-06, 13, 16).
+  const canEdit =
+    record.employeeId === actor.id && (record.status === "awaiting_decision" || record.status === "returned_for_revision");
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-10">
@@ -96,6 +100,18 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
           </ul>
         )}
       </section>
+
+      {canEdit ? (
+        <section aria-labelledby="edit-title" className="flex flex-col gap-3">
+          <h2 id="edit-title" className="text-lg font-semibold">
+            Ваш запис
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Можна змінити лише години. Щоб змінити дату, посаду чи тип відпустки, скасуйте запис і подайте нову заявку.
+          </p>
+          <EmployeeActions recordId={record.id} startsAt={record.startsAt} endsAt={record.endsAt} />
+        </section>
+      ) : null}
 
       {canDecide ? (
         <section aria-labelledby="decide-title" className="flex flex-col gap-3">

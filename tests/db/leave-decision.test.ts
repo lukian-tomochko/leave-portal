@@ -268,3 +268,106 @@ it("AC-DECIDE-15: працівник бачить, хто вирішив йог�
   expect(history).toEqual([{ decision: "approved", decided_by: user("manager1") }]);
   expect(asOutsider).toHaveLength(0);
 });
+
+it("AC-DECIDE-16: працівник змінює години запису, що чекає рішення, статус лишається, а менеджер бачить нові години", async () => {
+  const record = await makeRecord({ employee: "teacher1", position: POSITION_T1_MAIN });
+
+  const outcome = await updateHours("teacher1", record, "09:00", "12:00");
+
+  expect(outcome).toEqual({ ok: true, status: "awaiting_decision" });
+  expect(await hoursOf(record)).toBe("09:00-12:00");
+  const seen = await t.asUser<{ hours: string }>(
+    user("manager1"),
+    "select to_char(starts_at, 'HH24:MI') || '-' || to_char(ends_at, 'HH24:MI') as hours from public.leave_records where id = $1 and status = 'awaiting_decision'",
+    [record],
+  );
+  expect(seen).toEqual([{ hours: "09:00-12:00" }]);
+});
+
+it("AC-DECIDE-06: повернений запис після зміни годин знову чекає рішення тієї ж посади, у списку того самого менеджера", async () => {
+  const record = await makeRecord({ employee: "teacher1", position: POSITION_T1_MAIN, status: "returned_for_revision" });
+
+  const outcome = await updateHours("teacher1", record, "09:00", "12:00");
+
+  expect(outcome).toEqual({ ok: true, status: "awaiting_decision" });
+  expect(await statusOf(record)).toBe("awaiting_decision");
+  expect(await hoursOf(record)).toBe("09:00-12:00");
+  const awaiting = await t.asUser<{ id: string }>(
+    user("manager1"),
+    "select id from public.leave_records where id = $1 and status = 'awaiting_decision'",
+    [record],
+  );
+  expect(awaiting).toEqual([{ id: record }]);
+});
+
+it("AC-DECIDE-13: працівник скасовує запис, що чекає рішення, і той зникає зі списку «Awaiting decision» менеджера", async () => {
+  const record = await makeRecord({ employee: "teacher1", position: POSITION_T1_MAIN });
+
+  const outcome = await cancel("teacher1", record);
+
+  expect(outcome).toEqual({ ok: true, status: "cancelled" });
+  expect(await statusOf(record)).toBe("cancelled");
+  const awaiting = await t.asUser<{ id: string }>(
+    user("manager1"),
+    "select id from public.leave_records where id = $1 and status = 'awaiting_decision'",
+    [record],
+  );
+  expect(awaiting).toHaveLength(0);
+});
+
+it("AC-DECIDE-22: зміна годин із перетином з іншим записом тієї ж посади відхиляється базою, дані не змінюються", async () => {
+  const first = await makeRecord({ employee: "teacher1", position: POSITION_T1_MAIN, startsAt: "08:30", endsAt: "10:00" });
+  // Другий запис того ж дня тієї ж посади: дату беремо з першого, бо makeRecord дає кожному свою.
+  const [firstRow] = await t.asService<{ leave_date: string; request_id: string }>(
+    "select to_char(leave_date, 'YYYY-MM-DD') as leave_date, request_id from public.leave_records where id = $1",
+    [first],
+  );
+  const [second] = await t.asService<{ id: string }>(
+    `insert into public.leave_records (request_id, employee_id, position_id, leave_date, starts_at, ends_at)
+     values ($1, $2, $3, $4, '13:00', '15:30') returning id`,
+    [firstRow.request_id, user("teacher1"), POSITION_T1_MAIN, firstRow.leave_date],
+  );
+
+  await expect(updateHours("teacher1", second.id, "09:00", "15:30")).rejects.toThrow(/leave_records_no_overlap|conflicting key/);
+
+  expect(await hoursOf(second.id)).toBe("13:00-15:30");
+});
+
+async function employeeSeesDecisionComment(recordId: string, email = "teacher1") {
+  return t.asUser<{ decision: string; comment: string | null }>(
+    user(email),
+    "select decision, comment from public.leave_decisions where record_id = $1 order by decided_at desc",
+    [recordId],
+  );
+}
+
+it("AC-DECIDE-05: працівник бачить коментар менеджера «Enter hours instead of a whole day» до повернутого запису", async () => {
+  const record = await makeRecord({ employee: "teacher1", position: POSITION_T1_MAIN });
+
+  await decide("manager1", record, "returned_for_revision", "Enter hours instead of a whole day");
+
+  expect(await statusOf(record)).toBe("returned_for_revision");
+  expect(await employeeSeesDecisionComment(record)).toEqual([
+    { decision: "returned_for_revision", comment: "Enter hours instead of a whole day" },
+  ]);
+  // Сторонній працівник цього коментаря не бачить.
+  expect(await employeeSeesDecisionComment(record, "teacher2")).toHaveLength(0);
+});
+
+it("AC-DECIDE-23: працівник бачить коментар менеджера «Not enough staff that day» до відхиленого запису", async () => {
+  const record = await makeRecord({ employee: "teacher1", position: POSITION_T1_MAIN });
+
+  await decide("manager1", record, "rejected", "Not enough staff that day");
+
+  expect(await statusOf(record)).toBe("rejected");
+  expect(await employeeSeesDecisionComment(record)).toEqual([{ decision: "rejected", comment: "Not enough staff that day" }]);
+});
+
+it("AC-DECIDE-24: працівник бачить коментар менеджера «Get well soon» до схваленого запису", async () => {
+  const record = await makeRecord({ employee: "teacher1", position: POSITION_T1_MAIN });
+
+  await decide("manager1", record, "approved", "Get well soon");
+
+  expect(await statusOf(record)).toBe("approved");
+  expect(await employeeSeesDecisionComment(record)).toEqual([{ decision: "approved", comment: "Get well soon" }]);
+});

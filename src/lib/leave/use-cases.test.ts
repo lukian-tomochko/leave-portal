@@ -49,6 +49,20 @@ const view = (id: string, employeeId: string, date: string): LeaveRecordView => 
   leaveType: "sick",
   positionLabel: "Elementary school / Teacher",
   comment: null,
+  managerComment: null,
+});
+
+describe("My requests: коментар менеджера", () => {
+  it("AC-DECIDE-24: у «My requests» працівник бачить статус «Approved» і коментар менеджера «Get well soon»", async () => {
+    const { repository } = fakeRepository({
+      listed: [{ ...view("t1-a", "teacher1", "2026-11-02"), status: "approved", managerComment: "Get well soon" }],
+    });
+
+    const records = await listMyRecords(repository, "teacher1");
+
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({ status: "approved", managerComment: "Get well soon" });
+  });
 });
 
 describe("My requests", () => {

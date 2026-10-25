@@ -124,6 +124,26 @@ export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>
         throw new Error(`listRecords(positions) failed: ${positionsError.code ?? "unknown"}`);
       }
 
+      // Коментар менеджера: останнє рішення запису з коментарем (працівник бачить рішення своїх записів під RLS).
+      const { data: decisions, error: decisionsError } = await supabase
+        .from("leave_decisions")
+        .select("record_id, comment, decided_at")
+        .in(
+          "record_id",
+          records.map((record) => record.id),
+        )
+        .not("comment", "is", null)
+        .order("decided_at", { ascending: true });
+      if (decisionsError) {
+        throw new Error(`listRecords(decisions) failed: ${decisionsError.code ?? "unknown"}`);
+      }
+      const managerCommentByRecord = new Map<string, string>();
+      for (const decision of decisions) {
+        if (decision.comment) {
+          managerCommentByRecord.set(decision.record_id, decision.comment);
+        }
+      }
+
       const requestById = new Map(requests.map((request) => [request.id, request]));
       const labelByPosition = new Map(
         positions.map((position) => [position.id, positionLabel({ division: position.division, jobTitle: position.job_title })]),
@@ -145,6 +165,7 @@ export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>
           leaveType: request.leave_type as LeaveType,
           positionLabel: labelByPosition.get(record.position_id) ?? "—",
           comment: request.comment,
+          managerComment: managerCommentByRecord.get(record.id) ?? null,
         };
       });
     },
