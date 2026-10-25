@@ -168,6 +168,8 @@ declare
   v_uid uuid := auth.uid();
   v_role text;
   v_record public.leave_records%rowtype;
+  v_owner uuid;
+  v_position uuid;
 begin
   if v_uid is null then
     raise exception 'not authenticated' using errcode = '28000';
@@ -181,8 +183,10 @@ begin
     raise exception 'forbidden' using errcode = '42501';
   end if;
 
-  -- Рядок блокуємо: два одночасні рішення не пройдуть обидва (AC-DECIDE-07).
-  select * into v_record from public.leave_records where id = p_record_id for update;
+  -- Права перевіряємо ДО блокування: інакше сторонній менеджер міг би тримати блокування на чужих записах.
+  -- Власник і посада запису не змінюються ніколи (немає grant update, функції їх не чіпають), тож перевірка без
+  -- блокування безпечна.
+  select r.employee_id, r.position_id into v_owner, v_position from public.leave_records as r where r.id = p_record_id;
   if not found then
     raise exception 'forbidden' using errcode = '42501';
   end if;
@@ -190,13 +194,19 @@ begin
   if v_role <> 'admin' then
     if not exists (
       select 1 from public.position_managers as m
-      where m.position_id = v_record.position_id and m.manager_id = v_uid
+      where m.position_id = v_position and m.manager_id = v_uid
     ) then
       raise exception 'forbidden' using errcode = '42501';
     end if;
-    if v_record.employee_id = v_uid then
+    if v_owner = v_uid then
       raise exception 'own_record' using errcode = '42501';
     end if;
+  end if;
+
+  -- Лише тепер блокуємо рядок і перевіряємо статус: два одночасні рішення не пройдуть обидва (AC-DECIDE-07).
+  select * into v_record from public.leave_records where id = p_record_id for update;
+  if not found then
+    raise exception 'forbidden' using errcode = '42501';
   end if;
 
   if v_record.status <> 'awaiting_decision' then
@@ -235,8 +245,9 @@ begin
     raise exception 'invalid hours' using errcode = '22023';
   end if;
 
-  select * into v_record from public.leave_records where id = p_record_id for update;
-  if not found or v_record.employee_id <> v_uid then
+  -- Блокуємо лише власний рядок: чужий запис не можна притримати блокуванням.
+  select * into v_record from public.leave_records where id = p_record_id and employee_id = v_uid for update;
+  if not found then
     raise exception 'forbidden' using errcode = '42501';
   end if;
 
@@ -268,8 +279,9 @@ begin
     raise exception 'not authenticated' using errcode = '28000';
   end if;
 
-  select * into v_record from public.leave_records where id = p_record_id for update;
-  if not found or v_record.employee_id <> v_uid then
+  -- Блокуємо лише власний рядок: чужий запис не можна притримати блокуванням.
+  select * into v_record from public.leave_records where id = p_record_id and employee_id = v_uid for update;
+  if not found then
     raise exception 'forbidden' using errcode = '42501';
   end if;
 
