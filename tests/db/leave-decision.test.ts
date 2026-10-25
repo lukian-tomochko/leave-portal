@@ -397,17 +397,41 @@ it("AC-LEAVE-19 (зміна годин): працівник не зберіга�
   expect(await statusOf(record)).toBe("awaiting_decision");
 });
 
-it("приймання PM: pm-manager вирішує запис pm-employee, менеджер іншої посади й працівник — ні, адміністратор — так", async () => {
-  const position = "00000000-0000-4000-8000-000000000104"; // посада pm-employee із сиду
-  const first = await makeRecord({ employee: "pm-employee", position });
-  const second = await makeRecord({ employee: "pm-employee", position });
+// Акаунти для приймання PM (supabase/seed.sql): посада pm-employee, її менеджер pm-manager, адміністратор pm-admin.
+const POSITION_PM = "00000000-0000-4000-8000-000000000104";
 
-  await expect(decide("manager2", first, "approved")).rejects.toThrow(/forbidden/);
-  await expect(decide("pm-employee", first, "approved")).rejects.toThrow(/forbidden/);
-  expect(await statusOf(first)).toBe("awaiting_decision");
+it("AC-DECIDE-02 (акаунти PM): pm-manager схвалює запис pm-employee із коментарем, статус стає «Approved»", async () => {
+  const record = await makeRecord({ employee: "pm-employee", position: POSITION_PM });
 
-  expect(await decide("pm-manager", first, "approved", "Get well soon")).toEqual({ ok: true, status: "approved" });
-  expect(await decide("pm-admin", second, "rejected")).toEqual({ ok: true, status: "rejected" });
-  expect(await statusOf(first)).toBe("approved");
-  expect(await statusOf(second)).toBe("rejected");
+  const outcome = await decide("pm-manager", record, "approved", "Get well soon");
+
+  expect(outcome).toEqual({ ok: true, status: "approved" });
+  expect(await statusOf(record)).toBe("approved");
+});
+
+it("AC-DECIDE-08 (акаунти PM): manager2, який не відповідає за посаду pm-employee, не вирішує її запис", async () => {
+  const record = await makeRecord({ employee: "pm-employee", position: POSITION_PM });
+
+  await expect(decide("manager2", record, "approved")).rejects.toThrow(/forbidden/);
+
+  expect(await statusOf(record)).toBe("awaiting_decision");
+  expect(await decisionCount(record)).toBe(0);
+});
+
+it("AC-DECIDE-09 (акаунти PM): pm-employee без ролі менеджера не вирішує власний запис", async () => {
+  const record = await makeRecord({ employee: "pm-employee", position: POSITION_PM });
+
+  await expect(decide("pm-employee", record, "approved")).rejects.toThrow(/forbidden/);
+
+  expect(await statusOf(record)).toBe("awaiting_decision");
+  expect(await decisionCount(record)).toBe(0);
+});
+
+it("AC-DECIDE-10 (акаунти PM): pm-admin вирішує запис pm-employee, хоча не відповідає за посаду", async () => {
+  const record = await makeRecord({ employee: "pm-employee", position: POSITION_PM });
+
+  const outcome = await decide("pm-admin", record, "rejected");
+
+  expect(outcome).toEqual({ ok: true, status: "rejected" });
+  expect(await statusOf(record)).toBe("rejected");
 });
