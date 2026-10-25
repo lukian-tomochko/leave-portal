@@ -16,9 +16,11 @@ AC-BALANCE-13 (баланси чужих працівників недоступ
 
 ## Рішення
 
-- `SUPABASE_SECRET_KEY` читається лише в `src/lib/supabase/admin.ts` і в `scripts/` (локально, поза `src/`). Змінних
-  `NEXT_PUBLIC_*SECRET*` чи `NEXT_PUBLIC_*SERVICE_ROLE*` немає.
-- `admin.ts`, коли з'явиться, починається з `import "server-only"`.
+- Сьогодні `SUPABASE_SECRET_KEY` читається лише в `scripts/` (локально, поза `src/`), як вимагає розділ «Секрети»
+  в `AGENTS.md`. Змінних `NEXT_PUBLIC_*SECRET*` чи `NEXT_PUBLIC_*SERVICE_ROLE*` немає.
+- Читати ключ у `src/lib/supabase/admin.ts` дозволено лише після нового ADR **і** зміни правила в `AGENTS.md`. Скрипт
+  `check:boundary` уже робить `admin.ts` єдиним винятком у `src/`, але без цієї зміни файл не створюємо. Коли він
+  з'явиться, він починається з `import "server-only"`.
 - Admin-клієнт можна імпортувати лише у `actions.ts`, `route.ts` або файли з `"use server"`, ніколи у файли з `"use client"`. Перевірка ролі
   (`getClaims()` і роль із `profiles`) стоїть **до** admin-клієнта; кожна така дія вважається публічним POST-ендпойнтом.
 - У Vercel ключа немає: лише `NEXT_PUBLIC_SUPABASE_URL` і `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Якщо зріз справді
@@ -43,8 +45,9 @@ AC-BALANCE-13 (баланси чужих працівників недоступ
 ## Як перевіряємо
 
 - **`npm run check:boundary`**, job «Секретний ключ лише на сервері» в `.github/workflows/architecture.yml`
-  (`scripts/check-server-boundary.mjs`): завершується помилкою, якщо код читає ключ поза `admin.ts` або імпортує admin-клієнт із
+  (`scripts/check-server-boundary.mjs`): завершується помилкою, якщо код у `src/` читає ключ поза `admin.ts` або імпортує admin-клієнт із
   `"use client"` чи з допоміжного модуля (також відносним шляхом `../supabase/admin`), або є `NEXT_PUBLIC_…SECRET…`.
+  Скрипт обходить лише `src/`: `scripts/create-demo-users.mjs`, який читає ключ, у CI не перевіряється.
 - **Доказ, що правило ловить порушення:** на навмисних порушеннях скрипт виходить із кодом 1 і друкує 5 порушень
   (вивід — в описі PR, який додав цей ADR); без порушень друкує `OK`.
 - **Правило для агента:** `AGENTS.md`, розділи «Секрети» й «Межі».
