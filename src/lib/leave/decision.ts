@@ -63,9 +63,18 @@ export class DecisionDeniedError extends Error {
 }
 
 // Порт доступу до даних; адаптер — supabase-decision-repository.ts.
+export type RecordsView = "awaiting" | "history";
+
+// Сторінка записів: на одну більше за розмір сторінки репозиторій не повертає, а лише повідомляє, чи є наступна.
+export type RecordsPage = { records: DecisionRecord[]; page: number; hasNext: boolean };
+
+export const PAGE_SIZE = 25;
+
 export interface DecisionRepository {
-  // Записи, які бачить користувач і за які він відповідає (менеджер — свої посади, адміністратор — усі).
-  listRecords(actor: Actor): Promise<DecisionRecord[]>;
+  // Сторінка записів, які бачить користувач і за які він відповідає (менеджер — свої посади, адміністратор — усі).
+  // Статус фільтрує й сортує база («awaiting» — найближчі дати першими, «history» — найновіші), тож обмеження кількості
+  // рядків не відрізає потрібні записи; підготовка (hydrate) викликається лише для поточної сторінки.
+  listPage(actor: Actor, view: RecordsView, page: number, pageSize: number): Promise<RecordsPage>;
   // Один запис, якщо користувач його бачить (під RLS), інакше null.
   getRecord(actor: Actor, recordId: string): Promise<DecisionRecord | null>;
   // Рішення однією функцією бази; кидає DecisionDeniedError, коли база відмовила за правами.
@@ -97,20 +106,40 @@ function inScope(actor: Actor, record: DecisionRecord): boolean {
   return actor.role === "manager" && actor.managedPositionIds.includes(record.positionId);
 }
 
+// Номер сторінки з адреси: ціле число від 1, інакше 1.
+export function parsePage(value: string | string[] | undefined): number {
+  const text = Array.isArray(value) ? value[0] : value;
+  const page = Number(text);
+  return Number.isInteger(page) && page >= 1 ? page : 1;
+}
+
+// Перевірка id запису з адреси до запиту в базу: не-UUID дав би помилку Postgres (500) замість 404.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export function isRecordId(value: string): boolean {
+  return UUID_RE.test(value);
+}
+
+async function loadPage(
+  repository: DecisionRepository,
+  actor: Actor,
+  view: RecordsView,
+  page: number,
+): Promise<RecordsPage> {
+  const result = await repository.listPage(actor, view, page, PAGE_SIZE);
+  // Домен не покладається на фільтри бази сам: чужі записи й записи не того статусу відкидаємо.
+  const wanted = (record: DecisionRecord) =>
+    view === "awaiting" ? record.status === "awaiting_decision" : record.status !== "awaiting_decision";
+  return { ...result, records: result.records.filter((record) => inScope(actor, record) && wanted(record)) };
+}
+
 // Список «Awaiting decision» (AC-DECIDE-01, AC-DECIDE-11, AC-DECIDE-14), найближчі дати першими.
-export async function listAwaiting(repository: DecisionRepository, actor: Actor): Promise<DecisionRecord[]> {
-  const records = await repository.listRecords(actor);
-  return records
-    .filter((record) => inScope(actor, record) && record.status === "awaiting_decision")
-    .sort((a, b) => a.date.localeCompare(b.date) || a.startsAt.localeCompare(b.startsAt));
+export function listAwaiting(repository: DecisionRepository, actor: Actor, page = 1): Promise<RecordsPage> {
+  return loadPage(repository, actor, "awaiting", page);
 }
 
 // «History»: записи тих самих посад, які вже не чекають рішення (AC-DECIDE-11), найновіші дати першими.
-export async function listHistory(repository: DecisionRepository, actor: Actor): Promise<DecisionRecord[]> {
-  const records = await repository.listRecords(actor);
-  return records
-    .filter((record) => inScope(actor, record) && record.status !== "awaiting_decision")
-    .sort((a, b) => b.date.localeCompare(a.date) || b.startsAt.localeCompare(a.startsAt));
+export function listHistory(repository: DecisionRepository, actor: Actor, page = 1): Promise<RecordsPage> {
+  return loadPage(repository, actor, "history", page);
 }
 
 // Текст порожнього стану «Awaiting decision» (AC-DECIDE-14); для непорожнього списку — null.

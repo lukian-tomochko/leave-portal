@@ -2,13 +2,16 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { buttonVariants } from "@/components/ui/button";
-import { NOT_ALLOWED, isDecider, listHistory } from "@/lib/leave/decision";
+import { NOT_ALLOWED, isDecider, listHistory, parsePage } from "@/lib/leave/decision";
 import { createSupabaseDecisionRepository, loadActor } from "@/lib/leave/supabase-decision-repository";
 import { createClient } from "@/lib/supabase/server";
+import { Pager } from "../pager";
 import { RecordsTable } from "../records-table";
 
 // «History»: записи тих самих посад, які вже не чекають рішення (AC-DECIDE-11).
-export default async function HistoryPage() {
+export default async function HistoryPage({ searchParams }: PageProps<"/decisions/history">) {
+  const { page: pageParam } = await searchParams;
+  const page = parsePage(pageParam);
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
@@ -28,7 +31,7 @@ export default async function HistoryPage() {
     );
   }
 
-  const records = await listHistory(createSupabaseDecisionRepository(supabase), actor);
+  const { records, hasNext } = await listHistory(createSupabaseDecisionRepository(supabase), actor, page);
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-10">
@@ -44,7 +47,10 @@ export default async function HistoryPage() {
       {records.length === 0 ? (
         <p className="text-sm text-muted-foreground">Рішень ще немає.</p>
       ) : (
-        <RecordsTable records={records} testId="history-records" />
+        <>
+          <RecordsTable records={records} testId="history-records" />
+          <Pager basePath="/decisions/history" page={page} hasNext={hasNext} />
+        </>
       )}
     </main>
   );

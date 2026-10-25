@@ -43,7 +43,9 @@ export async function decideLeaveRecord(_previous: DecisionFormState, formData: 
       decision,
       typeof comment === "string" ? comment : undefined,
     );
-  } catch {
+  } catch (error) {
+    // Адаптери формують повідомлення лише з назви операції й коду Supabase, тож message не містить даних користувача.
+    console.error("decideLeaveRecord failed", error instanceof Error ? error.message : "unknown");
     return { status: "error", message: TECHNICAL_ERROR };
   }
   if (!outcome.ok) {

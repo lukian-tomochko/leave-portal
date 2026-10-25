@@ -7,6 +7,7 @@ import {
   type DecisionEntry,
   type DecisionRecord,
   type DecisionRepository,
+  type RecordsView,
 } from "./decision";
 import { positionLabel } from "./schedule";
 import { trimSeconds } from "./time";
@@ -95,22 +96,33 @@ export function createSupabaseDecisionRepository(supabase: SupabaseClient<Databa
   }
 
   return {
-    async listRecords(actor: Actor) {
+    async listPage(actor: Actor, view: RecordsView, page: number, pageSize: number) {
       if (actor.role === "employee") {
-        return [];
+        return { records: [], page, hasNext: false };
       }
-      let query = supabase.from("leave_records").select(RECORD_COLUMNS).order("leave_date", { ascending: true });
+      const awaiting = view === "awaiting";
+      let query = supabase
+        .from("leave_records")
+        .select(RECORD_COLUMNS)
+        // Стабільне сортування (id як остання ознака), щоб записи не «стрибали» між сторінками.
+        .order("leave_date", { ascending: awaiting })
+        .order("starts_at", { ascending: awaiting })
+        .order("id", { ascending: true });
+      query = awaiting ? query.eq("status", "awaiting_decision") : query.neq("status", "awaiting_decision");
       if (actor.role === "manager") {
         if (actor.managedPositionIds.length === 0) {
-          return [];
+          return { records: [], page, hasNext: false };
         }
         query = query.in("position_id", actor.managedPositionIds);
       }
-      const { data, error } = await query;
+      // Беремо на один рядок більше за сторінку, щоб знати, чи є наступна.
+      const offset = (page - 1) * pageSize;
+      const { data, error } = await query.range(offset, offset + pageSize);
       if (error) {
-        throw new Error(`listRecords failed: ${error.code ?? "unknown"}`);
+        throw new Error(`listPage failed: ${error.code ?? "unknown"}`);
       }
-      return hydrate(data);
+      const hasNext = data.length > pageSize;
+      return { records: await hydrate(data.slice(0, pageSize)), page, hasNext };
     },
 
     async getRecord(_actor: Actor, recordId: string) {

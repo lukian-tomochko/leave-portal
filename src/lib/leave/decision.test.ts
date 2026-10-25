@@ -6,12 +6,15 @@ import {
   type Decision,
   type DecisionRecord,
   type DecisionRepository,
+  PAGE_SIZE,
   awaitingEmptyMessage,
   decideRecord,
   formatDecisionLine,
   getRecord,
+  isRecordId,
   listAwaiting,
   listHistory,
+  parsePage,
 } from "./decision";
 
 // Дані з прикладів PM (requirements/02-leave-decision.md): teacher1 має основну посаду (manager1) і додаткову (manager2).
@@ -71,7 +74,13 @@ function fakeRepository(records: DecisionRecord[], currentUser: Actor, names: Re
     return { ok: true, status: decision };
   });
   const repository: DecisionRepository = {
-    listRecords: async () => records,
+    listPage: async (_actor, view, page, pageSize) => {
+      const wanted = records
+        .filter((item) => (view === "awaiting" ? item.status === "awaiting_decision" : item.status !== "awaiting_decision"))
+        .sort((a, b) => (view === "awaiting" ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date)));
+      const start = (page - 1) * pageSize;
+      return { records: wanted.slice(start, start + pageSize), page, hasNext: wanted.length > start + pageSize };
+    },
     getRecord: async (_actor, recordId) => records.find((item) => item.id === recordId) ?? null,
     decide,
   };
@@ -86,7 +95,7 @@ describe("список «Awaiting decision» і «History»", () => {
 
     const list = await listAwaiting(repository, MANAGER1);
 
-    expect(list.map((item) => item.id)).toEqual(["r-main"]);
+    expect(list.records.map((item) => item.id)).toEqual(["r-main"]);
   });
 
   it("AC-DECIDE-11: після схвалення одного з трьох записів у «Awaiting decision» лишається два, а схвалений потрапляє в «History»", async () => {
@@ -97,11 +106,11 @@ describe("список «Awaiting decision» і «History»", () => {
     ];
     const { repository } = fakeRepository(records, MANAGER1);
 
-    expect((await listAwaiting(repository, MANAGER1)).map((item) => item.id)).toEqual(["r1", "r2", "r3"]);
+    expect((await listAwaiting(repository, MANAGER1)).records.map((item) => item.id)).toEqual(["r1", "r2", "r3"]);
     await decideRecord(repository, "r2", "approved");
 
-    expect((await listAwaiting(repository, MANAGER1)).map((item) => item.id)).toEqual(["r1", "r3"]);
-    expect((await listHistory(repository, MANAGER1)).map((item) => item.id)).toEqual(["r2"]);
+    expect((await listAwaiting(repository, MANAGER1)).records.map((item) => item.id)).toEqual(["r1", "r3"]);
+    expect((await listHistory(repository, MANAGER1)).records.map((item) => item.id)).toEqual(["r2"]);
   });
 
   it("AC-DECIDE-14: без записів, що чекають рішення, менеджер бачить «No records awaiting decision»", async () => {
@@ -109,8 +118,47 @@ describe("список «Awaiting decision» і «History»", () => {
 
     const list = await listAwaiting(repository, MANAGER1);
 
-    expect(awaitingEmptyMessage(list)).toBe("No records awaiting decision");
+    expect(awaitingEmptyMessage(list.records)).toBe("No records awaiting decision");
     expect(awaitingEmptyMessage([record({ id: "r1" })])).toBeNull();
+  });
+});
+
+describe("сторінки списків", () => {
+  const many = (count: number, status: DecisionRecord["status"]) =>
+    Array.from({ length: count }, (_, i) =>
+      record({ id: `r${i}`, status, date: `2026-12-${String(i + 1).padStart(2, "0")}` }),
+    );
+
+  it("«Awaiting decision» ділиться на сторінки: перша повна з ознакою наступної, друга — решта", async () => {
+    const { repository } = fakeRepository(many(PAGE_SIZE + 5, "awaiting_decision"), MANAGER1);
+
+    const first = await listAwaiting(repository, MANAGER1, 1);
+    const second = await listAwaiting(repository, MANAGER1, 2);
+
+    expect(first.records).toHaveLength(PAGE_SIZE);
+    expect(first.hasNext).toBe(true);
+    expect(second.records).toHaveLength(5);
+    expect(second.hasNext).toBe(false);
+  });
+
+  it("«History» на першій сторінці показує найновіші записи, а не найстаріші", async () => {
+    const { repository } = fakeRepository(many(PAGE_SIZE + 5, "approved"), MANAGER1);
+
+    const first = await listHistory(repository, MANAGER1, 1);
+
+    expect(first.records[0].date).toBe(`2026-12-${PAGE_SIZE + 5}`);
+    expect(first.hasNext).toBe(true);
+  });
+
+  it("номер сторінки й id запису з адреси перевіряються до запиту в базу", () => {
+    expect(parsePage("3")).toBe(3);
+    expect(parsePage(["2", "5"])).toBe(2);
+    for (const bad of [undefined, "", "0", "-1", "1.5", "abc"]) {
+      expect(parsePage(bad)).toBe(1);
+    }
+    expect(isRecordId("3f2c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f")).toBe(true);
+    expect(isRecordId("abc")).toBe(false);
+    expect(isRecordId("3f2c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f; drop table")).toBe(false);
   });
 });
 

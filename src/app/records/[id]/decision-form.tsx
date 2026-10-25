@@ -27,7 +27,15 @@ export function DecisionForm({ recordId }: { recordId: string }) {
 
   return (
     <>
-      <form id="decision-form" action={formAction} className="flex flex-col gap-3">
+      <form
+        id="decision-form"
+        // Діалог закриваємо в момент відправки: FormData вже зібрано (разом із decision), а помилку дії видно у формі.
+        action={(formData) => {
+          setConfirm(null);
+          formAction(formData);
+        }}
+        className="flex flex-col gap-3"
+      >
         <input type="hidden" name="recordId" value={recordId} />
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="decision-comment">Comment (required to return for revision)</Label>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDecisionLine, getRecord, isDecider } from "@/lib/leave/decision";
+import { formatDecisionLine, getRecord, isDecider, isRecordId } from "@/lib/leave/decision";
 import { LEAVE_TYPE_LABELS, STATUS_LABELS } from "@/lib/leave/messages";
 import { createSupabaseDecisionRepository, loadActor } from "@/lib/leave/supabase-decision-repository";
 import type { RecordStatus } from "@/lib/leave/types";
@@ -21,6 +21,10 @@ const STATUS_VARIANTS = {
 // (AC-DECIDE-20), історія рішень (AC-DECIDE-15) і форма рішення. Чужий запис RLS не віддає, тож це notFound().
 export default async function RecordPage({ params }: PageProps<"/records/[id]">) {
   const { id } = await params;
+  // id з адреси перевіряємо до запиту: не-UUID дав би помилку Postgres (500) замість 404.
+  if (!isRecordId(id)) {
+    notFound();
+  }
 
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
