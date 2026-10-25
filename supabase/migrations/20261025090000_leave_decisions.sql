@@ -23,6 +23,8 @@ create table public.leave_decisions (
 );
 
 create index leave_decisions_record_id_idx on public.leave_decisions (record_id, decided_at);
+-- Політика profiles фільтрує журнал за автором рішення (private.sees_decider).
+create index leave_decisions_decided_by_idx on public.leave_decisions (decided_by);
 
 comment on table public.leave_decisions is
   'Журнал рішень менеджера: хто, коли й що вирішив щодо запису відпустки (AC-DECIDE-10, AC-DECIDE-15).';
@@ -109,6 +111,9 @@ grant execute on function private.manages_request(uuid), private.manages_employe
   private.sees_decider(uuid) to authenticated;
 
 -- ── 3. Політики читання: менеджер бачить записи лише своїх посад (AC-DECIDE-01, AC-DECIDE-08) ──
+-- РИЗИК: наступні три `drop policy` замінюють політики читання leave_records, leave_requests і profiles. Умови власника
+-- й адміністратора збережено дослівно; нові гілки лише розширюють читання для відповідального менеджера (і автора
+-- рішення для profiles). Самі дані не змінюються.
 drop policy leave_records_select on public.leave_records;
 create policy leave_records_select
   on public.leave_records

@@ -46,18 +46,15 @@ export interface LeaveDb {
   asService<T = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<T[]>;
 }
 
+// Роль, claim і SQL виконуються в одній транзакції PGlite (db.transaction): помилка відкочує її, а COMMIT теж може
+// впасти (відкладені constraint trigger-и), і тоді помилка потрапляє до тесту.
 async function inTransaction<T>(db: PGlite, role: string, userId: string | null, sql: string, params: unknown[]) {
-  await db.exec(`begin; set local role ${role};`);
-  try {
-    if (userId) await db.query("select set_config('request.jwt.claim.sub', $1, true)", [userId]);
-    const result = await db.query<T>(sql, params);
-    // COMMIT теж може впасти: відкладені constraint trigger-и спрацьовують саме тут.
-    await db.exec("commit");
+  return db.transaction(async (tx) => {
+    await tx.exec(`set local role ${role}`);
+    if (userId) await tx.query("select set_config('request.jwt.claim.sub', $1, true)", [userId]);
+    const result = await tx.query<T>(sql, params);
     return result.rows;
-  } catch (error) {
-    await db.exec("rollback").catch(() => {});
-    throw error;
-  }
+  });
 }
 
 export async function createLeaveDb(): Promise<LeaveDb> {
