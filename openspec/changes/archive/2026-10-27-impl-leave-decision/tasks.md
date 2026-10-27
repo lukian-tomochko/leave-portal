@@ -52,8 +52,9 @@
   (зі статусу «Returned for revision» запис знову в «Awaiting decision») і скасовує запис; дії `updateLeaveRecordHours` і
   `cancelLeaveRecord` з `getClaims()`; повідомлення PM (AC-DECIDE-12, AC-DECIDE-21, AC-DECIDE-22), перевірка годин за
   розкладом і перетину.
-- [ ] 3.2 Тести: AC-DECIDE-06, AC-DECIDE-13, AC-DECIDE-16 (позитивні); відмови AC-DECIDE-12, AC-DECIDE-21, AC-DECIDE-22 —
+- [x] 3.2 Тести: AC-DECIDE-06, AC-DECIDE-13, AC-DECIDE-16 (позитивні); відмови AC-DECIDE-12, AC-DECIDE-21, AC-DECIDE-22 —
   повідомлення й незмінні дані. Мутаційна перевірка. Архівуємо зміну (`npx openspec archive impl-leave-decision -y`) в
   цьому PR; `docs/conformance.md` — усі 24 рядки AC-DECIDE; скріни за ролями в `docs/img/`.
   Done when: AC-DECIDE-06, AC-DECIDE-13, AC-DECIDE-16, AC-DECIDE-22 — тести зелені; запис екрана з прод-URL: працівник
   бачить рішення з коментарем, змінює години повернутого запису й скасовує інший.
+  Примітка: тести й мутаційна перевірка зроблені в PR #20, на проді запис працівника перевірено вручну; скріни за ролями в `docs/img/` не додано.
