@@ -26,7 +26,7 @@
 | AC-LEAVE-02 | заявка на дві посади дає два записи main і additional | `src/app/requests/actions.ts` (createRequest) | `tests/requests.test.ts` | реалізовано |
 | AC-LEAVE-04 | заблоковані дні не рахуються | — | — | відкладено (чекаю відповідь PM на Q2, <pm>/<team-slug>-spec#5) |
 | AC-LEAVE-07 | менеджер бачить лише свій відділ | — | — | відкладено (рішення PM: поза зрізом 1, <pm>/<team-slug>-spec#8) |
-| AC-LEAVE-10 | діапазон лише із заблокованих днів | `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/multi.test.ts` | реалізовано |
+| AC-LEAVE-10 | діапазон лише із заблокованих днів | — | — | відкладено (чекає реалізації) |
 -->
 
 Вимоги: https://github.com/mkozlovskyi-ops/course-staff-management-spec · джерело: docs · знімок 2026-10-24
@@ -45,7 +45,7 @@
 | AC-LEAVE-08 | Початок на кінці блоку | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
 | AC-LEAVE-20 | Початок на кінці першого блоку між блоками | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
 | AC-LEAVE-09 | Кінець раніше за початок | `src/lib/leave/schedule.ts` (validateHours), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/hours.test.ts` | реалізовано |
-| AC-LEAVE-10 | Усі посади виключені | `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/multi.test.ts` | реалізовано |
+| AC-LEAVE-10 | Усі посади виключені | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/form-checks.ts` (positionsError), `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/multi.test.ts`, `src/lib/leave/form-checks.test.ts` | реалізовано |
 | AC-LEAVE-11 | Повернення до редагування без підтвердження | `src/lib/leave/use-cases.ts` (previewRequest), `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/use-cases.test.ts` | реалізовано |
 | AC-LEAVE-12 | "Family celebration" без спорідненості | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/messages.ts` | `src/lib/leave/comment.test.ts` | реалізовано |
 | AC-LEAVE-13 | Перетин із записом на розгляді | `src/lib/leave/request.ts` (planRequest), `supabase/migrations/20261021041722_leave_no_overlap.sql` | `src/lib/leave/multi.test.ts` | реалізовано |
