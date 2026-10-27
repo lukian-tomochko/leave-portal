@@ -1,6 +1,6 @@
 // Тести бази для подання заявки (вимога 01): PGlite застосовує наші міграції й сид, запити йдуть від імені
 // конкретних користувачів (роль authenticated). Подання — лише через public.create_leave_request (міграція
-// 20261027120000_leave_request_hardening.sql); кожен тест відмови перевіряє і саму відмову, і те, що дані не змінились.
+// 20261027130000_leave_request_hardening.sql); кожен тест відмови перевіряє і саму відмову, і те, що дані не змінились.
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { createLeaveDb, type LeaveDb } from "./supabase-pglite";
 
