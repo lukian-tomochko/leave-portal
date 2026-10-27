@@ -29,6 +29,11 @@ export async function decideWithBalance(
     return { ok: false, code: "FORBIDDEN", message: NOT_ALLOWED };
   }
 
+  // Баланс потрібен лише для схвалення "Personal leave" запису, що чекає рішення; статус решти перевіряє decideRecord через базу.
+  if (record.leaveType !== "personal" || record.status !== "awaiting_decision") {
+    return decideRecord(repository, recordId, decision, comment);
+  }
+
   let inputs: BalanceInputs;
   try {
     inputs = await loadInputs(record.employeeId);

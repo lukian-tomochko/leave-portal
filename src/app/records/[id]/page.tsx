@@ -49,7 +49,8 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
   const canDecide = isDecider(actor.role) && record.status === "awaiting_decision";
   // Попередження менеджеру й підказка розподілу, коли запис "Personal leave" перевищує баланс (AC-BALANCE-09, AC-BALANCE-14).
   let suggestion: SplitSuggestion | null = null;
-  if (canDecide) {
+  // Лише для запису, що чекає рішення: схвалений запис уже входить у вхідні дані балансу й порахувався б двічі.
+  if (canDecide && record.leaveType === "personal" && record.status === "awaiting_decision") {
     try {
       const inputs = await loadBalanceInputs(supabase, record.employeeId);
       suggestion = suggestSplit(inputs, {

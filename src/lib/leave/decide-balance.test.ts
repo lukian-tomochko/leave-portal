@@ -92,6 +92,26 @@ describe("схвалення з урахуванням балансу", () => {
     expect(decide).toHaveBeenCalledWith("r1", "approved", null, undefined);
   });
 
+  it("AC-BALANCE-10: схвалення «Sick leave» не читає баланс", async () => {
+    const { repository, decide } = setup({ ...target, leaveType: "sick" });
+    const loadInputs = vi.fn(async () => inputsWithRemaining());
+
+    await decideWithBalance(repository, loadInputs, MANAGER, "r1", "approved", undefined, false);
+
+    expect(loadInputs).not.toHaveBeenCalled();
+    expect(decide).toHaveBeenCalledOnce();
+  });
+
+  it("AC-DECIDE-07: уже схвалений запис не читає баланс і не дає SPLIT_REQUIRED, рішення йде в базу", async () => {
+    const { repository, decide } = setup({ ...target, status: "approved" });
+    const loadInputs = vi.fn(async () => inputsWithRemaining());
+
+    await decideWithBalance(repository, loadInputs, MANAGER, "r1", "approved", undefined, false);
+
+    expect(loadInputs).not.toHaveBeenCalled();
+    expect(decide).toHaveBeenCalledOnce();
+  });
+
   it("AC-BALANCE-12: відмова бази у вхідних даних балансу дає FORBIDDEN без рішення", async () => {
     const { repository, decide } = setup();
     const denied = async (): Promise<BalanceInputs> => {

@@ -28,10 +28,16 @@ export default async function BalancesPage() {
   // Працівники, чиї баланси може відкрити менеджер чи адміністратор: за видимими під RLS посадами.
   let employees: { id: string; name: string }[] = [];
   if (isDecider(actor.role)) {
-    const { data: positions } = await supabase.from("positions").select("employee_id");
+    const { data: positions, error: positionsError } = await supabase.from("positions").select("employee_id");
+    if (positionsError) {
+      throw new Error(`balances(positions) failed: ${positionsError.code}`);
+    }
     const ids = [...new Set((positions ?? []).map((row) => row.employee_id))].filter((id) => id !== userId);
     if (ids.length > 0) {
-      const { data: profiles } = await supabase.from("profiles").select("id, full_name, email").in("id", ids);
+      const { data: profiles, error: profilesError } = await supabase.from("profiles").select("id, full_name, email").in("id", ids);
+      if (profilesError) {
+        throw new Error(`balances(profiles) failed: ${profilesError.code}`);
+      }
       employees = (profiles ?? []).map((row) => ({ id: row.id, name: row.full_name ?? row.email ?? "—" }));
     }
   }
