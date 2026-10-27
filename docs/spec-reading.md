@@ -53,9 +53,9 @@
 
 | # | AC / вимога | Питання | Рекомендація | Issue в репо PM | Відповідь PM | Рішення (що зробили) |
 |---|---|---|---|---|---|---|
-| Q4 | AC-BALANCE-08 (`requirements/03-leave-balance.md`) | Чи має попередження про залишок виглядати як помилка? | A: ні, це попередження, а не відмова | mkozlovskyi-ops/course-staff-management-spec#16 | попередження не схоже на помилку | `Alert variant="warning"` окремо від `destructive` (`DESIGN.md`, розділ 6), використано в підсумку заявки й на записі менеджера |
-| Q5 | AC-DECIDE-07 (`requirements/02-leave-decision.md`) | Чи питати підтвердження перед «Approve» і «Reject»? | A: так, бо рішення остаточні | mkozlovskyi-ops/course-staff-management-spec#17 | рішення за розробником; «Approved» і «Rejected» не скасовуються | діалог підтвердження для «Approve» і «Reject» у `decision-form.tsx` |
-| Q6 | `requirements/product.md` | Чи буде розділ «Вигляд і тон»? | A: ні, вигляд на розсуд розробника | mkozlovskyi-ops/course-staff-management-spec#18 | вигляд на розсуд розробника | `DESIGN.md` виведено з бачення продукту й трьох правил PM (#14, #16, #15) |
+| Q4 | AC-BALANCE-08 (`requirements/03-leave-balance.md`) | Чи має попередження про залишок виглядати як помилка? | A: помилка виглядає як помилка, попередження як попередження | mkozlovskyi-ops/course-staff-management-spec#16 | **A** (24.10): «saved, but note this» відрізняється від «not saved»; вигляд на розсуд розробника, текст дослівно з AC | `Alert variant="warning"` окремо від `destructive` (`DESIGN.md`, розділ 6), використано в підсумку заявки й на записі менеджера |
+| Q5 | AC-DECIDE-07 (`requirements/02-leave-decision.md`) | Чи питати підтвердження перед «Approve» і «Reject»? | A: так, бо рішення остаточні | mkozlovskyi-ops/course-staff-management-spec#17 | **рішення за розробником** (24.10): «Approved» і «Rejected» не скасовуються, підтвердження доречне | діалог підтвердження для «Approve» і «Reject» у `decision-form.tsx` |
+| Q6 | `requirements/product.md` | Чи буде розділ «Вигляд і тон»? | A: PM додає розділ «Вигляд і тон» | mkozlovskyi-ops/course-staff-management-spec#18 | **розділу не буде** (24.10): вигляд на розсуд розробника; правила про зміст — #14 і #16 | `DESIGN.md` виведено з бачення продукту й трьох правил PM (#14, #16, #15) |
 
 Кандидати на питання після зрізу 2 (не подані: на реалізацію не впливають, бо тексти й правила взяті з AC):
 
