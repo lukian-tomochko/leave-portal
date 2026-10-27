@@ -69,6 +69,11 @@ export default async function MyRequestsPage() {
                 <TableCell>{LEAVE_TYPE_LABELS[record.leaveType]}</TableCell>
                 <TableCell>
                   <Badge variant={STATUS_VARIANTS[record.status]}>{STATUS_LABELS[record.status]}</Badge>
+                  {record.split ? (
+                    <p className="mt-1 text-xs text-muted-foreground" data-testid="record-split">
+                      {record.split}
+                    </p>
+                  ) : null}
                 </TableCell>
                 <TableCell className="whitespace-normal">{record.comment ?? ""}</TableCell>
                 <TableCell className="whitespace-normal" data-testid="manager-comment">

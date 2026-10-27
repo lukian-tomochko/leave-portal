@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import {
   DecisionDeniedError,
+  type ApprovalSplit,
   type Actor,
   type Decision,
   type DecisionEntry,
@@ -137,11 +138,14 @@ export function createSupabaseDecisionRepository(supabase: SupabaseClient<Databa
       return record ?? null;
     },
 
-    async decide(recordId: string, decision: Decision, comment: string | null) {
+    async decide(recordId: string, decision: Decision, comment: string | null, split?: ApprovalSplit) {
       const { data, error } = await supabase.rpc("decide_leave_record", {
         p_record_id: recordId,
         p_decision: decision,
         p_comment: comment ?? undefined,
+        // Розподіл (AC-BALANCE-10, AC-BALANCE-19): частки дня; без розподілу база отримує null і 0.
+        p_paid_share: split && split.paidCents !== null ? split.paidCents / 100 : undefined,
+        p_unpaid_share: split ? split.unpaidCents / 100 : 0,
       });
       if (error) {
         // 42501 — відмова за правами: «own_record» (власний запис менеджера) або «forbidden» (решта).

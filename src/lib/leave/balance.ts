@@ -7,6 +7,15 @@ import type { LeaveType, Position } from "./types";
 //
 // Усі частки дня рахуємо цілими «сотими дня» (100 = 1.00 день): без похибок плаваючої крапки.
 
+// Доступ до балансу заборонено (AC-BALANCE-12, AC-BALANCE-13): його бачить сам працівник, адміністратор і менеджер хоча б однієї
+// посади працівника. Кидає адаптер, коли функція бази відповіла відмовою за правами.
+export class BalanceDeniedError extends Error {
+  constructor() {
+    super("balance denied");
+    this.name = "BalanceDeniedError";
+  }
+}
+
 export const GRANTED_CENTS = 1800; // 18.00 днів на навчальний рік для "Sick leave" і "Personal leave" (припущення PM)
 
 export type ApprovedRecord = {

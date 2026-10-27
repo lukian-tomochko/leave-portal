@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/", label: "Головна", exact: true, deciders: false },
   { href: "/leave", label: "Мої заявки", exact: false, deciders: false },
   { href: "/leave/new", label: "Нова заявка", exact: true, deciders: false },
+  { href: "/balances", label: "Баланс", exact: false, deciders: false },
   { href: "/decisions", label: "Рішення", exact: false, deciders: true },
 ];
 

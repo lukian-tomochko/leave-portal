@@ -54,3 +54,8 @@ export function formatDuration(minutes: number): string {
   }
   return m === 0 ? `${h} h` : `${h} h ${m} min`;
 }
+
+// Сьогоднішня цивільна дата за Києвом: "2026-10-27" (навчальний рік рахуємо за київською датою).
+export function todayInKyiv(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Kyiv" }).format(now);
+}

@@ -14,6 +14,7 @@ export type LeaveFormState =
   | { status: "error"; message: string }
   | {
       status: "summary";
+      warning: string | null; // попередження про перевищення балансу (AC-BALANCE-08, 15, 17)
       // Введені значення: форма підтвердження відправляє їх знову, а submitLeaveRequest перевіряє все наново.
       values: RequestInput;
       leaveTypeLabel: string;

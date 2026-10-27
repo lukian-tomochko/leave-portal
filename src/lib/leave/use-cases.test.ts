@@ -50,6 +50,7 @@ const view = (id: string, employeeId: string, date: string): LeaveRecordView => 
   positionLabel: "Elementary school / Teacher",
   comment: null,
   managerComment: null,
+  split: null,
 });
 
 describe("My requests: коментар менеджера", () => {

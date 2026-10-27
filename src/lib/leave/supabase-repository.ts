@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { LeaveConflictError, type LeaveRepository, type NewRequest } from "./repository";
+import { splitText } from "./balance";
 import { positionLabel } from "./schedule";
 import { trimSeconds } from "./time";
 import type { LeaveType, Position, PositionKind, RecordStatus, ScheduleBlock } from "./types";
@@ -96,7 +97,7 @@ export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>
     async listRecords(employeeId) {
       const { data: records, error } = await supabase
         .from("leave_records")
-        .select("id, request_id, employee_id, position_id, leave_date, starts_at, ends_at, status")
+        .select("id, request_id, employee_id, position_id, leave_date, starts_at, ends_at, status, paid_share, unpaid_share")
         .eq("employee_id", employeeId)
         .order("leave_date", { ascending: false });
       if (error) {
@@ -174,6 +175,10 @@ export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>
           positionLabel: labelByPosition.get(record.position_id) ?? "—",
           comment: request.comment,
           managerComment: managerCommentByRecord.get(record.id) ?? null,
+          split: splitText(
+            record.paid_share === null ? null : Math.round(Number(record.paid_share) * 100),
+            Math.round(Number(record.unpaid_share) * 100),
+          ),
         };
       });
     },
