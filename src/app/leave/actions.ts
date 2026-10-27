@@ -2,9 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requestWarning } from "@/lib/leave/balance";
 import { parseRequestForm } from "@/lib/leave/form";
 import { LEAVE_TYPE_LABELS, STATUS_LABELS } from "@/lib/leave/messages";
 import { positionLabel } from "@/lib/leave/schedule";
+import { loadBalanceInputs } from "@/lib/leave/supabase-balance-repository";
 import { createSupabaseLeaveRepository } from "@/lib/leave/supabase-repository";
 import { formatDuration } from "@/lib/leave/time";
 import { previewRequest, submitRequest } from "@/lib/leave/use-cases";
@@ -28,12 +30,12 @@ async function authorize() {
   if (!employeeId) {
     redirect("/login");
   }
-  return { employeeId, repository: createSupabaseLeaveRepository(supabase) };
+  return { employeeId, supabase, repository: createSupabaseLeaveRepository(supabase) };
 }
 
 // Крок 1: перевіряє заявку й показує підсумок. Нічого не записує (AC-LEAVE-11).
 export async function previewLeaveRequest(_previous: LeaveFormState, formData: FormData): Promise<LeaveFormState> {
-  const { employeeId, repository } = await authorize();
+  const { employeeId, supabase, repository } = await authorize();
 
   const parsed = parseRequestForm(formData);
   if (!parsed.ok) {
@@ -50,8 +52,28 @@ export async function previewLeaveRequest(_previous: LeaveFormState, formData: F
     return errorState(outcome.code, outcome.message);
   }
 
+  // Попередження, коли заявка "Personal leave" перевищує баланс (AC-BALANCE-08, 15, 17): заявку все одно можна подати.
+  // Баланс лише допомога: якщо його не вдалося прочитати, підсумок показуємо без попередження.
+  let warning: string | null = null;
+  try {
+    const balance = await loadBalanceInputs(supabase, employeeId);
+    warning = requestWarning(
+      balance,
+      outcome.leaveType,
+      outcome.records.map((record) => ({
+        positionId: record.positionId,
+        date: record.date,
+        startsAt: record.startsAt,
+        endsAt: record.endsAt,
+      })),
+    );
+  } catch (error) {
+    console.error("previewLeaveRequest balance failed", error instanceof Error ? error.message : "unknown");
+  }
+
   return {
     status: "summary",
+    warning,
     values: parsed.input,
     leaveTypeLabel: LEAVE_TYPE_LABELS[outcome.leaveType],
     comment: outcome.comment,

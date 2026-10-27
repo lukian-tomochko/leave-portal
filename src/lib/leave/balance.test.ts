@@ -156,7 +156,7 @@ describe("баланси працівника", () => {
     expect(balancesForYear(inputs(records), 2027).personal.used).toBe(1);
   });
 
-  it("частка дня заокруглюється half up: 355 хв із 1000 робочих хвилин дають 0.36 (припущення PM: 0.355 → 0.36)", () => {
+  it("AC-BALANCE-03: частка дня заокруглюється half up: 355 хв із 1000 робочих хвилин дають 0.36 (припущення PM: 0.355 → 0.36)", () => {
     const long: Position = { ...MAIN, blocks: [{ weekday: 2, startsAt: "00:00", endsAt: "16:40" }] }; // 1000 хв
     const record = approved("2026-11-03", "personal", { startsAt: "00:00", endsAt: "05:55" }); // 355 хв
 
@@ -192,7 +192,7 @@ describe("попередження про перевищення балансу"
     expect(warning).toBe("Your Personal leave balance is 1.50 day. Another 1.50 day will be counted as Unpaid leave");
   });
 
-  it("заявка в межах балансу й заявки інших типів не дають попередження", () => {
+  it("AC-BALANCE-08: заявка в межах балансу й заявки інших типів не дають попередження", () => {
     const state = inputs(used("personal", 5));
 
     expect(requestWarning(state, "personal", [WHOLE_DAY("2026-11-03")])).toBeNull();
@@ -265,7 +265,20 @@ describe("схвалення з розподілом", () => {
     expect(balances.personal.remaining).toBe(0);
   });
 
-  it("запис у межах балансу схвалюється без розподілу", () => {
+  it("AC-BALANCE-05: друга посада на ту саму дату рахується приростом частки дня (0.15), узгодженим із підсумком балансу", () => {
+    // Основна посада вже схвалена на цілий день цією датою (0.85 з 495 хв), баланс «Personal leave» вичерпано.
+    const state = inputs([...used("personal", 18), approved("2026-11-02", "personal", { positionId: "main" })], [MAIN, ADDITIONAL]);
+    const extra = { leaveType: "personal" as const, positionId: "additional", date: "2026-11-02", startsAt: "15:45", endsAt: "17:00" };
+
+    expect(suggestSplit(state, extra)).toMatchObject({ paidCents: 0, unpaidCents: 15 });
+    const after = inputs(
+      [...state.records, { ...approved("2026-11-02", "personal", { positionId: "additional", startsAt: "15:45", endsAt: "17:00" }), paidCents: 0, unpaidCents: 15 }],
+      [MAIN, ADDITIONAL],
+    );
+    expect(balancesForYear(after, 2026).unpaid.used).toBe(0.15);
+  });
+
+  it("AC-BALANCE-16: запис у межах балансу схвалюється без розподілу", () => {
     expect(planApproval(inputs(used("personal", 5)), record, false)).toEqual({ ok: true, paidCents: null, unpaidCents: 0 });
     expect(suggestSplit(inputs(used("personal", 5)), record)).toBeNull();
   });

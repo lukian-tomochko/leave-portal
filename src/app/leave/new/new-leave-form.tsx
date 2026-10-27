@@ -266,6 +266,11 @@ export function NewLeaveForm({
           </h2>
           <p className="text-sm text-muted-foreground">Тип: {summary.leaveTypeLabel}</p>
           {summary.comment ? <p className="text-sm">Коментар: {summary.comment}</p> : null}
+          {summary.warning ? (
+            <Alert variant="warning" role="status" data-testid="balance-warning">
+              <AlertDescription>{summary.warning}</AlertDescription>
+            </Alert>
+          ) : null}
           {summary.skippedDates.map((date) => (
             <Alert key={date} variant="warning" role="status">
               <AlertDescription>

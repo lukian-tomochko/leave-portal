@@ -21,9 +21,10 @@ const IDLE: DecisionFormState = { status: "idle" };
 
 // Форма рішення менеджера. Approve і Reject остаточні («Approved» і «Rejected» не скасовуються), тому перед ними
 // діалог підтвердження (рішення розробника, PM: issue #17). «Return for revision» вимагає коментаря й відправляється одразу.
-export function DecisionForm({ recordId }: { recordId: string }) {
+export function DecisionForm({ recordId, splitSuggested }: { recordId: string; splitSuggested: boolean }) {
   const [state, formAction, pending] = useActionState(decideLeaveRecord, IDLE);
-  const [confirm, setConfirm] = useState<"approved" | "rejected" | null>(null);
+  // split: схвалення з розподілом (запис "Personal leave" перевищує баланс, AC-BALANCE-10).
+  const [confirm, setConfirm] = useState<{ decision: "approved" | "rejected"; split: boolean } | null>(null);
 
   return (
     <>
@@ -37,6 +38,7 @@ export function DecisionForm({ recordId }: { recordId: string }) {
         className="flex flex-col gap-3"
       >
         <input type="hidden" name="recordId" value={recordId} />
+        <input type="hidden" name="split" value={confirm?.split ? "1" : "0"} />
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="decision-comment">Comment (required to return for revision)</Label>
           <Textarea id="decision-comment" name="comment" rows={3} />
@@ -47,10 +49,25 @@ export function DecisionForm({ recordId }: { recordId: string }) {
           </Alert>
         ) : null}
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={pending} onClick={() => setConfirm("approved")}>
+          {splitSuggested ? (
+            <Button type="button" disabled={pending} onClick={() => setConfirm({ decision: "approved", split: true })}>
+              Approve with the suggested split
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant={splitSuggested ? "outline" : "default"}
+            disabled={pending}
+            onClick={() => setConfirm({ decision: "approved", split: false })}
+          >
             Approve
           </Button>
-          <Button type="button" variant="destructive" disabled={pending} onClick={() => setConfirm("rejected")}>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={pending}
+            onClick={() => setConfirm({ decision: "rejected", split: false })}
+          >
             Reject
           </Button>
           <Button type="submit" name="decision" value="returned_for_revision" variant="outline" disabled={pending}>
@@ -62,7 +79,7 @@ export function DecisionForm({ recordId }: { recordId: string }) {
       <Dialog open={confirm !== null} onOpenChange={(open) => (open ? undefined : setConfirm(null))}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{confirm === "approved" ? "Approve this record?" : "Reject this record?"}</DialogTitle>
+            <DialogTitle>{confirm?.decision === "rejected" ? "Reject this record?" : "Approve this record?"}</DialogTitle>
             <DialogDescription>
               This decision is final: an approved or rejected record cannot be changed back.
             </DialogDescription>
@@ -73,8 +90,8 @@ export function DecisionForm({ recordId }: { recordId: string }) {
               type="submit"
               form="decision-form"
               name="decision"
-              value={confirm ?? ""}
-              variant={confirm === "rejected" ? "destructive" : "default"}
+              value={confirm?.decision ?? ""}
+              variant={confirm?.decision === "rejected" ? "destructive" : "default"}
               disabled={pending}
             >
               Confirm

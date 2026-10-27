@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { NOT_ALLOWED, decideRecord, isDecider, isDecision, isRecordId } from "@/lib/leave/decision";
+import { decideWithBalance } from "@/lib/leave/decide-balance";
+import { NOT_ALLOWED, isDecider, isDecision, isRecordId } from "@/lib/leave/decision";
+import { loadBalanceInputs } from "@/lib/leave/supabase-balance-repository";
 import { createSupabaseDecisionRepository, loadActor } from "@/lib/leave/supabase-decision-repository";
 import { createClient } from "@/lib/supabase/server";
 import type { DecisionFormState } from "./state";
@@ -38,11 +40,15 @@ export async function decideLeaveRecord(_previous: DecisionFormState, formData: 
       return { status: "error", message: TECHNICAL_ERROR };
     }
 
-    outcome = await decideRecord(
+    // Схвалення "Personal leave" понад баланс можливе лише з розподілом (AC-BALANCE-16, AC-BALANCE-10).
+    outcome = await decideWithBalance(
       createSupabaseDecisionRepository(supabase),
+      (employeeId) => loadBalanceInputs(supabase, employeeId),
+      actor,
       recordId,
       decision,
       typeof comment === "string" ? comment : undefined,
+      formData.get("split") === "1",
     );
   } catch (error) {
     // Адаптери формують повідомлення лише з назви операції й коду Supabase, тож message не містить даних користувача.

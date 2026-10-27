@@ -78,25 +78,25 @@
 | AC-DECIDE-22 | Зміна годин із перетином | `src/lib/leave/employee-record.ts` (changeHours, cancelRecord), `src/app/records/[id]/actions.ts`, `src/app/records/[id]/employee-actions.tsx`, `supabase/migrations/20261021041722_leave_no_overlap.sql` | `src/lib/leave/employee-record.test.ts` | реалізовано |
 | AC-DECIDE-23 | Відхилення з коментарем | `src/lib/leave/supabase-repository.ts` (listRecords: managerComment), `src/app/leave/page.tsx`, `supabase/migrations/20261025090000_leave_decisions.sql` (leave_decisions_select) | `tests/db/leave-decision.test.ts` | реалізовано |
 | AC-DECIDE-24 | Погодження з коментарем | `src/lib/leave/supabase-repository.ts` (listRecords: managerComment), `src/app/leave/page.tsx`, `supabase/migrations/20261025090000_leave_decisions.sql` (leave_decisions_select) | `src/lib/leave/use-cases.test.ts` | реалізовано |
-| AC-BALANCE-01 | Початкові баланси | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-02 | Погоджений цілий день | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-03 | Частина дня | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-05 | Дві посади в одну дату | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-06 | Цілий день лише додаткової посади | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-04 | Запис на розгляді не зменшує баланс | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-07 | Відхилений запис не зменшує баланс | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-08 | Перевищення залишку на цілий день | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-15 | Перевищення залишку частиною дня | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-17 | Одне попередження для заявки на кілька дат | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-09 | Попередження менеджеру | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-14 | Залишок після попереднього погодження | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-10 | Погодження із запропонованим розподілом | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-18 | Запис із розподілом лишається одним | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-19 | Розподіл при нульовому залишку | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-16 | Спроба погодити без розподілу | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-11 | Перенесення залишку Sick leave | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-12 | Менеджер без посад працівника | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-13 | Працівник не бачить чужих балансів | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-20 | Менеджер додаткової посади бачить повний баланс | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-21 | Пізнє погодження за минулий рік | — | — | відкладено (чекає реалізації) |
-| AC-BALANCE-22 | Заявка на два навчальні роки | — | — | відкладено (чекає реалізації) |
+| AC-BALANCE-01 | Початкові баланси | `src/lib/leave/balance.ts` (balancesForYear), `src/app/balances/page.tsx`, `src/app/balances/balance-view.tsx` | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-02 | Погоджений цілий день | `src/lib/leave/balance.ts` (recordMinutes, usageByYear) | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-03 | Частина дня | `src/lib/leave/balance.ts` (recordMinutes, usageByYear) | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-05 | Дві посади в одну дату | `src/lib/leave/balance.ts` (usageByYear) | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-06 | Цілий день лише додаткової посади | `src/lib/leave/balance.ts` (usageByYear) | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-04 | Запис на розгляді не зменшує баланс | `supabase/migrations/20261027090000_leave_balance.sql` (employee_balance_inputs: лише схвалені) | `tests/db/leave-balance.test.ts` | реалізовано |
+| AC-BALANCE-07 | Відхилений запис не зменшує баланс | `supabase/migrations/20261027090000_leave_balance.sql` (employee_balance_inputs), `src/lib/leave/decide-balance.ts` | `src/lib/leave/decide-balance.test.ts`, `tests/db/leave-balance.test.ts` | реалізовано |
+| AC-BALANCE-08 | Перевищення залишку на цілий день | `src/lib/leave/balance.ts` (requestWarning), `src/app/leave/actions.ts` (previewLeaveRequest), `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-15 | Перевищення залишку частиною дня | `src/lib/leave/balance.ts` (requestWarning), `src/app/leave/actions.ts` (previewLeaveRequest) | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-17 | Одне попередження для заявки на кілька дат | `src/lib/leave/balance.ts` (requestWarning), `src/app/leave/actions.ts` (previewLeaveRequest) | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-09 | Попередження менеджеру | `src/lib/leave/balance.ts` (suggestSplit), `src/app/records/[id]/page.tsx` (balance-warning) | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-14 | Залишок після попереднього погодження | `src/lib/leave/balance.ts` (suggestSplit, balancesOn) | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-10 | Погодження із запропонованим розподілом | `src/lib/leave/decide-balance.ts` (decideWithBalance), `src/app/records/[id]/decision-form.tsx`, `supabase/migrations/20261027090000_leave_balance.sql` (private.decide_leave_record) | `src/lib/leave/decide-balance.test.ts`, `tests/db/leave-balance.test.ts`, `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-18 | Запис із розподілом лишається одним | `src/lib/leave/balance.ts` (splitText), `src/lib/leave/supabase-repository.ts` (listRecords: split), `src/app/leave/page.tsx` | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-19 | Розподіл при нульовому залишку | `src/lib/leave/balance.ts` (planApproval, splitText), `supabase/migrations/20261027090000_leave_balance.sql` | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-16 | Спроба погодити без розподілу | `src/lib/leave/decide-balance.ts` (decideWithBalance), `src/lib/leave/balance.ts` (planApproval) | `src/lib/leave/decide-balance.test.ts`, `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-11 | Перенесення залишку Sick leave | `src/lib/leave/balance.ts` (balancesForYear) | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-12 | Менеджер без посад працівника | `supabase/migrations/20261027090000_leave_balance.sql` (private.employee_balance_inputs), `src/lib/leave/decide-balance.ts` | `src/lib/leave/decide-balance.test.ts`, `tests/db/leave-balance.test.ts` | реалізовано |
+| AC-BALANCE-13 | Працівник не бачить чужих балансів | `supabase/migrations/20261027090000_leave_balance.sql` (private.employee_balance_inputs), `src/app/balances/[id]/page.tsx` | `tests/db/leave-balance.test.ts` | реалізовано |
+| AC-BALANCE-20 | Менеджер додаткової посади бачить повний баланс | `supabase/migrations/20261027090000_leave_balance.sql` (private.employee_balance_inputs), `src/app/balances/page.tsx` | `tests/db/leave-balance.test.ts` | реалізовано |
+| AC-BALANCE-21 | Пізнє погодження за минулий рік | `src/lib/leave/balance.ts` (schoolYearOf, balancesForYear) | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-BALANCE-22 | Заявка на два навчальні роки | `src/lib/leave/balance.ts` (schoolYearOf, usageByYear) | `src/lib/leave/balance.test.ts` | реалізовано |

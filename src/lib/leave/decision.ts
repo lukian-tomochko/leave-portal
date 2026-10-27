@@ -50,6 +50,9 @@ export type DecisionRecord = {
 
 export type DecideResult = { ok: boolean; status: RecordStatus };
 
+// Розподіл при схваленні запису "Personal leave", що перевищує баланс (AC-BALANCE-10, AC-BALANCE-19): частки дня в сотих.
+export type ApprovalSplit = { paidCents: number | null; unpaidCents: number };
+
 // База відмовила за правами: "own_record" — менеджер вирішує власний запис (AC-DECIDE-18); "forbidden" — немає ролі,
 // запис не видно чи менеджер не відповідає за посаду (AC-DECIDE-08, AC-DECIDE-09).
 export class DecisionDeniedError extends Error {
@@ -78,12 +81,16 @@ export interface DecisionRepository {
   // Один запис, якщо користувач його бачить (під RLS), інакше null.
   getRecord(actor: Actor, recordId: string): Promise<DecisionRecord | null>;
   // Рішення однією функцією бази; кидає DecisionDeniedError, коли база відмовила за правами.
-  decide(recordId: string, decision: Decision, comment: string | null): Promise<DecideResult>;
+  decide(recordId: string, decision: Decision, comment: string | null, split?: ApprovalSplit): Promise<DecideResult>;
 }
 
 export type DecideOutcome =
   | { ok: true; status: RecordStatus }
-  | { ok: false; code: "COMMENT_REQUIRED" | "ALREADY_DECIDED" | "OWN_RECORD" | "FORBIDDEN"; message: string };
+  | {
+      ok: false;
+      code: "COMMENT_REQUIRED" | "ALREADY_DECIDED" | "OWN_RECORD" | "FORBIDDEN" | "SPLIT_REQUIRED";
+      message: string;
+    };
 
 // Нейтральна фраза для випадків, де PM тексту не дав (скасований запис, відмова за правами): нових правил не вигадуємо.
 export const NOT_ALLOWED = "Недостатньо прав або запис змінився. Оновіть сторінку.";
@@ -162,6 +169,7 @@ export async function decideRecord(
   recordId: string,
   decision: Decision,
   comment?: string,
+  split?: ApprovalSplit,
 ): Promise<DecideOutcome> {
   const text = comment?.trim() ? comment.trim() : null;
   if (decision === "returned_for_revision" && text === null) {
@@ -170,7 +178,7 @@ export async function decideRecord(
 
   let result: DecideResult;
   try {
-    result = await repository.decide(recordId, decision, text);
+    result = await repository.decide(recordId, decision, text, split);
   } catch (error) {
     if (error instanceof DecisionDeniedError) {
       return error.reason === "own_record"

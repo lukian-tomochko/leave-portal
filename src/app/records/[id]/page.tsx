@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BalanceDeniedError, type SplitSuggestion, suggestSplit } from "@/lib/leave/balance";
 import { formatDecisionLine, getRecord, isDecider, isRecordId } from "@/lib/leave/decision";
 import { LEAVE_TYPE_LABELS, STATUS_LABELS } from "@/lib/leave/messages";
+import { loadBalanceInputs } from "@/lib/leave/supabase-balance-repository";
 import { createSupabaseDecisionRepository, loadActor } from "@/lib/leave/supabase-decision-repository";
 import type { RecordStatus } from "@/lib/leave/types";
 import { createClient } from "@/lib/supabase/server";
@@ -44,6 +47,27 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
   }
 
   const canDecide = isDecider(actor.role) && record.status === "awaiting_decision";
+  // Попередження менеджеру й підказка розподілу, коли запис "Personal leave" перевищує баланс (AC-BALANCE-09, AC-BALANCE-14).
+  let suggestion: SplitSuggestion | null = null;
+  // Лише для запису, що чекає рішення: схвалений запис уже входить у вхідні дані балансу й порахувався б двічі.
+  if (canDecide && record.leaveType === "personal" && record.status === "awaiting_decision") {
+    try {
+      const inputs = await loadBalanceInputs(supabase, record.employeeId);
+      suggestion = suggestSplit(inputs, {
+        leaveType: record.leaveType,
+        positionId: record.positionId,
+        date: record.date,
+        startsAt: record.startsAt,
+        endsAt: record.endsAt,
+      });
+    } catch (error) {
+      // Баланс бачать лише ті, хто має на це право: без нього рішення можливе, але без підказки.
+      if (!(error instanceof BalanceDeniedError)) {
+        throw error;
+      }
+    }
+  }
+
   // Власник змінює лише години й скасовує, поки запис чекає рішення чи повернутий на доопрацювання (AC-DECIDE-06, 13, 16).
   const canEdit =
     record.employeeId === actor.id && (record.status === "awaiting_decision" || record.status === "returned_for_revision");
@@ -118,7 +142,12 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
           <h2 id="decide-title" className="text-lg font-semibold">
             Decision
           </h2>
-          <DecisionForm recordId={record.id} />
+          {suggestion ? (
+            <Alert variant="warning" data-testid="balance-warning">
+              <AlertDescription>{suggestion.message}</AlertDescription>
+            </Alert>
+          ) : null}
+          <DecisionForm recordId={record.id} splitSuggested={suggestion !== null} />
         </section>
       ) : null}
     </main>

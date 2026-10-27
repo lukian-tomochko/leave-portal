@@ -119,7 +119,7 @@ it("AC-BALANCE-10: схвалення з розподілом зберігає �
   expect(Number(stored?.unpaid_share)).toBe(0.5);
 });
 
-it("розподіл можливий лише при схваленні й у межах одного дня, дані не змінюються", async () => {
+it("AC-BALANCE-19: розподіл можливий лише при схваленні й у межах одного дня, дані не змінюються", async () => {
   const record = await makeRecord("teacher1", POSITION_T1_MAIN, "personal");
 
   await expect(decide("manager1", record, "rejected", null, 0.5, 0.5)).rejects.toThrow(/invalid split/);

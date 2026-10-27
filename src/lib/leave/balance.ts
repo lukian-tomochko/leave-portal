@@ -7,6 +7,15 @@ import type { LeaveType, Position } from "./types";
 //
 // Усі частки дня рахуємо цілими «сотими дня» (100 = 1.00 день): без похибок плаваючої крапки.
 
+// Доступ до балансу заборонено (AC-BALANCE-12, AC-BALANCE-13): його бачить сам працівник, адміністратор і менеджер хоча б однієї
+// посади працівника. Кидає адаптер, коли функція бази відповіла відмовою за правами.
+export class BalanceDeniedError extends Error {
+  constructor() {
+    super("balance denied");
+    this.name = "BalanceDeniedError";
+  }
+}
+
 export const GRANTED_CENTS = 1800; // 18.00 днів на навчальний рік для "Sick leave" і "Personal leave" (припущення PM)
 
 export type ApprovedRecord = {
@@ -173,10 +182,20 @@ function requestOverBalance(inputs: BalanceInputs, planned: PlannedHours[]) {
   for (const item of planned) {
     minutesByDate.set(item.date, (minutesByDate.get(item.date) ?? 0) + recordMinutes(positionById.get(item.positionId), item));
   }
+  // Приріст частки дня: частка (схвалені + запит) мінус частка схвалених того ж дня, бо частка дня не перевищує 1.00 (AC-BALANCE-05).
+  const approvedMinutes = (date: string) =>
+    inputs.records
+      .filter((item) => item.date === date && item.leaveType === "personal")
+      .reduce((sum, item) => sum + recordMinutes(positionById.get(item.positionId), item), 0);
   const requestedByYear = new Map<number, number>();
+  let totalRequested = 0;
   for (const [date, minutes] of minutesByDate) {
     const year = schoolYearOf(date);
-    requestedByYear.set(year, (requestedByYear.get(year) ?? 0) + shareCents(minutes, workingMinutes(inputs.positions, date)));
+    const working = workingMinutes(inputs.positions, date);
+    const before = approvedMinutes(date);
+    const increment = shareCents(before + minutes, working) - shareCents(before, working);
+    totalRequested += increment;
+    requestedByYear.set(year, (requestedByYear.get(year) ?? 0) + increment);
   }
 
   let remaining = 0;
@@ -186,7 +205,7 @@ function requestOverBalance(inputs: BalanceInputs, planned: PlannedHours[]) {
     remaining += Math.max(0, left);
     excess += Math.max(0, requested - Math.max(0, left));
   }
-  return { remaining, excess };
+  return { remaining, excess, requested: totalRequested };
 }
 
 // Попередження працівнику, коли заявка "Personal leave" перевищує баланс (AC-BALANCE-08, AC-BALANCE-15, AC-BALANCE-17).
@@ -212,22 +231,17 @@ export function suggestSplit(inputs: BalanceInputs, record: RecordForDecision): 
   if (record.leaveType !== "personal") {
     return null;
   }
-  const { remaining, excess } = requestOverBalance(inputs, [record]);
+  const { remaining, excess, requested } = requestOverBalance(inputs, [record]);
   if (excess <= 0) {
     return null;
   }
-  const paidCents = shareOfRecord(inputs, record) - excess;
+  const paidCents = requested - excess;
   return {
     paidCents,
     unpaidCents: excess,
     remainingCents: remaining,
     message: `This request exceeds the Personal leave balance (${formatDays(remaining)} day). Suggested: ${formatDays(paidCents)} day Personal leave, ${formatDays(excess)} day Unpaid leave`,
   };
-}
-
-function shareOfRecord(inputs: BalanceInputs, record: RecordForDecision): number {
-  const position = inputs.positions.find((item) => item.id === record.positionId);
-  return shareCents(recordMinutes(position, record), workingMinutes(inputs.positions, record.date));
 }
 
 // «The Personal leave balance is 0.50 day: approve with the suggested split or reject» (AC-BALANCE-16).

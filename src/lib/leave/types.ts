@@ -118,4 +118,6 @@ export type LeaveRecordView = {
   comment: string | null;
   // Коментар менеджера з останнього рішення, де він був (AC-DECIDE-05, AC-DECIDE-23, AC-DECIDE-24).
   managerComment: string | null;
+  // Розподіл схваленого запису: "0.50 Personal leave + 0.50 Unpaid leave" (AC-BALANCE-18, AC-BALANCE-19); без розподілу null.
+  split: string | null;
 };
