@@ -181,6 +181,8 @@ export type Database = {
           ends_at: string;
           status: string;
           created_at: string;
+          paid_share: number | null;
+          unpaid_share: number;
         };
         Insert: {
           id?: string;
@@ -192,6 +194,8 @@ export type Database = {
           ends_at: string;
           status?: string;
           created_at?: string;
+          paid_share?: number | null;
+          unpaid_share?: number;
         };
         Update: {
           id?: string;
@@ -203,6 +207,8 @@ export type Database = {
           ends_at?: string;
           status?: string;
           created_at?: string;
+          paid_share?: number | null;
+          unpaid_share?: number;
         };
         Relationships: [
           {
@@ -286,6 +292,14 @@ export type Database = {
           p_record_id: string;
           p_decision: string;
           p_comment?: string;
+          p_paid_share?: number;
+          p_unpaid_share?: number;
+        };
+        Returns: Json;
+      };
+      employee_balance_inputs: {
+        Args: {
+          p_employee_id: string;
         };
         Returns: Json;
       };
