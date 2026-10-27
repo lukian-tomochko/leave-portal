@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { NO_WORKING_HOURS } from "@/lib/leave/messages";
+import { dateError as checkDate, positionsError } from "@/lib/leave/form-checks";
 import { RELATIONSHIPS } from "@/lib/leave/types";
-import { weekdayOf } from "@/lib/leave/time";
 import { previewLeaveRequest, submitLeaveRequest } from "../actions";
 import type { LeaveFormState } from "../state";
 
@@ -65,15 +65,9 @@ export function NewLeaveForm({
     return <p role="status" className="text-muted-foreground">У вас немає посад, тож подати заявку не можна. Зверніться до адміністратора.</p>;
   }
 
-  // Дату не приймаємо, якщо жодна з обраних посад не має розкладу в цей день тижня (AC-LEAVE-06).
-  const dateError = (date: string): string | null => {
-    if (!date) {
-      return null;
-    }
-    const weekday = weekdayOf(date);
-    const works = positions.some((position) => selected.includes(position.id) && position.weekdays.includes(weekday));
-    return works ? null : NO_WORKING_HOURS;
-  };
+  // Дату не приймаємо, якщо жодна з обраних посад не має розкладу в цей день тижня (AC-LEAVE-06). Жодної обраної посади —
+  // окреме повідомлення PM при поданні (AC-LEAVE-10), тож біля дати помилки немає. Правила — у form-checks.ts з тестами.
+  const dateError = (date: string): string | null => checkDate(date, positions, selected);
 
   const acceptedDates = dates.filter((date) => date !== "" && dateError(date) === null);
   const isFamily = leaveType === "family";
@@ -90,6 +84,11 @@ export function NewLeaveForm({
 
   const onPreview = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const noPositions = positionsError(selected);
+    if (noPositions) {
+      setLocalError(noPositions);
+      return;
+    }
     if (acceptedDates.length === 0) {
       setLocalError(dates.map(dateError).find((message) => message !== null) ?? "Оберіть хоча б одну дату.");
       return;
