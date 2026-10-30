@@ -17,7 +17,8 @@
     "users:demo": "node --env-file=.env.local scripts/create-demo-users.mjs",
     "check:design": "node scripts/check-design-tokens.mjs",
     "check:boundary": "node scripts/check-server-boundary.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "accounts:zip": "node scripts/zip-accounts.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -39,6 +40,7 @@
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@zip.js/zip.js": "2.24.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "supabase": "2.120.0",
