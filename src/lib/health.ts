@@ -14,6 +14,11 @@ export type DbHealth = { db: "ok" | "down"; reason: string };
 export function classifyDbProbe({ status, error }: DbProbe): DbHealth {
   if (status === SUPABASE_PAUSED) return { db: "down", reason: "paused" };
   const code = error?.code ?? "";
+  // Збій сервера (0 — мережа, 5xx) — не «база відповіла», навіть коли в тілі є SQLSTATE чи код PostgREST:
+  // 503 з 53300 («забагато з'єднань») чи 500 з PGRST300 — база недоступна. Виняток — очікуваний 42501.
+  if ((status === 0 || status >= 500) && code !== "42501") {
+    return { db: "down", reason: `status-${status}${code ? `-${code}` : ""}` };
+  }
   if (!error || SQLSTATE.test(code) || (code.startsWith("PGRST") && !PGRST_DB_DOWN.test(code))) {
     return { db: "ok", reason: "" };
   }
