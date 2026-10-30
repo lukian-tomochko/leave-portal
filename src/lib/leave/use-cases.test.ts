@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { LeaveConflictError, type LeaveRepository, type NewRequest } from "./repository";
 import type { ExistingRecord, LeaveRecordView, Position } from "./types";
 import { listMyRecords, previewRequest, submitRequest } from "./use-cases";
+import { assertOk } from "./test-support";
 
 const MAIN: Position = {
   id: "main",
@@ -122,9 +123,8 @@ describe("сценарії над репозиторієм", () => {
     const outcome = await previewRequest(repository, "employee-1", TWO_DATES);
 
     expect(outcome.ok).toBe(true);
-    if (outcome.ok) {
-      expect(outcome.records).toHaveLength(2);
-    }
+    const previewed = assertOk(outcome);
+    expect(previewed.records).toHaveLength(2);
     expect(created).toHaveLength(0);
   });
 

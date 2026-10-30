@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { STATUS_LABELS } from "./messages";
 import { planRequest } from "./request";
 import type { Position } from "./types";
+import { assertOk } from "./test-support";
 
 // Дані з прикладів PM (requirements/01-leave-request.md): основна посада "Elementary school / Teacher",
 // розклад Mon–Fri 08:30–15:30. 2026-11-02 — понеділок.
@@ -32,9 +33,8 @@ describe("planRequest: цілий день", () => {
       ],
       skippedDates: [],
     });
-    if (result.ok) {
-      expect(STATUS_LABELS[result.records[0].status]).toBe("Awaiting decision");
-    }
+    const planned = assertOk(result);
+    expect(STATUS_LABELS[planned.records[0].status]).toBe("Awaiting decision");
   });
 
   it("не створює жодного запису, коли посада не з контексту працівника", () => {

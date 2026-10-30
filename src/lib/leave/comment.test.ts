@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { planRequest } from "./request";
 import type { Position } from "./types";
+import { assertOk } from "./test-support";
 
 // Посади з AC-LEAVE-02: основна (пн–пт 08:30–15:30) і додаткова (пн 15:45–17:00). 2026-11-02 — понеділок.
 const MAIN: Position = {
@@ -66,20 +67,18 @@ describe("коментар до заявки", () => {
     );
 
     expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.records).toHaveLength(2);
-      expect(result.records.map((record) => record.comment)).toEqual(["Doctor's appointment", "Doctor's appointment"]);
-    }
+    const planned = assertOk(result);
+    expect(planned.records).toHaveLength(2);
+    expect(planned.records.map((record) => record.comment)).toEqual(["Doctor's appointment", "Doctor's appointment"]);
   });
 
   it("без коментаря записи не мають його", () => {
     const result = planRequest({ leaveType: "sick", dates: ["2026-11-02"], positionIds: ["main"] }, CONTEXT);
 
     expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.comment).toBeUndefined();
-      expect(result.records[0].comment).toBeUndefined();
-    }
+    const planned = assertOk(result);
+    expect(planned.comment).toBeUndefined();
+    expect(planned.records[0].comment).toBeUndefined();
   });
 
   it("AC-LEAVE-18: коментар із 501 символу відхиляється повідомленням PM і без записів", () => {
