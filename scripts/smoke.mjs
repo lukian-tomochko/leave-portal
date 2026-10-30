@@ -25,7 +25,14 @@ const get = async (path) => {
       text: await r.text(),
     };
   } catch (e) {
-    return { status: 0, location: "", vercelError: "", text: String(e.cause?.code ?? e) };
+    const code = e?.cause?.code;
+    const text =
+      e?.name === "TimeoutError"
+        ? "таймаут запиту після 15 секунд"
+        : code
+          ? `мережевий код ${code}`
+          : "мережевий запит не виконано";
+    return { status: 0, location: "", vercelError: "", text };
   }
 };
 const vercelWall = (r) =>
