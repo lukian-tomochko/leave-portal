@@ -30,4 +30,15 @@ describe("classifyDbProbe (/api/health)", () => {
     });
     expect(classifyDbProbe({ status: 0, error: { message: "fetch failed" } })).toEqual({ db: "down", reason: "status-0" });
   });
+
+  it("не рахує базу живою, коли сервер відповів помилкою 5xx із SQLSTATE чи кодом PostgREST", () => {
+    expect(classifyDbProbe({ status: 503, error: { code: "53300", message: "too many connections" } })).toEqual({
+      db: "down",
+      reason: "status-503-53300",
+    });
+    expect(classifyDbProbe({ status: 500, error: { code: "PGRST300", message: "JWT secret missing" } })).toEqual({
+      db: "down",
+      reason: "status-500-PGRST300",
+    });
+  });
 });
