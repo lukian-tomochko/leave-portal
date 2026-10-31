@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { planRequest } from "./request";
 import { formatDuration } from "./time";
 import type { Position, RequestInput } from "./types";
+import { expectOk } from "../../../tests/support/expect-ok";
 
 // Дати з прикладів PM: 2026-11-02 — понеділок, 2026-11-03 — вівторок, 2026-11-07 — субота.
 const position = (id: string, blocks: Position["blocks"]): Position => ({
@@ -38,12 +39,10 @@ describe("години в межах розкладу", () => {
   it("AC-LEAVE-04: години 09:00–11:30 дають 1 запис тривалістю 2 h 30 min", () => {
     const result = planRequest(request(FULL_WEEK, "2026-11-02", "09:00", "11:30"), { positions: [FULL_WEEK] });
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.records).toHaveLength(1);
-      expect(result.records[0]).toMatchObject({ date: "2026-11-02", startsAt: "09:00", endsAt: "11:30", minutes: 150 });
-      expect(formatDuration(result.records[0].minutes)).toBe("2 h 30 min");
-    }
+    const resultOk = expectOk(result);
+    expect(resultOk.records).toHaveLength(1);
+    expect(resultOk.records[0]).toMatchObject({ date: "2026-11-02", startsAt: "09:00", endsAt: "11:30", minutes: 150 });
+    expect(formatDuration(resultOk.records[0].minutes)).toBe("2 h 30 min");
   });
 
   it("AC-LEAVE-06: дата без робочих годин (субота) не приймається з повідомленням PM", () => {
@@ -84,12 +83,10 @@ describe("години в межах розкладу", () => {
   it("AC-LEAVE-15: заявка через проміжок між блоками рахує лише хвилини в блоках (1 h 30 min)", () => {
     const result = planRequest(request(TUESDAY_GAP, "2026-11-03", "11:00", "13:00"), { positions: [TUESDAY_GAP] });
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.records).toHaveLength(1);
-      expect(result.records[0]).toMatchObject({ date: "2026-11-03", startsAt: "11:00", endsAt: "13:00", minutes: 90 });
-      expect(formatDuration(result.records[0].minutes)).toBe("1 h 30 min");
-    }
+    const resultOk = expectOk(result);
+    expect(resultOk.records).toHaveLength(1);
+    expect(resultOk.records[0]).toMatchObject({ date: "2026-11-03", startsAt: "11:00", endsAt: "13:00", minutes: 90 });
+    expect(formatDuration(resultOk.records[0].minutes)).toBe("1 h 30 min");
   });
 
   it("AC-LEAVE-19: повідомлення про години поза розкладом перелічує всі блоки дня", () => {
