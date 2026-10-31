@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { planRequest } from "./request";
 import type { ExistingRecord, Position } from "./types";
+import { expectOk } from "../../../tests/support/expect-ok";
 
 // Дані з прикладів PM (requirements/01-leave-request.md). 2026-11-02 — понеділок, 2026-11-03 — вівторок.
 const MAIN: Position = {
@@ -33,33 +34,27 @@ describe("заявка на кілька посад і дат", () => {
   it("AC-LEAVE-02: цілий день на двох посадах створює 2 записи в одній заявці", () => {
     const result = planRequest({ leaveType: "sick", dates: ["2026-11-02"], positionIds: ["main", "additional"] }, { positions: POSITIONS });
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.records.map((r) => [r.positionId, r.startsAt, r.endsAt, r.status])).toEqual([
-        ["main", "08:30", "15:30", "awaiting_decision"],
-        ["additional", "15:45", "17:00", "awaiting_decision"],
-      ]);
-    }
+    const resultOk = expectOk(result);
+    expect(resultOk.records.map((r) => [r.positionId, r.startsAt, r.endsAt, r.status])).toEqual([
+      ["main", "08:30", "15:30", "awaiting_decision"],
+      ["additional", "15:45", "17:00", "awaiting_decision"],
+    ]);
   });
 
   it("AC-LEAVE-03: виключена додаткова посада не дає запису", () => {
     const result = planRequest({ leaveType: "sick", dates: ["2026-11-02"], positionIds: ["main"] }, { positions: POSITIONS });
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.records).toHaveLength(1);
-      expect(result.records[0].positionId).toBe("main");
-      expect(result.records.some((r) => r.positionId === "additional")).toBe(false);
-    }
+    const resultOk = expectOk(result);
+    expect(resultOk.records).toHaveLength(1);
+    expect(resultOk.records[0].positionId).toBe("main");
+    expect(resultOk.records.some((r) => r.positionId === "additional")).toBe(false);
   });
 
   it("дві дати дають 2 записи (по одному на дату) в одному результаті планування", () => {
     const result = planRequest({ leaveType: "sick", dates: ["2026-11-02", "2026-11-03"], positionIds: ["main"] }, { positions: POSITIONS });
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.records.map((r) => r.date)).toEqual(["2026-11-02", "2026-11-03"]);
-    }
+    const resultOk = expectOk(result);
+    expect(resultOk.records.map((r) => r.date)).toEqual(["2026-11-02", "2026-11-03"]);
   });
 
   it("AC-LEAVE-10: жодної посади — повідомлення PM і жодного запису", () => {
@@ -72,10 +67,8 @@ describe("заявка на кілька посад і дат", () => {
     // Вівторок: додаткова посада не працює, основна працює.
     const result = planRequest({ leaveType: "sick", dates: ["2026-11-03"], positionIds: ["main", "additional"] }, { positions: POSITIONS });
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.records.map((r) => r.positionId)).toEqual(["main"]);
-    }
+    const resultOk = expectOk(result);
+    expect(resultOk.records.map((r) => r.positionId)).toEqual(["main"]);
   });
 
   it("AC-LEAVE-21: субота без годин не приймається з повідомленням, а п'ятниця лишається в заявці", () => {
@@ -85,11 +78,9 @@ describe("заявка на кілька посад і дат", () => {
       { positions: POSITIONS },
     );
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.records.map((r) => r.date)).toEqual(["2026-11-06"]);
-      expect(result.skippedDates).toEqual(["2026-11-07"]);
-    }
+    const resultOk = expectOk(result);
+    expect(resultOk.records.map((r) => r.date)).toEqual(["2026-11-06"]);
+    expect(resultOk.skippedDates).toEqual(["2026-11-07"]);
   });
 
   it("усі обрані дати без годин — заявки немає й повідомлення «No working hours»", () => {
