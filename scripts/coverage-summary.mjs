@@ -16,7 +16,13 @@ const LAYERS = [
 const layerIndex = (file) => LAYERS.findIndex((l) => l.test.test(file));
 const pct = (m) => (m.total === 0 ? "—" : `${Math.floor(m.pct)} %`);
 
-const summary = JSON.parse(readFileSync(process.argv[2] ?? "coverage/coverage-summary.json", "utf8"));
+let summary;
+try {
+  summary = JSON.parse(readFileSync(process.argv[2] ?? "coverage/coverage-summary.json", "utf8"));
+} catch {
+  console.error("Не вдалося прочитати звіт покриття. Спочатку виконайте npm run test:coverage.");
+  process.exit(1);
+}
 const rows = Object.entries(summary)
   .filter(([file]) => file !== "total")
   .map(([file, m]) => ({ file: path.relative(process.cwd(), file).replaceAll("\\", "/"), layer: layerIndex(file), m }))

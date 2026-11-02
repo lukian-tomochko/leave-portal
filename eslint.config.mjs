@@ -8,7 +8,7 @@ import nextTs from "eslint-config-next/typescript";
 import vitest from "@vitest/eslint-plugin";
 import playwright from "eslint-plugin-playwright";
 
-// AC ID, як його читає ac:coverage (scripts/lib/spec-lib.mjs): лише на початку назви тесту.
+// AC ID, як його читає ac:coverage (scripts/lib/spec-lib.mjs): AC-<2–12 великих літер>-<2 цифри>, без «-»/літери одразу після, лише на початку назви.
 const AC = String.raw`AC-[A-Z]+-\d+`;
 // Власні модулі, які не мокаємо: src/lib/** (крім адаптерів src/lib/supabase/**) і src/app/** — через аліас
 // (@/lib/…, @/app/…) або відносним шляхом (../../src/lib/…). У регулярному виразі esquery не може бути «/», тому
@@ -54,6 +54,12 @@ const eslintConfig = defineConfig([
           // vi.mock(import("@/lib/…")) — та сама заборона для форми з import().
           selector: `CallExpression[callee.object.name='vi'][callee.property.name=/^(mock|doMock)$/][arguments.0.source.value=${OWN_MODULE}]`,
           message: NO_OWN_MOCK,
+        },
+        {
+          // it.runIf(false)(…) і it.skipIf(true)(…) обходять vitest/no-disabled-tests (він бачить лише .skip), а ac:coverage
+          // рахує .runIf як покриття, хоча Vitest тіла не виконає.
+          selector: "CallExpression[callee.property.name=/^(runIf|skipIf)$/]",
+          message: "Не реєструйте тести умовно (runIf/skipIf): такий тест може не виконатись, а AC лишиться «покритим».",
         },
       ],
     },
