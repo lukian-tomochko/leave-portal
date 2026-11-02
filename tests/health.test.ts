@@ -31,6 +31,16 @@ describe("classifyDbProbe (/api/health)", () => {
     expect(classifyDbProbe({ status: 0, error: { message: "fetch failed" } })).toEqual({ db: "down", reason: "status-0" });
   });
 
+  it("лишає 42501 живою базою навіть зі статусом 5xx, а нерозпізнану відповідь 4xx рахує недоступною з кодом", () => {
+    expect(classifyDbProbe({ status: 500, error: { code: "42501", message: "permission denied" } })).toEqual({ db: "ok", reason: "" });
+    expect(classifyDbProbe({ status: 404, error: { code: "x", message: "not found" } })).toEqual({
+      db: "down",
+      reason: "status-404-x",
+    });
+    expect(classifyDbProbe({ status: 404, error: { code: "x" } })).toEqual({ db: "down", reason: "status-404-x" });
+    expect(classifyDbProbe({ status: 404, error: {} })).toEqual({ db: "down", reason: "status-404" });
+  });
+
   it("не рахує базу живою, коли сервер відповів помилкою 5xx із SQLSTATE чи кодом PostgREST", () => {
     expect(classifyDbProbe({ status: 503, error: { code: "53300", message: "too many connections" } })).toEqual({
       db: "down",
