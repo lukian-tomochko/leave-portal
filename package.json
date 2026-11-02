@@ -18,7 +18,10 @@
     "check:design": "node scripts/check-design-tokens.mjs",
     "check:boundary": "node scripts/check-server-boundary.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "accounts:zip": "node scripts/zip-accounts.mjs"
+    "accounts:zip": "node scripts/zip-accounts.mjs",
+    "gates": "npm run lint && npm run typecheck && fallow audit --base origin/main",
+    "test:coverage": "vitest run --config vitest.coverage.config.mts --coverage",
+    "coverage:summary": "node scripts/coverage-summary.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -40,9 +43,13 @@
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "5.0.3",
+    "@vitest/eslint-plugin": "1.6.27",
     "@zip.js/zip.js": "2.24.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "eslint-plugin-playwright": "2.12.1",
+    "fallow": "3.35.0",
     "supabase": "2.120.0",
     "tailwindcss": "^4",
     "typescript": "^5",
