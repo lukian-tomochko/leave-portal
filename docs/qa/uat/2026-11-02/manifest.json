@@ -1,0 +1,85 @@
+{
+  "kind": "uat",
+  "generatedAt": "2026-11-02T11:08:56.821Z",
+  "baseURL": "https://leave-portal-blush.vercel.app",
+  "deployedSha": "2336860b26d557094431e6bc650258bc42674d79",
+  "testsCommit": "76cc1cf042dbfa15b0fde27f04e63a60b73dea19",
+  "reviewer": {
+    "model": "claude-haiku-5-5",
+    "disputes": "claude-sonnet-5-5"
+  },
+  "note": "Відео й траси не в git (test-results/ локально, артефакт CI). check-recordings конвеєра WS9 вимагає відео на диску — для нього цей manifest треба доповнити.",
+  "results": [
+    {
+      "id": "AC-BALANCE-01",
+      "proof": "AC-BALANCE-01",
+      "title": "AC-BALANCE-01: працівник без погоджених записів і перенесених днів бачить початкові баланси",
+      "screenshot": "docs/qa/uat/2026-11-02/frames/AC-BALANCE-01-then-1.png",
+      "video": "test-results/artifacts/balances-власний-баланс-AC-d238d-ів-бачить-початкові-баланси-chromium/video.webm",
+      "trace": "test-results/artifacts/balances-власний-баланс-AC-d238d-ів-бачить-початкові-баланси-chromium/trace.zip",
+      "asserted": true,
+      "vision": null,
+      "agentModel": "claude-sonnet-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": null,
+        "claude-sonnet-5-5": null
+      },
+      "escalated": true,
+      "quotesVerified": [],
+      "verdict": "NEEDS-HUMAN",
+      "factoryGate": "NOT-EARNED",
+      "rule": "R2: немає вердикту агента або кадру",
+      "playwrightMs": 4452,
+      "reviewCostUsd": 0,
+      "reviewWallMs": 87
+    },
+    {
+      "id": "AC-BALANCE-13",
+      "proof": "AC-BALANCE-13",
+      "title": "AC-BALANCE-13: працівник не бачить балансів іншого працівника",
+      "screenshot": "docs/qa/uat/2026-11-02/frames/AC-BALANCE-13-then-1.png",
+      "video": "test-results/artifacts/balances-баланс-іншого-пра-3671f--балансів-іншого-працівника-chromium/video.webm",
+      "trace": "test-results/artifacts/balances-баланс-іншого-пра-3671f--балансів-іншого-працівника-chromium/trace.zip",
+      "asserted": true,
+      "vision": null,
+      "agentModel": "claude-sonnet-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": null,
+        "claude-sonnet-5-5": null
+      },
+      "escalated": true,
+      "quotesVerified": [],
+      "verdict": "NEEDS-HUMAN",
+      "factoryGate": "NOT-EARNED",
+      "rule": "R2: немає вердикту агента або кадру",
+      "playwrightMs": 5830,
+      "reviewCostUsd": 0,
+      "reviewWallMs": 58
+    },
+    {
+      "id": "AC-DECIDE-14",
+      "proof": "AC-DECIDE-14",
+      "title": "AC-DECIDE-14: менеджер без записів, що чекають рішення, бачить повідомлення про порожній список",
+      "screenshot": "docs/qa/uat/2026-11-02/frames/AC-DECIDE-14-then-1.png",
+      "video": "test-results/artifacts/decisions-AC-DECIDE-14-мен-0b851-омлення-про-порожній-список-chromium/video.webm",
+      "trace": "test-results/artifacts/decisions-AC-DECIDE-14-мен-0b851-омлення-про-порожній-список-chromium/trace.zip",
+      "asserted": true,
+      "vision": null,
+      "agentModel": "claude-sonnet-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": null,
+        "claude-sonnet-5-5": null
+      },
+      "escalated": true,
+      "quotesVerified": [],
+      "verdict": "NEEDS-HUMAN",
+      "factoryGate": "NOT-EARNED",
+      "rule": "R2: немає вердикту агента або кадру",
+      "playwrightMs": 3792,
+      "reviewCostUsd": 0,
+      "reviewWallMs": 29
+    }
+  ],
+  "negativeControls": [],
+  "cleanup": null
+}
