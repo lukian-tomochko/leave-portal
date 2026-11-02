@@ -244,8 +244,22 @@ describe("рішення менеджера", () => {
 
     expect(outcome.ok).toBe(false);
     expect(outcome.ok === false && outcome.code).toBe("FORBIDDEN");
+    // Відмова не мовчазна: працівник чи менеджер бачить якесь пояснення, а не порожній рядок.
+    expect(outcome.ok === false && outcome.message).toMatch(/\S/);
     expect(records[0].status).toBe("awaiting_decision");
     expect(records[0].entries).toHaveLength(0);
+  });
+
+  it("AC-DECIDE-08: збій бази під час рішення не видається за відмову в правах і не ковтається", async () => {
+    const records = [record({ id: "r1" })];
+    const { repository } = fakeRepository(records, MANAGER1);
+    repository.decide = async () => {
+      throw new Error("connection reset");
+    };
+
+    await expect(decideRecord(repository, "r1", "approved")).rejects.toThrow("connection reset");
+
+    expect(records[0].status).toBe("awaiting_decision");
   });
 
   it("AC-DECIDE-09: працівник без ролі менеджера не вирішує власний запис, статус не змінюється", async () => {
