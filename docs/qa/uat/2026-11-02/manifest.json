@@ -1,9 +1,9 @@
 {
   "kind": "uat",
-  "generatedAt": "2026-11-02T11:08:56.821Z",
+  "generatedAt": "2026-11-02T16:18:03.676Z",
   "baseURL": "https://leave-portal-blush.vercel.app",
-  "deployedSha": "2336860b26d557094431e6bc650258bc42674d79",
-  "testsCommit": "76cc1cf042dbfa15b0fde27f04e63a60b73dea19",
+  "deployedSha": "22b8afe41093855f3666dedf166068dbbac85314",
+  "testsCommit": "22b8afe41093855f3666dedf166068dbbac85314",
   "reviewer": {
     "model": "claude-haiku-5-5",
     "disputes": "claude-sonnet-5-5"
@@ -18,20 +18,105 @@
       "video": "test-results/artifacts/balances-власний-баланс-AC-d238d-ів-бачить-початкові-баланси-chromium/video.webm",
       "trace": "test-results/artifacts/balances-власний-баланс-AC-d238d-ів-бачить-початкові-баланси-chromium/trace.zip",
       "asserted": true,
-      "vision": null,
-      "agentModel": "claude-sonnet-5-5",
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі frame-then-1.png сторінка «Баланс відпусток» (/balances) з таблицею за «Навчальний рік 2026–2027». Рядки Sick leave і Personal leave показують Granted 18.00, Used 0.00, Remaining 18.00; Unpaid leave і Family celebration мають лише Used 0.00, решта клітинок — «—». Кадр повний, читабельний, без завантаження."
+      },
+      "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
-        "claude-haiku-5-5": null,
+        "claude-haiku-5-5": "PASS",
         "claude-sonnet-5-5": null
       },
-      "escalated": true,
-      "quotesVerified": [],
-      "verdict": "NEEDS-HUMAN",
-      "factoryGate": "NOT-EARNED",
-      "rule": "R2: немає вердикту агента або кадру",
-      "playwrightMs": 4452,
-      "reviewCostUsd": 0,
-      "reviewWallMs": 87
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Sick leave",
+          "onPage": true
+        },
+        {
+          "quote": "18.00",
+          "onPage": true
+        },
+        {
+          "quote": "0.00",
+          "onPage": true
+        },
+        {
+          "quote": "0.00",
+          "onPage": true
+        },
+        {
+          "quote": "18.00",
+          "onPage": true
+        },
+        {
+          "quote": "Personal leave",
+          "onPage": true
+        },
+        {
+          "quote": "18.00",
+          "onPage": true
+        },
+        {
+          "quote": "0.00",
+          "onPage": true
+        },
+        {
+          "quote": "0.00",
+          "onPage": true
+        },
+        {
+          "quote": "18.00",
+          "onPage": true
+        },
+        {
+          "quote": "Unpaid leave",
+          "onPage": true
+        },
+        {
+          "quote": "—",
+          "onPage": true
+        },
+        {
+          "quote": "—",
+          "onPage": true
+        },
+        {
+          "quote": "0.00",
+          "onPage": true
+        },
+        {
+          "quote": "—",
+          "onPage": true
+        },
+        {
+          "quote": "Family celebration",
+          "onPage": true
+        },
+        {
+          "quote": "—",
+          "onPage": true
+        },
+        {
+          "quote": "—",
+          "onPage": true
+        },
+        {
+          "quote": "0.00",
+          "onPage": true
+        },
+        {
+          "quote": "—",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 5788,
+      "reviewCostUsd": 0.12261,
+      "reviewWallMs": 16382
     },
     {
       "id": "AC-BALANCE-13",
@@ -41,20 +126,37 @@
       "video": "test-results/artifacts/balances-баланс-іншого-пра-3671f--балансів-іншого-працівника-chromium/video.webm",
       "trace": "test-results/artifacts/balances-баланс-іншого-пра-3671f--балансів-іншого-працівника-chromium/trace.zip",
       "asserted": true,
-      "vision": null,
-      "agentModel": "claude-sonnet-5-5",
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно заголовок «Баланс працівника» і червоне повідомлення про відмову «Недостатньо прав або запис змінився. Оновіть сторінку.». Таблиці балансів на сторінці немає, під заголовком більше нічого не відображено."
+      },
+      "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
-        "claude-haiku-5-5": null,
+        "claude-haiku-5-5": "PASS",
         "claude-sonnet-5-5": null
       },
-      "escalated": true,
-      "quotesVerified": [],
-      "verdict": "NEEDS-HUMAN",
-      "factoryGate": "NOT-EARNED",
-      "rule": "R2: немає вердикту агента або кадру",
-      "playwrightMs": 5830,
-      "reviewCostUsd": 0,
-      "reviewWallMs": 58
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Баланс працівника",
+          "onPage": true
+        },
+        {
+          "quote": "Недостатньо прав або запис змінився. Оновіть сторінку.",
+          "onPage": true
+        },
+        {
+          "quote": "Недостатньо прав або запис змінився. Оновіть сторінку.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 7080,
+      "reviewCostUsd": 0.07345,
+      "reviewWallMs": 11555
     },
     {
       "id": "AC-DECIDE-14",
@@ -64,22 +166,44 @@
       "video": "test-results/artifacts/decisions-AC-DECIDE-14-мен-0b851-омлення-про-порожній-список-chromium/video.webm",
       "trace": "test-results/artifacts/decisions-AC-DECIDE-14-мен-0b851-омлення-про-порожній-список-chromium/trace.zip",
       "asserted": true,
-      "vision": null,
-      "agentModel": "claude-sonnet-5-5",
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінка /decisions з заголовком «Awaiting decision» і активною вкладкою «Awaiting decision» (поруч «History»). Під вкладками відображається повідомлення «No records awaiting decision», а записів у списку немає. Текст збігається з критерієм посимвольно."
+      },
+      "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
-        "claude-haiku-5-5": null,
+        "claude-haiku-5-5": "PASS",
         "claude-sonnet-5-5": null
       },
-      "escalated": true,
-      "quotesVerified": [],
-      "verdict": "NEEDS-HUMAN",
-      "factoryGate": "NOT-EARNED",
-      "rule": "R2: немає вердикту агента або кадру",
-      "playwrightMs": 3792,
-      "reviewCostUsd": 0,
-      "reviewWallMs": 29
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Awaiting decision",
+          "onPage": true
+        },
+        {
+          "quote": "No records awaiting decision",
+          "onPage": true
+        },
+        {
+          "quote": "No records awaiting decision",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 3595,
+      "reviewCostUsd": 0.108,
+      "reviewWallMs": 12962
     }
   ],
   "negativeControls": [],
-  "cleanup": null
+  "cleanup": {
+    "at": "2026-11-02T16:17:44.794Z",
+    "deleted": [],
+    "remaining": [],
+    "leftoverRequests": 0
+  }
 }
