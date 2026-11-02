@@ -96,17 +96,18 @@
 
 Негативний контроль: `tests/e2e/negative-controls.spec.ts` (NC-1: хибний текст у перевірці → очікуємо FAIL; NC-2: інший текст AC при тих самих перевірках → очікуємо NEEDS-HUMAN).
 
-Результати прогону на проді (`npm run uat -- --url https://leave-portal-blush.vercel.app`): **заповнюються після запуску власником** (потрібні паролі акаунтів і вхід рецензента в його терміналі).
+Результати прогону на проді 02.11.2026 (`npm run uat -- --url https://leave-portal-blush.vercel.app`, `/api/health`: коміт `2336860`). Усі три твердження Playwright пройшли. **Агент-рецензент не відпрацював:** `claude -p` не запустився (`spawn claude ENOENT`: Claude Code CLI немає на машині, де йшов прогін), тож за правилом R2 підсумок кожного AC — **NEEDS-HUMAN** (немає вердикту агента). Вердикти вручну не правимо. Рішення про приймання — за PM, який дивиться кадри; повторний розбір тих самих кадрів — `npm run uat:review` на машині з Claude Code CLI.
 
 | AC | Специфікація | Тест (твердження) | Агент | Вердикт | Кадр |
 |---|---|---|---|---|---|
-| AC-BALANCE-01 | `tests/e2e/balances.spec.ts` | — | — | — | — |
-| AC-BALANCE-13 | `tests/e2e/balances.spec.ts` | — | — | — | — |
-| AC-DECIDE-14 | `tests/e2e/decisions.spec.ts` | — | — | — | — |
+| AC-BALANCE-01 | `tests/e2e/balances.spec.ts` | passed | немає вердикту (`claude` недоступний) | NEEDS-HUMAN, R2 | `docs/qa/uat/2026-11-02/frames/AC-BALANCE-01-then-1.png` |
+| AC-BALANCE-13 | `tests/e2e/balances.spec.ts` | passed | немає вердикту (`claude` недоступний) | NEEDS-HUMAN, R2 | `docs/qa/uat/2026-11-02/frames/AC-BALANCE-13-then-1.png` |
+| AC-DECIDE-14 | `tests/e2e/decisions.spec.ts` | passed | немає вердикту (`claude` недоступний) | NEEDS-HUMAN, R2 | `docs/qa/uat/2026-11-02/frames/AC-DECIDE-14-then-1.png` |
 
-- Звіт: `docs/qa/uat/<YYYY-MM-DD>/report.md` — після прогону
-- Відео: вкладення в описі PR зі звітом
-- Негативний контроль: після `npm run uat:nc`
+- Звіт: `docs/qa/uat/2026-11-02/report.md` (разом із `manifest.json` і `frames/`)
+- Відео: не в git; є локально в `test-results/artifacts/…/video.webm`. До опису PR відео не додано.
+- Рецензент: не відпрацював (див. вище); вартість розбору $0.00
+- Негативний контроль (`npm run uat:nc`, 02.11.2026): **NC-1** (AC-DECIDE-14, навмисно хибний текст «Nothing is waiting for your decision» у перевірці) → **FAIL, R1** (перевірка впала, агент не перекриває); так видно, що UAT уміє падати. **NC-2** (змінений текст AC при тих самих перевірках) → NEEDS-HUMAN, але за **R2** (немає вердикту агента), а не за R3 (агент не погодився з новим текстом): без рецензента це не доказ, і ми його не рахуємо.
 - Дані: лише читання
 
 ## D. Eval рецензента
