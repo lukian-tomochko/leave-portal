@@ -51,7 +51,7 @@
 
 **Правило:** R6: перевірки, агент і цитати збігаються
 
-**Відео:** [вкладення PR #39](https://github.com/user-attachments/assets/c06a31f8-9ad8-4b32-864f-021b214d924f) · локально: `test-results/artifacts/balances-власний-баланс-AC-d238d-ів-бачить-початкові-баланси-chromium/video.webm` · **траса:** `test-results/artifacts/balances-власний-баланс-AC-d238d-ів-бачить-початкові-баланси-chromium/trace.zip` (не в git)
+**Відео:** [вкладення PR #39](https://github.com/user-attachments/assets/ce64e054-c626-41ee-b533-90a0e55013ee) · локально: `test-results/artifacts/balances-власний-баланс-AC-d238d-ів-бачить-початкові-баланси-chromium/video.webm` · **траса:** `test-results/artifacts/balances-власний-баланс-AC-d238d-ів-бачить-початкові-баланси-chromium/trace.zip` (не в git)
 
 **Рішення PM:** ☐ приймаю · ☐ відхилення від вимог (issue «Відхилення від вимог: AC-BALANCE-01 — …») · @login: ____
 
@@ -76,7 +76,7 @@
 
 **Правило:** R6: перевірки, агент і цитати збігаються
 
-**Відео:** [вкладення PR #39](https://github.com/user-attachments/assets/4777fd65-73cc-461e-84ee-1d8a48741ab9) · локально: `test-results/artifacts/balances-баланс-іншого-пра-3671f--балансів-іншого-працівника-chromium/video.webm` · **траса:** `test-results/artifacts/balances-баланс-іншого-пра-3671f--балансів-іншого-працівника-chromium/trace.zip` (не в git)
+**Відео:** [вкладення PR #39](https://github.com/user-attachments/assets/3c9ee872-0c4e-4cda-81fc-c5c4a7404ff0) · локально: `test-results/artifacts/balances-баланс-іншого-пра-3671f--балансів-іншого-працівника-chromium/video.webm` · **траса:** `test-results/artifacts/balances-баланс-іншого-пра-3671f--балансів-іншого-працівника-chromium/trace.zip` (не в git)
 
 **Рішення PM:** ☐ приймаю · ☐ відхилення від вимог (issue «Відхилення від вимог: AC-BALANCE-13 — …») · @login: ____
 
@@ -101,7 +101,7 @@
 
 **Правило:** R6: перевірки, агент і цитати збігаються
 
-**Відео:** [вкладення PR #39](https://github.com/user-attachments/assets/bf33ca5a-4bdb-4b08-bf59-f6030512d9c8) · локально: `test-results/artifacts/decisions-AC-DECIDE-14-мен-0b851-омлення-про-порожній-список-chromium/video.webm` · **траса:** `test-results/artifacts/decisions-AC-DECIDE-14-мен-0b851-омлення-про-порожній-список-chromium/trace.zip` (не в git)
+**Відео:** [вкладення PR #39](https://github.com/user-attachments/assets/56709014-1938-4582-8940-eb474a687334) · локально: `test-results/artifacts/decisions-AC-DECIDE-14-мен-0b851-омлення-про-порожній-список-chromium/video.webm` · **траса:** `test-results/artifacts/decisions-AC-DECIDE-14-мен-0b851-омлення-про-порожній-список-chromium/trace.zip` (не в git)
 
 **Рішення PM:** ☐ приймаю · ☐ відхилення від вимог (issue «Відхилення від вимог: AC-DECIDE-14 — …») · @login: ____
 
