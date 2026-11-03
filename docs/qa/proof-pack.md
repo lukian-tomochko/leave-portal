@@ -105,7 +105,7 @@
 | AC-DECIDE-14 | `tests/e2e/decisions.spec.ts` | passed | Haiku: PASS | **PASS**, R6 | `docs/qa/uat/2026-11-02/frames/AC-DECIDE-14-then-1.png` |
 
 - Звіт: `docs/qa/uat/2026-11-02/report.md` (разом із `manifest.json` і `frames/`)
-- Відео: не в git; лежить локально в `test-results/artifacts/…/video.webm` (додається вкладенням до опису PR UAT, коли воно буде).
+- Відео (вкладення PR #39, не в git): [AC-BALANCE-01](https://github.com/user-attachments/assets/c06a31f8-9ad8-4b32-864f-021b214d924f), [AC-BALANCE-13](https://github.com/user-attachments/assets/4777fd65-73cc-461e-84ee-1d8a48741ab9), [AC-DECIDE-14](https://github.com/user-attachments/assets/bf33ca5a-4bdb-4b08-bf59-f6030512d9c8). Локальні оригінали — `test-results/artifacts/…/video.webm`.
 - Рецензент: `claude-haiku-5-5`, суперечки → `claude-sonnet-5-5`; вартість розбору $0.3041 за ціною API (за підпискою — у межах ліміту плану).
 - Негативний контроль (`npm run uat:nc`, 02.11.2026 18:20): **NC-1** (AC-DECIDE-14, навмисно хибний текст «Nothing is waiting for your decision» у перевірці): Playwright впав, агент (Haiku) сказав PASS, але підсумок — **FAIL, R1** (перевірка впала, агент її не перекриває). **NC-2** (змінений текст AC при тих самих перевірках): агент не погодився (Haiku FAIL, суперечка → Sonnet FAIL), підсумок — **NEEDS-HUMAN, R3**. Так видно, що наш UAT уміє падати й що агент не пропускає неправдивий «Тоді».
 - Дані: лише читання; прибирання синтетичних `uat-*@example.test` не знадобилось (видалено 0, лишилось 0).
