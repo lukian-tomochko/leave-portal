@@ -105,6 +105,7 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
   «відкладено (чекає реалізації)», доки його не реалізовано або не вказано конкретну причину з посиланням на рішення PM.
   `npm run ac:coverage` попереджає (не падає) про AC PM з `requirements/`, яких ще немає в `openspec/specs/`.
 - На кожен коментар CodeRabbit — виправлення або відповідь, чому ні.
+- Фільтри статусів у списках рішень (`loadPage` у `src/lib/leave/decision.ts`, `listPage` у `src/lib/leave/supabase-decision-repository.ts`): «Awaiting decision» — лише `awaiting_decision`; «History» — усі інші статуси: `approved`, `rejected`, `returned_for_revision`, `cancelled`. Звуження переліку статусів у фільтрі «History» (запис зникає зі списку) — помилка рівня «must fix» (AC-DECIDE-11), навіть якщо тести зелені.
 - `/opsx:verify` і `/conformance` — порадники; ворота — CI (`spec`, `app`, `conformance`, `db-check`).
 - Виправлення шаблону курсу переносимо `git cherry-pick <sha>` у гілку `template/<коротко>`, не `git merge` (історії не пов'язані), — PR «Оновлення шаблону».
 
