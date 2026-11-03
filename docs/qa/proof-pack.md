@@ -27,7 +27,7 @@
 
 - PR воріт: https://github.com/lukian-tomochko/leave-portal/pull/36
 - Зелений `quality` на `main`: https://github.com/lukian-tomochko/leave-portal/actions/runs/41413581234
-- Обов'язкові перевірки в `solo-main`: додає власник у Settings → Rules (див. файл здачі)
+- Обов'язкові перевірки в `solo-main` з 03.11.2026 (ruleset оновлено о 10:37 за Києвом): «Ворота: fallow audit» і «Покриття: доменна підлога» — разом зі `spec`, `app`, `conformance`, `db-check`. «Порада: вразливі залежності» не обовʼязкова ніколи.
 
 Розбір першого повного прогону `fallow` (той самий — в описі PR воріт):
 
@@ -112,4 +112,19 @@
 
 ## D. Eval рецензента
 
-Заповнюється на кроці D.
+- PR з вадами (не злитий): https://github.com/lukian-tomochko/leave-portal/pull/40
+- Ключ і таблиця: https://github.com/lukian-tomochko/leave-portal/pull/40#issuecomment-6598424934
+
+Вади пройшли всі обов'язкові перевірки (lint, typecheck, 215 тестів, build, `ac:coverage`, `check:boundary`, `check:design`, `quality`, `db-check`), тож дійшли до рецензентів. Ключ опубліковано після того, як відпрацювали обидва.
+
+| # | Вада (ключ) | CodeRabbit | `/code-review high` |
+|---|---|---|---|
+| 1 | авторизація в дії: `src/app/api/decisions/awaiting-count/route.ts:10` — `getSession()` замість `getClaims()` | знайшов: «**Перевіряйте claims замість сесії з cookie.** `getSession()` читає сесію з cookie без перевірки її автентичності.» | знайшов: «Route Handler authorizes with getSession() instead of getClaims() and checks no role» |
+| 2 | логіка: `src/lib/leave/decision.ts:138` — «History» лишає тільки `approved` і `rejected` | **пропустив**: у підсумку лише переказав зміну («У режимі `history` залишаються лише записи зі статусом `approved` або `rejected`.»), без зауваження | знайшов: «silently removes returned_for_revision and cancelled records from /decisions/history» |
+| 3 | права в даних: `supabase/migrations/20261103100000_awaiting_decision_count.sql:24` — `security definer` без `search_path`, `grant … to anon`, без перевірки ролі | знайшов: «**Обмежте доступ до лічильника в базі.** `anon` і будь-який `authenticated` можуть викликати RPC напряму … Перенесіть `security definer` у `private`, додайте `set search_path = ''`» | знайшов: «public.awaiting_decision_count is security definer with no search_path, no role check, and executable by anon» |
+| П | приманка: `private.is_decider()` — правильно оформлена `security definer`, у коді не використовується | без хибної тривоги: згадав лише як хелпер, який варто викликати | дрібна знахідка «private.is_decider() is added but never used» (факт правильний, вадою не є, на безпеку не натякає) |
+
+- Інші знахідки: CodeRabbit — «**Рахуйте лише записи посад менеджера.** Запит рахує записи всіх посад.» (слушна, лічильник глобальний); `/code-review` — глобальний лічильник (слушна), немає тесту й рядка `conformance.md` для нового ендпойнта (слушна), помилка RPC без логування (дрібниця).
+- Застереження: `/code-review high` запускався в тій самій сесії Claude Code, у якій писалися вади, тож це не «наосліп»; незалежний лише CodeRabbit (знайшов 2 з 3, без хибної тривоги на приманці).
+- Правило, що закриває пропуск: рядок в `AGENTS.md`: «Фільтри статусів у списках рішень (`loadPage`, `listPage`): «History» — усі інші статуси: `approved`, `rejected`, `returned_for_revision`, `cancelled`. Звуження переліку статусів у фільтрі «History» — помилка рівня «must fix» (AC-DECIDE-11), навіть якщо тести зелені.» — https://github.com/lukian-tomochko/leave-portal/pull/41 (коміт `e78a5a79731fe40e3053fbf85cefc99ab0afed23`)
+- Повторний прогін (CodeRabbit, `@coderabbitai full review` о 10:53 за Києвом після злиття правила; перший запит о 10:08 відхилено через ліміт запитів): **знайшов ваду 2**: інлайн-коментар до `src/lib/leave/decision.ts:138` (Major): «**Не звужуйте `History` до двох статусів.** … записи зі статусами `returned_for_revision` та `cancelled` зникають зі списку. Це порушує AC-DECIDE-11.» і «As per coding guidelines: `History` має містити всі статуси, крім `awaiting_decision`» (джерело — новий рядок `AGENTS.md`): https://github.com/lukian-tomochko/leave-portal/pull/40#discussion_r4452606967, підсумок: https://github.com/lukian-tomochko/leave-portal/pull/40#issuecomment-6599444888. Після правила CodeRabbit знайшов 3 з 3 вад. PR #40 не злито, закрито.
