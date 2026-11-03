@@ -8,8 +8,8 @@
 -->
 
 - Прод-URL: https://leave-portal-blush.vercel.app
-- Вимоги: Вимоги: https://github.com/mkozlovskyi-ops/course-staff-management-spec · джерело: docs · знімок 2026-10-24
-- `/api/health` на момент UAT: заповнюється на кроці C
+- Вимоги: https://github.com/mkozlovskyi-ops/course-staff-management-spec · джерело: docs · знімок 2026-10-24
+- `/api/health` на момент UAT: `{"ok":true,"sha":"22b8afe…","env":"production","db":"ok"}` (коміт `22b8afe`, прогін 02.11.2026 18:16)
 
 ## 3 AC
 
@@ -96,19 +96,19 @@
 
 Негативний контроль: `tests/e2e/negative-controls.spec.ts` (NC-1: хибний текст у перевірці → очікуємо FAIL; NC-2: інший текст AC при тих самих перевірках → очікуємо NEEDS-HUMAN).
 
-Результати прогону на проді 02.11.2026 (`npm run uat -- --url https://leave-portal-blush.vercel.app`, `/api/health`: коміт `2336860`). Усі три твердження Playwright пройшли. **Агент-рецензент не відпрацював:** `claude -p` не запустився (`spawn claude ENOENT`: Claude Code CLI немає на машині, де йшов прогін), тож за правилом R2 підсумок кожного AC — **NEEDS-HUMAN** (немає вердикту агента). Вердикти вручну не правимо. Рішення про приймання — за PM, який дивиться кадри; повторний розбір тих самих кадрів — `npm run uat:review` на машині з Claude Code CLI.
+Результати прогону на проді 02.11.2026 о 18:16 за Києвом (`npm run uat -- --url https://leave-portal-blush.vercel.app --grep-invert "@writes"`, `/api/health`: коміт `22b8afe`, `"db":"ok"`). Усі три твердження Playwright пройшли, рецензент «наосліп» (`claude-haiku-5-5`, `claude -p`, лише Read) погодився з кожним кадром, цитати знайдено на сторінці. Підсумок за кодом — правило R6, вердикти вручну не правилися. Перший прогін того ж дня (коміт `2336860`) дав NEEDS-HUMAN за R2: `claude` не було в PATH; його замінено цим повторним прогоном після встановлення CLI.
 
 | AC | Специфікація | Тест (твердження) | Агент | Вердикт | Кадр |
 |---|---|---|---|---|---|
-| AC-BALANCE-01 | `tests/e2e/balances.spec.ts` | passed | немає вердикту (`claude` недоступний) | NEEDS-HUMAN, R2 | `docs/qa/uat/2026-11-02/frames/AC-BALANCE-01-then-1.png` |
-| AC-BALANCE-13 | `tests/e2e/balances.spec.ts` | passed | немає вердикту (`claude` недоступний) | NEEDS-HUMAN, R2 | `docs/qa/uat/2026-11-02/frames/AC-BALANCE-13-then-1.png` |
-| AC-DECIDE-14 | `tests/e2e/decisions.spec.ts` | passed | немає вердикту (`claude` недоступний) | NEEDS-HUMAN, R2 | `docs/qa/uat/2026-11-02/frames/AC-DECIDE-14-then-1.png` |
+| AC-BALANCE-01 | `tests/e2e/balances.spec.ts` | passed | Haiku: PASS | **PASS**, R6 | `docs/qa/uat/2026-11-02/frames/AC-BALANCE-01-then-1.png` |
+| AC-BALANCE-13 | `tests/e2e/balances.spec.ts` | passed | Haiku: PASS | **PASS**, R6 | `docs/qa/uat/2026-11-02/frames/AC-BALANCE-13-then-1.png` |
+| AC-DECIDE-14 | `tests/e2e/decisions.spec.ts` | passed | Haiku: PASS | **PASS**, R6 | `docs/qa/uat/2026-11-02/frames/AC-DECIDE-14-then-1.png` |
 
 - Звіт: `docs/qa/uat/2026-11-02/report.md` (разом із `manifest.json` і `frames/`)
-- Відео: не в git; є локально в `test-results/artifacts/…/video.webm`. До опису PR відео не додано.
-- Рецензент: не відпрацював (див. вище); вартість розбору $0.00
-- Негативний контроль (`npm run uat:nc`, 02.11.2026): **NC-1** (AC-DECIDE-14, навмисно хибний текст «Nothing is waiting for your decision» у перевірці) → **FAIL, R1** (перевірка впала, агент не перекриває); так видно, що UAT уміє падати. **NC-2** (змінений текст AC при тих самих перевірках) → NEEDS-HUMAN, але за **R2** (немає вердикту агента), а не за R3 (агент не погодився з новим текстом): без рецензента це не доказ, і ми його не рахуємо.
-- Дані: лише читання
+- Відео (вкладення PR #39, не в git): [AC-BALANCE-01](https://github.com/user-attachments/assets/c06a31f8-9ad8-4b32-864f-021b214d924f), [AC-BALANCE-13](https://github.com/user-attachments/assets/4777fd65-73cc-461e-84ee-1d8a48741ab9), [AC-DECIDE-14](https://github.com/user-attachments/assets/bf33ca5a-4bdb-4b08-bf59-f6030512d9c8). Локальні оригінали — `test-results/artifacts/…/video.webm`.
+- Рецензент: `claude-haiku-5-5`, суперечки → `claude-sonnet-5-5`; вартість розбору $0.3041 за ціною API (за підпискою — у межах ліміту плану).
+- Негативний контроль (`npm run uat:nc`, 02.11.2026 18:20): **NC-1** (AC-DECIDE-14, навмисно хибний текст «Nothing is waiting for your decision» у перевірці): Playwright впав, агент (Haiku) сказав PASS, але підсумок — **FAIL, R1** (перевірка впала, агент її не перекриває). **NC-2** (змінений текст AC при тих самих перевірках): агент не погодився (Haiku FAIL, суперечка → Sonnet FAIL), підсумок — **NEEDS-HUMAN, R3**. Так видно, що наш UAT уміє падати й що агент не пропускає неправдивий «Тоді».
+- Дані: лише читання; прибирання синтетичних `uat-*@example.test` не знадобилось (видалено 0, лишилось 0).
 
 ## D. Eval рецензента
 
