@@ -135,7 +135,7 @@ async function loadPage(
   const result = await repository.listPage(actor, view, page, PAGE_SIZE);
   // Домен не покладається на фільтри бази сам: чужі записи й записи не того статусу відкидаємо.
   const wanted = (record: DecisionRecord) =>
-    view === "awaiting" ? record.status === "awaiting_decision" : record.status !== "awaiting_decision";
+    view === "awaiting" ? record.status === "awaiting_decision" : record.status === "approved" || record.status === "rejected";
   return { ...result, records: result.records.filter((record) => inScope(actor, record) && wanted(record)) };
 }
 

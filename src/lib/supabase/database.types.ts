@@ -281,6 +281,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      awaiting_decision_count: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
       cancel_leave_record: {
         Args: {
           p_record_id: string;
