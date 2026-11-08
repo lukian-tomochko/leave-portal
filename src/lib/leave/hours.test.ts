@@ -89,6 +89,15 @@ describe("години в межах розкладу", () => {
     expect(formatDuration(resultOk.records[0].minutes)).toBe("1 h 30 min");
   });
 
+  it("AC-LEAVE-22: кінець на початку наступного блоку (12:30) приймається, проміжок 12:00–12:30 не рахується (3 h)", () => {
+    const result = planRequest(request(TUESDAY_GAP, "2026-11-03", "09:00", "12:30"), { positions: [TUESDAY_GAP] });
+
+    const resultOk = expectOk(result);
+    expect(resultOk.records).toHaveLength(1);
+    expect(resultOk.records[0]).toMatchObject({ date: "2026-11-03", startsAt: "09:00", endsAt: "12:30", minutes: 180 });
+    expect(formatDuration(resultOk.records[0].minutes)).toBe("3 h");
+  });
+
   it("AC-LEAVE-19: повідомлення про години поза розкладом перелічує всі блоки дня", () => {
     const result = planRequest(request(TUESDAY_GAP, "2026-11-03", "07:30", "09:00"), { positions: [TUESDAY_GAP] });
 

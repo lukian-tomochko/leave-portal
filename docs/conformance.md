@@ -54,7 +54,7 @@
 | AC-LEAVE-17 | Коментар на всіх записах заявки | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/use-cases.ts`, `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/comment.test.ts`, `tests/db/leave-request.test.ts` | реалізовано |
 | AC-LEAVE-18 | Коментар із 501 символу | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/messages.ts` | `src/lib/leave/comment.test.ts` | реалізовано |
 | AC-LEAVE-21 | Дата без годин у заявці на кілька дат | `src/lib/leave/request.ts` (planRequest), `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/multi.test.ts` | реалізовано |
-| AC-LEAVE-22 | Кінець відпустки на початку наступного блоку | — | — | відкладено (чекає реалізації) |
+| AC-LEAVE-22 | Кінець відпустки на початку наступного блоку | `src/lib/leave/schedule.ts` (validateHours), `supabase/migrations/20261109090000_leave_hours_end_at_block_start.sql` | `src/lib/leave/hours.test.ts`, `tests/db/leave-request.test.ts` | реалізовано |
 | AC-DECIDE-01 | RLS: менеджер читає записи лише своїх посад | `src/lib/leave/decision.ts` (listAwaiting), `src/app/decisions/page.tsx` | `src/lib/leave/decision.test.ts` | реалізовано |
 | AC-DECIDE-14 | Порожній список | `src/lib/leave/decision.ts` (awaitingEmptyMessage), `src/app/decisions/page.tsx` | `src/lib/leave/decision.test.ts`, `tests/e2e/decisions.spec.ts` | реалізовано |
 | AC-DECIDE-02 | Погодження одного з двох записів | `src/lib/leave/decision.ts` (decideRecord), `src/app/decisions/actions.ts` (decideLeaveRecord) | `src/lib/leave/decision.test.ts` | реалізовано |
