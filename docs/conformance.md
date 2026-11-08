@@ -54,6 +54,7 @@
 | AC-LEAVE-17 | Коментар на всіх записах заявки | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/use-cases.ts`, `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/comment.test.ts`, `tests/db/leave-request.test.ts` | реалізовано |
 | AC-LEAVE-18 | Коментар із 501 символу | `src/lib/leave/request.ts` (planRequest), `src/lib/leave/messages.ts` | `src/lib/leave/comment.test.ts` | реалізовано |
 | AC-LEAVE-21 | Дата без годин у заявці на кілька дат | `src/lib/leave/request.ts` (planRequest), `src/app/leave/new/new-leave-form.tsx` | `src/lib/leave/multi.test.ts` | реалізовано |
+| AC-LEAVE-22 | Кінець відпустки на початку наступного блоку | — | — | відкладено (чекає реалізації) |
 | AC-DECIDE-01 | RLS: менеджер читає записи лише своїх посад | `src/lib/leave/decision.ts` (listAwaiting), `src/app/decisions/page.tsx` | `src/lib/leave/decision.test.ts` | реалізовано |
 | AC-DECIDE-14 | Порожній список | `src/lib/leave/decision.ts` (awaitingEmptyMessage), `src/app/decisions/page.tsx` | `src/lib/leave/decision.test.ts`, `tests/e2e/decisions.spec.ts` | реалізовано |
 | AC-DECIDE-02 | Погодження одного з двох записів | `src/lib/leave/decision.ts` (decideRecord), `src/app/decisions/actions.ts` (decideLeaveRecord) | `src/lib/leave/decision.test.ts` | реалізовано |
@@ -100,3 +101,18 @@
 | AC-BALANCE-20 | Менеджер додаткової посади бачить повний баланс | `supabase/migrations/20261027090000_leave_balance.sql` (private.employee_balance_inputs), `src/app/balances/page.tsx` | `tests/db/leave-balance.test.ts` | реалізовано |
 | AC-BALANCE-21 | Пізнє погодження за минулий рік | `src/lib/leave/balance.ts` (schoolYearOf, balancesForYear) | `src/lib/leave/balance.test.ts` | реалізовано |
 | AC-BALANCE-22 | Заявка на два навчальні роки | `src/lib/leave/balance.ts` (schoolYearOf, usageByYear) | `src/lib/leave/balance.test.ts` | реалізовано |
+| AC-CAL-01 | Закриття на цілі дні | — | — | відкладено (чекає реалізації) |
+| AC-CAL-02 | Працівник бачить закриття | — | — | відкладено (чекає реалізації) |
+| AC-CAL-03 | Закритий день у новій заявці | — | — | відкладено (чекає реалізації) |
+| AC-CAL-04 | Цілий день на скороченому дні | — | — | відкладено (чекає реалізації) |
+| AC-CAL-05 | Години після часу закриття | — | — | відкладено (чекає реалізації) |
+| AC-CAL-06 | Частка дня на скороченому дні | — | — | відкладено (чекає реалізації) |
+| AC-CAL-07 | Погоджений запис блокує закриття | — | — | відкладено (чекає реалізації) |
+| AC-CAL-08 | Відхилений запис не блокує закриття | — | — | відкладено (чекає реалізації) |
+| AC-CAL-09 | Видалене закриття повертає робочі дні | — | — | відкладено (чекає реалізації) |
+| AC-CAL-10 | Кінцева дата раніше за початкову | — | — | відкладено (чекає реалізації) |
+| AC-CAL-11 | Дата вже закрита | — | — | відкладено (чекає реалізації) |
+| AC-CAL-12 | Працівник відкриває сторінку зміни | — | — | відкладено (чекає реалізації) |
+| AC-CAL-13 | Менеджер закриває день напряму | — | — | відкладено (чекає реалізації) |
+| AC-CAL-14 | Відвідувач без входу | — | — | відкладено (чекає реалізації) |
+| AC-CAL-15 | Календар без закриттів | — | — | відкладено (чекає реалізації) |
