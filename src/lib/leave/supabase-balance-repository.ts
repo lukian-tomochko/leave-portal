@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { BalanceDeniedError, type ApprovedRecord, type BalanceInputs } from "./balance";
+import type { Closure } from "./closures";
 import { trimSeconds } from "./time";
 import type { LeaveType, Position, PositionKind } from "./types";
 
@@ -60,5 +61,20 @@ export async function loadBalanceInputs(supabase: SupabaseClient<Database>, empl
     paidCents: record.paid_share === null ? null : cents(record.paid_share),
     unpaidCents: cents(record.unpaid_share),
   }));
-  return { positions, records };
+
+  // Усі закриття календаря (AC-CAL-06): їх мало, а розрахунок потребує й дат нової заявки чи запису, не лише схвалених.
+  // `school_closures` доступна всім авторизованим (AC-CAL-02).
+  const { data: closureRows, error: closureError } = await supabase
+    .from("school_closures")
+    .select("name, starts_on, ends_on, closed_from");
+  if (closureError) {
+    throw new Error(`loadBalanceInputs closures failed: ${closureError.code ?? "unknown"}`);
+  }
+  const closures: Closure[] = closureRows.map((row) => ({
+    name: row.name,
+    startsOn: row.starts_on,
+    endsOn: row.ends_on,
+    closedFrom: row.closed_from === null ? null : trimSeconds(row.closed_from),
+  }));
+  return { positions, records, closures };
 }

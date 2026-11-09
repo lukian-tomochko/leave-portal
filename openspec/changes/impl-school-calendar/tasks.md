@@ -42,9 +42,9 @@
 
 ## 4. Закриття в балансі (AC-CAL-06)
 
-- [ ] 4.1 `BalanceInputs.closures`, `supabase-balance-repository.ts` читає `school_closures`; `balance.ts` без приватного
+- [x] 4.1 `BalanceInputs.closures`, `supabase-balance-repository.ts` читає `school_closures`; `balance.ts` без приватного
   `blocksOn`, `workingMinutes`/`recordMinutes` через `openBlocks`.
-- [ ] 4.2 Unit: скорочений день 12:00, один запис 08:30–12:00 → 1.00 (210/210), а не 0.50; ручний мутант на `openBlocks` у `workingMinutes`.
+- [x] 4.2 Unit: скорочений день 12:00, один запис 08:30–12:00 → 1.00 (210/210), а не 0.50; ручний мутант на `openBlocks` у `workingMinutes`.
   Done when: AC-CAL-06 — unit зелений, без `openBlocks` тест червоний.
 
 ## 5. Сторінка календаря (AC-CAL-02, 14, 15)

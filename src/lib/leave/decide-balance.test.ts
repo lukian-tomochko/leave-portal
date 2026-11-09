@@ -48,7 +48,7 @@ function inputsWithRemaining(): BalanceInputs {
     }
     day.setUTCDate(day.getUTCDate() + 1);
   }
-  return { positions: [MAIN], records };
+  return { positions: [MAIN], records, closures: [] };
 }
 
 function setup(record: DecisionRecord = target) {

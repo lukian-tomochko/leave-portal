@@ -1,3 +1,4 @@
+import { type Closure, closureOn, openBlocks } from "./closures";
 import { parseTime, weekdayOf } from "./time";
 import type { LeaveType, Position } from "./types";
 
@@ -33,6 +34,7 @@ export type ApprovedRecord = {
 export type BalanceInputs = {
   positions: Position[]; // усі посади працівника з розкладом (частка дня рахується за всіма посадами)
   records: ApprovedRecord[]; // лише схвалені записи
+  closures: Closure[]; // закриття шкільного календаря (AC-CAL-06): закриті хвилини не рахуються в частці дня
 };
 
 export type LimitedBalance = { granted: number; carriedOver: number; used: number; remaining: number };
@@ -69,29 +71,37 @@ const shareCents = (minutes: number, totalMinutes: number): number => {
   return Math.min(100, Math.floor((200 * minutes + totalMinutes) / (2 * totalMinutes)));
 };
 
-const blocksOn = (position: Position, date: string) => {
+// Незакриті блоки розкладу посади на дату: цілий закритий день — жодного, скорочений — до часу закриття (AC-CAL-06).
+const blocksOn = (position: Position, date: string, closures: Closure[]) => {
   const weekday = weekdayOf(date);
-  return position.blocks.filter((block) => block.weekday === weekday);
+  return openBlocks(
+    position.blocks.filter((block) => block.weekday === weekday),
+    closureOn(closures, date),
+  );
 };
 
-// Усі робочі хвилини працівника на дату за розкладами всіх його посад.
-export function workingMinutes(positions: Position[], date: string): number {
+// Усі незакриті робочі хвилини працівника на дату за розкладами всіх його посад.
+export function workingMinutes(positions: Position[], date: string, closures: Closure[] = []): number {
   return positions.reduce(
     (sum, position) =>
       sum +
-      blocksOn(position, date).reduce((blockSum, block) => blockSum + (parseTime(block.endsAt) - parseTime(block.startsAt)), 0),
+      blocksOn(position, date, closures).reduce((blockSum, block) => blockSum + (parseTime(block.endsAt) - parseTime(block.startsAt)), 0),
     0,
   );
 }
 
 // Хвилини запису лише в межах блоків розкладу його посади (проміжок між блоками не рахується).
-export function recordMinutes(position: Position | undefined, record: { date: string; startsAt: string; endsAt: string }): number {
+export function recordMinutes(
+  position: Position | undefined,
+  record: { date: string; startsAt: string; endsAt: string },
+  closures: Closure[] = [],
+): number {
   if (!position) {
     return 0;
   }
   const start = parseTime(record.startsAt);
   const end = parseTime(record.endsAt);
-  return blocksOn(position, record.date).reduce(
+  return blocksOn(position, record.date, closures).reduce(
     (sum, block) => sum + Math.max(0, Math.min(end, parseTime(block.endsAt)) - Math.max(start, parseTime(block.startsAt))),
     0,
   );
@@ -109,7 +119,7 @@ export function usageByYear(inputs: BalanceInputs): Map<number, Usage> {
   for (const record of inputs.records) {
     const key = `${record.date}|${record.leaveType}`;
     const group = groups.get(key) ?? { date: record.date, type: record.leaveType, minutes: 0, unpaid: 0 };
-    group.minutes += recordMinutes(positionById.get(record.positionId), record);
+    group.minutes += recordMinutes(positionById.get(record.positionId), record, inputs.closures);
     group.unpaid += record.unpaidCents;
     groups.set(key, group);
   }
@@ -118,7 +128,7 @@ export function usageByYear(inputs: BalanceInputs): Map<number, Usage> {
   for (const group of groups.values()) {
     const year = schoolYearOf(group.date);
     const current = usage.get(year) ?? emptyUsage();
-    const total = shareCents(group.minutes, workingMinutes(inputs.positions, group.date));
+    const total = shareCents(group.minutes, workingMinutes(inputs.positions, group.date, inputs.closures));
     const unpaid = Math.min(group.unpaid, total);
     current[group.type] += total - unpaid;
     current.unpaid += unpaid;
@@ -180,18 +190,18 @@ function requestOverBalance(inputs: BalanceInputs, planned: PlannedHours[]) {
   const positionById = new Map(inputs.positions.map((position) => [position.id, position]));
   const minutesByDate = new Map<string, number>();
   for (const item of planned) {
-    minutesByDate.set(item.date, (minutesByDate.get(item.date) ?? 0) + recordMinutes(positionById.get(item.positionId), item));
+    minutesByDate.set(item.date, (minutesByDate.get(item.date) ?? 0) + recordMinutes(positionById.get(item.positionId), item, inputs.closures));
   }
   // Приріст частки дня: частка (схвалені + запит) мінус частка схвалених того ж дня, бо частка дня не перевищує 1.00 (AC-BALANCE-05).
   const approvedMinutes = (date: string) =>
     inputs.records
       .filter((item) => item.date === date && item.leaveType === "personal")
-      .reduce((sum, item) => sum + recordMinutes(positionById.get(item.positionId), item), 0);
+      .reduce((sum, item) => sum + recordMinutes(positionById.get(item.positionId), item, inputs.closures), 0);
   const requestedByYear = new Map<number, number>();
   let totalRequested = 0;
   for (const [date, minutes] of minutesByDate) {
     const year = schoolYearOf(date);
-    const working = workingMinutes(inputs.positions, date);
+    const working = workingMinutes(inputs.positions, date, inputs.closures);
     const before = approvedMinutes(date);
     const increment = shareCents(before + minutes, working) - shareCents(before, working);
     totalRequested += increment;
