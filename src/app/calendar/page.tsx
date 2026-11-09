@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import { listItemCard } from "@/components/ui/card";
 import { type Closure, closuresInSchoolYear, describeClosure, parseSchoolYear } from "@/lib/leave/closures";
 import { schoolYearLabel, schoolYearOf } from "@/lib/leave/balance";
 import { noClosuresInYear } from "@/lib/leave/messages";
 import { todayInKyiv, trimSeconds } from "@/lib/leave/time";
 import { createClient } from "@/lib/supabase/server";
+import { APPEAR, FADE_IN, stagger } from "@/lib/utils";
 
 // «Шкільний календар»: закриття навчального року (цілі дні й скорочені дні). Бачать усі авторизовані (AC-CAL-02);
 // гостя перенаправляє на /login без даних (AC-CAL-14: proxy і перевірка тут). Читання йде клієнтом користувача, RLS пускає
@@ -61,15 +63,16 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
       </nav>
 
       {closures.length === 0 ? (
-        <p className="text-sm text-muted-foreground" data-testid="calendar-empty">
+        <p className={`text-sm text-muted-foreground ${FADE_IN}`} data-testid="calendar-empty">
           {noClosuresInYear(year)}
         </p>
       ) : (
         <ul className="flex flex-col gap-2 text-sm" data-testid="calendar-closures">
-          {closures.map((closure) => (
+          {closures.map((closure, index) => (
             <li
               key={`${closure.startsOn}-${closure.name}`}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3"
+              className={`flex flex-wrap items-center justify-between gap-2 p-3 ${listItemCard} ${APPEAR}`}
+              style={stagger(index)}
             >
               <span className="font-medium">{closure.name}</span>
               <span className="tabular-nums text-muted-foreground">{describeClosure(closure)}</span>

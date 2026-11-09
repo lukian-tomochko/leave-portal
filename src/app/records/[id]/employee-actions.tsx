@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { cancelLeaveRecord, updateLeaveRecordHours } from "./actions";
 import type { RecordActionState } from "./state";
 
@@ -59,7 +60,8 @@ export function EmployeeActions({ recordId, startsAt, endsAt }: { recordId: stri
               className="w-auto"
             />
           </div>
-          <Button type="submit" disabled={hoursPending}>
+          <Button type="submit" disabled={hoursPending} aria-busy={hoursPending}>
+            {hoursPending ? <Spinner /> : null}
             Зберегти години
           </Button>
         </div>
@@ -85,7 +87,8 @@ export function EmployeeActions({ recordId, startsAt, endsAt }: { recordId: stri
             <AlertDescription>{cancelState.message}</AlertDescription>
           </Alert>
         ) : null}
-        <Button type="button" variant="destructive" className="self-start" disabled={cancelPending} onClick={() => setConfirmOpen(true)}>
+        <Button type="button" variant="destructive" className="self-start" disabled={cancelPending} aria-busy={cancelPending} onClick={() => setConfirmOpen(true)}>
+          {cancelPending ? <Spinner /> : null}
           Скасувати запис
         </Button>
       </form>

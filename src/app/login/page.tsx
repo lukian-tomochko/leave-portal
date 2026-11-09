@@ -1,8 +1,8 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SubmitButton } from "@/components/submit-button";
 import { login } from "./actions";
 
 const ERRORS: Record<string, string> = {
@@ -42,9 +42,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
                 <AlertDescription>{message}</AlertDescription>
               </Alert>
             ) : null}
-            <Button type="submit" size="lg">
-              Увійти
-            </Button>
+            <SubmitButton size="lg">Увійти</SubmitButton>
           </form>
         </CardContent>
       </Card>

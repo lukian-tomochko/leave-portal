@@ -79,6 +79,8 @@ export async function removeUatClosures(browser: Browser) {
   try {
     const page = await context.newPage();
     await page.goto("/calendar/manage");
+    // loading.tsx віддає скелетон одразу, а сторінку допотоковує: count() не чекає, тож спершу чекаємо на заголовок списку.
+    await page.getByRole("heading", { name: "Усі закриття" }).waitFor();
     for (const name of UAT_CLOSURE_NAMES) {
       // Точна назва, а не підрядок: справжнє закриття зі схожою назвою (наприклад, «Winter break 2027») не видаляємо.
       const rows = page.getByTestId("manage-closures").getByRole("listitem").filter({ has: page.getByText(name, { exact: true }) });
@@ -87,6 +89,7 @@ export async function removeUatClosures(browser: Browser) {
         await page.getByRole("dialog").getByRole("button", { name: "Видалити" }).click();
         await expect(page.getByRole("dialog")).toHaveCount(0);
         await page.goto("/calendar/manage");
+        await page.getByRole("heading", { name: "Усі закриття" }).waitFor();
       }
     }
   } finally {

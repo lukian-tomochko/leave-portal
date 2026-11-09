@@ -10,6 +10,7 @@ import { loadBalanceInputs } from "@/lib/leave/supabase-balance-repository";
 import { createSupabaseDecisionRepository, loadActor } from "@/lib/leave/supabase-decision-repository";
 import type { RecordStatus } from "@/lib/leave/types";
 import { createClient } from "@/lib/supabase/server";
+import { APPEAR, stagger } from "@/lib/utils";
 import { DecisionForm } from "./decision-form";
 import { EmployeeActions } from "./employee-actions";
 
@@ -112,10 +113,11 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
           <p className="text-sm text-muted-foreground">Рішень ще немає.</p>
         ) : (
           <ul className="flex flex-col gap-2 text-sm" data-testid="decision-history">
-            {record.entries.map((entry) => (
+            {record.entries.map((entry, index) => (
               <li
                 key={`${entry.decidedAt}-${entry.decidedByName}`}
-                className="rounded-lg border border-border bg-card p-3 text-card-foreground"
+                className={`rounded-lg border border-border bg-card p-3 text-card-foreground ${APPEAR}`}
+                style={stagger(index)}
               >
                 <p>{formatDecisionLine(entry)}</p>
                 {entry.comment ? <p className="text-muted-foreground">{entry.comment}</p> : null}
