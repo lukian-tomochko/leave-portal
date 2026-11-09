@@ -50,9 +50,16 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Рух (DESIGN.md, розділ 10): утиліта ease-soft; тривалості — у :root як --motion-*. */
+  --ease-soft: var(--motion-ease);
 }
 
 :root {
+  /* Рух: короткий і спокійний. fast — hover/active, base — поява й зсув, slow — діалоги й переходи сторінок. */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 240ms;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --background: oklch(0.972 0.012 258);
   --foreground: oklch(0.2 0.04 262);
   --card: oklch(1 0 0);
@@ -140,5 +147,24 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* Менше руху: ті, хто вимкнув анімації в системі, і UAT-запис (Playwright reducedMotion) бачать кінцевий стан одразу,
+   без напівпрозорих кадрів. Спінер і скелетон лишаються на місці, але без обертання й пульсації. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

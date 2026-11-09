@@ -38,6 +38,8 @@ export default defineConfig({
     baseURL,
     locale: "uk-UA",
     timezoneId: "Europe/Kyiv",
+    // Кадри «Тоді» знімаються без animations: "disabled": зі зменшеним рухом (globals.css) кінцевий стан одразу в кадрі.
+    reducedMotion: "reduce",
     viewport: { width: 1280, height: 800 },
     video: {
       mode: "on",
