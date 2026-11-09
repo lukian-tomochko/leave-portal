@@ -177,6 +177,8 @@ test.describe("адміністратор", () => {
         await page.getByRole("button", { name: "Показати підсумок" }).click();
         await expect(page.getByTestId("summary-lines")).toContainText("2026-12-29, 08:30–15:30");
         await expect(page.getByText("The school is closed on this day")).toHaveCount(0);
+        // Кадр знімає лише видиму частину: підсумок має бути в кадрі, а не під заголовком.
+        await page.getByTestId("summary-lines").scrollIntoViewIfNeeded();
       },
     );
   });
@@ -193,10 +195,14 @@ test.describe("адміністратор", () => {
       page,
       {
         clause: 'the administrator sees the message "The end date cannot be earlier than the start date"',
-        visible: ["форма закриття з введеними датами", "червоне повідомлення «The end date cannot be earlier than the start date»"],
+        visible: ["форма закриття з назвою «Winter break» і введеними датами", "червоне повідомлення «The end date cannot be earlier than the start date»"],
       },
       async () => {
         await expect(page.getByRole("alert").filter({ hasText: "The end date cannot be earlier than the start date" })).toBeVisible();
+        // Введене лишається у формі (DESIGN.md): адміністратор виправляє дату, а не вводить усе заново.
+        await expect(page.getByLabel("Назва")).toHaveValue("Winter break");
+        await expect(page.getByLabel("Початкова дата")).toHaveValue("2027-01-08");
+        await expect(page.getByLabel("Кінцева дата")).toHaveValue("2026-12-28");
       },
     );
     await thenStep(
@@ -221,11 +227,13 @@ test.describe("адміністратор", () => {
       page,
       {
         clause: 'the administrator sees the message "2026-12-30 is already closed: Winter break"',
-        visible: ["форма з назвою «Staff day»", "червоне повідомлення «2026-12-30 is already closed: Winter break»"],
+        visible: ["форма з назвою «Staff day» і датою 2026-12-30", "червоне повідомлення «2026-12-30 is already closed: Winter break»", "у списку лише «Winter break»"],
         hidden: ["закриття «Staff day» не збережено"],
       },
       async () => {
         await expect(page.getByRole("alert").filter({ hasText: "2026-12-30 is already closed: Winter break" })).toBeVisible();
+        await expect(page.getByLabel("Назва")).toHaveValue("Staff day");
+        await expect(page.getByLabel("Початкова дата")).toHaveValue("2026-12-30");
         await expect(page.getByTestId("manage-closures").getByText("Staff day")).toHaveCount(0);
       },
     );
@@ -271,7 +279,7 @@ test.describe("працівник і календар", () => {
       page,
       {
         clause: 'the employee sees the message "The school is closed on this day: Winter break"',
-        visible: ["форма нової заявки з датою 2026-12-29", "повідомлення «The school is closed on this day: Winter break»"],
+        visible: ["форма нової заявки", "під полем дати повідомлення «The school is closed on this day: Winter break»"],
         hidden: ["дата не прийнята: підсумок заявки не створено"],
       },
       async () => {
@@ -406,12 +414,16 @@ test.describe("працівник і календар", () => {
     );
     await thenStep(
       page,
-      { clause: "2026-11-27 is still accepted in a new request", visible: ["підсумок заявки", "рядок «2026-11-27, 08:30–15:30»"] },
+      {
+        clause: "2026-11-27 is still accepted in a new request",
+        visible: ["підсумок нової заявки працівника (заявку подає працівник, а не менеджер)", "рядок «2026-11-27, 08:30–15:30» без повідомлення про закриту школу"],
+      },
       async () => {
         await actAs(page, employeeSession);
         await fillRequest(page, { date: "2026-11-27", type: "personal" });
         await page.getByRole("button", { name: "Показати підсумок" }).click();
         await expect(page.getByTestId("summary-lines")).toContainText("2026-11-27, 08:30–15:30");
+        await page.getByTestId("summary-lines").scrollIntoViewIfNeeded();
       },
     );
   });
@@ -454,6 +466,7 @@ test.describe("працівник і календар", () => {
       },
       async () => {
         await expect(page.getByTestId("summary-lines")).toContainText("2026-11-03, 09:00–12:30 (3 h");
+        await page.getByTestId("summary-lines").scrollIntoViewIfNeeded();
       },
     );
     await when("працівник підтверджує підсумок", async () => {

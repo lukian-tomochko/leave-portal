@@ -15,12 +15,14 @@ const IDLE: ClosureFormState = { status: "idle" };
 export function ClosureForm() {
   const [state, formAction, pending] = useActionState(addClosure, IDLE);
   const [kind, setKind] = useState<"whole" | "early">("whole");
+  // Після помилки поля беруть введене з стану дії; після успіху (saved) стан без values, і форма порожня.
+  const values = state.status === "error" ? state.values : undefined;
 
   return (
     <form action={formAction} className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4" data-testid="closure-form">
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="closure-name">Назва</Label>
-        <Input id="closure-name" name="name" required maxLength={100} />
+        <Input id="closure-name" name="name" required maxLength={100} defaultValue={values?.name} />
       </div>
 
       <fieldset className="flex flex-col gap-2">
@@ -53,22 +55,22 @@ export function ClosureForm() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="closure-starts-on">Початкова дата</Label>
-            <Input id="closure-starts-on" name="startsOn" type="date" required />
+            <Input id="closure-starts-on" name="startsOn" type="date" required defaultValue={values?.startsOn} />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="closure-ends-on">Кінцева дата</Label>
-            <Input id="closure-ends-on" name="endsOn" type="date" required />
+            <Input id="closure-ends-on" name="endsOn" type="date" required defaultValue={values?.endsOn} />
           </div>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="closure-date">Дата</Label>
-            <Input id="closure-date" name="date" type="date" required />
+            <Input id="closure-date" name="date" type="date" required defaultValue={values?.date} />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="closure-time">Школа закрита від</Label>
-            <Input id="closure-time" name="time" type="time" step={300} required />
+            <Input id="closure-time" name="time" type="time" step={300} required defaultValue={values?.time} />
           </div>
         </div>
       )}

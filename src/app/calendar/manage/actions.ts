@@ -6,7 +6,7 @@ import { addClosureMessage, parseClosureForm, removeClosureMessage } from "@/lib
 import { isRecordId } from "@/lib/leave/decision";
 import { CLOSURE_TECHNICAL_ERROR, ONLY_ADMIN_CALENDAR } from "@/lib/leave/messages";
 import { createClient } from "@/lib/supabase/server";
-import type { ClosureFormState } from "./state";
+import type { ClosureFormState, ClosureFormValues } from "./state";
 
 const field = (formData: FormData, name: string): string => {
   const value = formData.get(name);
@@ -36,16 +36,16 @@ export async function addClosure(_previous: ClosureFormState, formData: FormData
     if (!isAdmin) {
       return { status: "error", message: ONLY_ADMIN_CALENDAR };
     }
-    const parsed = parseClosureForm({
-      kind: field(formData, "kind"),
+    const values: ClosureFormValues = {
       name: field(formData, "name"),
       startsOn: field(formData, "startsOn"),
       endsOn: field(formData, "endsOn"),
       date: field(formData, "date"),
       time: field(formData, "time"),
-    });
+    };
+    const parsed = parseClosureForm({ kind: field(formData, "kind"), ...values });
     if (!parsed.ok) {
-      return { status: "error", message: parsed.message };
+      return { status: "error", message: parsed.message, values };
     }
     const { name, startsOn, endsOn, closedFrom } = parsed.input;
     const { data, error } = await supabase.rpc("add_school_closure", {
@@ -56,11 +56,11 @@ export async function addClosure(_previous: ClosureFormState, formData: FormData
     });
     if (error) {
       // 42501 — база відмовила за роллю (AC-CAL-13).
-      return { status: "error", message: error.code === "42501" ? ONLY_ADMIN_CALENDAR : CLOSURE_TECHNICAL_ERROR };
+      return { status: "error", message: error.code === "42501" ? ONLY_ADMIN_CALENDAR : CLOSURE_TECHNICAL_ERROR, values };
     }
     const message = addClosureMessage(data);
     if (message !== null) {
-      return { status: "error", message };
+      return { status: "error", message, values };
     }
   } catch (error) {
     // redirect() усередині try кидає службовий виняток Next.js: його не ковтаємо.
