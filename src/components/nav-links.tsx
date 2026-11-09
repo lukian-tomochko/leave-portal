@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,12 @@ const LINKS = [
   { href: "/calendar", label: "Календар", exact: false, deciders: false },
   { href: "/decisions", label: "Рішення", exact: false, deciders: true },
 ];
+
+// Підпис пункту: поки клацнутий маршрут вантажиться, текст м'яко пульсує (useLinkStatus читає стан найближчого Link).
+function NavLabel({ label }: { label: string }) {
+  const { pending } = useLinkStatus();
+  return <span className={pending ? "animate-pulse" : undefined}>{label}</span>;
+}
 
 // Навігація шапки: активний пункт підсвічено й позначено aria-current (не лише кольором).
 export function NavLinks({ role }: { role?: string | null }) {
@@ -38,7 +44,7 @@ export function NavLinks({ role }: { role?: string | null }) {
                 : "text-header-muted after:scale-x-0 hover:bg-header-foreground/10 hover:text-header-foreground hover:after:scale-x-50",
             )}
           >
-            {link.label}
+            <NavLabel label={link.label} />
           </Link>
         );
       })}

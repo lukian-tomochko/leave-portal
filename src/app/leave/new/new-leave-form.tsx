@@ -7,6 +7,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import type { Closure } from "@/lib/leave/closures";
 import { NO_WORKING_HOURS, schoolClosedOn } from "@/lib/leave/messages";
@@ -256,7 +257,8 @@ export function NewLeaveForm({
           </Alert>
         ) : null}
 
-        <Button type="submit" disabled={previewPending || isTransition} className="self-start">
+        <Button type="submit" disabled={previewPending || isTransition} aria-busy={previewPending || isTransition} className="self-start">
+          {previewPending || isTransition ? <Spinner /> : null}
           Показати підсумок
         </Button>
       </form>
@@ -322,7 +324,8 @@ export function NewLeaveForm({
             ) : null}
 
             <div className="flex items-center gap-4">
-              <Button type="submit" disabled={submitPending}>
+              <Button type="submit" disabled={submitPending} aria-busy={submitPending}>
+                {submitPending ? <Spinner /> : null}
                 Підтвердити
               </Button>
               <Link href="/leave/new" className={buttonVariants({ variant: "link" })}>
