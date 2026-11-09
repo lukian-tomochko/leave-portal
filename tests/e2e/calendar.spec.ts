@@ -178,7 +178,7 @@ test.describe("адміністратор", () => {
         await expect(page.getByTestId("summary-lines")).toContainText("2026-12-29, 08:30–15:30");
         await expect(page.getByText("The school is closed on this day")).toHaveCount(0);
         // Кадр знімає лише видиму частину: підсумок має бути в кадрі, а не під заголовком.
-        await page.getByTestId("summary-lines").scrollIntoViewIfNeeded();
+        await page.getByRole("button", { name: "Підтвердити" }).scrollIntoViewIfNeeded();
       },
     );
   });
@@ -195,7 +195,8 @@ test.describe("адміністратор", () => {
       page,
       {
         clause: 'the administrator sees the message "The end date cannot be earlier than the start date"',
-        visible: ["форма закриття з назвою «Winter break» і введеними датами", "червоне повідомлення «The end date cannot be earlier than the start date»"],
+        visible: ["червоне повідомлення «The end date cannot be earlier than the start date»", "закриття не додано: список закриттів порожній"],
+        hidden: ["назва й обидві дати лишилися у формі (перевіряє твердження)"],
       },
       async () => {
         await expect(page.getByRole("alert").filter({ hasText: "The end date cannot be earlier than the start date" })).toBeVisible();
@@ -227,8 +228,8 @@ test.describe("адміністратор", () => {
       page,
       {
         clause: 'the administrator sees the message "2026-12-30 is already closed: Winter break"',
-        visible: ["форма з назвою «Staff day» і датою 2026-12-30", "червоне повідомлення «2026-12-30 is already closed: Winter break»", "у списку лише «Winter break»"],
-        hidden: ["закриття «Staff day» не збережено"],
+        visible: ["червоне повідомлення «2026-12-30 is already closed: Winter break»", "у списку закриттів лише «Winter break», «Staff day» немає"],
+        hidden: ["закриття «Staff day» не збережено", "назва й дата лишилися у формі (перевіряє твердження)"],
       },
       async () => {
         await expect(page.getByRole("alert").filter({ hasText: "2026-12-30 is already closed: Winter break" })).toBeVisible();
@@ -423,7 +424,7 @@ test.describe("працівник і календар", () => {
         await fillRequest(page, { date: "2026-11-27", type: "personal" });
         await page.getByRole("button", { name: "Показати підсумок" }).click();
         await expect(page.getByTestId("summary-lines")).toContainText("2026-11-27, 08:30–15:30");
-        await page.getByTestId("summary-lines").scrollIntoViewIfNeeded();
+        await page.getByRole("button", { name: "Підтвердити" }).scrollIntoViewIfNeeded();
       },
     );
   });
@@ -466,7 +467,7 @@ test.describe("працівник і календар", () => {
       },
       async () => {
         await expect(page.getByTestId("summary-lines")).toContainText("2026-11-03, 09:00–12:30 (3 h");
-        await page.getByTestId("summary-lines").scrollIntoViewIfNeeded();
+        await page.getByRole("button", { name: "Підтвердити" }).scrollIntoViewIfNeeded();
       },
     );
     await when("працівник підтверджує підсумок", async () => {
