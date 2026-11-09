@@ -1,3 +1,4 @@
+import type { Closure } from "./closures";
 import type { ExistingRecord, LeaveRecordView, LeaveType, PlannedRecord, Position } from "./types";
 
 // Порт доступу до даних: домен не знає про Supabase. Адаптер — supabase-repository.ts; у тестах — фейк у пам'яті.
@@ -22,6 +23,8 @@ export interface LeaveRepository {
   loadPositions(employeeId: string): Promise<Position[]>;
   // Записи працівника, що блокують перетин (статуси «Awaiting decision», «Returned for revision», «Approved»).
   loadExistingRecords(employeeId: string): Promise<ExistingRecord[]>;
+  // Закриття шкільного календаря, що покривають хоча б одну з дат (їх бачать усі авторизовані користувачі).
+  loadClosures(dates: string[]): Promise<Closure[]>;
   // Заявка й усі її записи створюються атомарно (одна функція Postgres); повертає id заявки.
   // Кидає LeaveConflictError, якщо базу відхилила заявку через перетин.
   createRequest(request: NewRequest): Promise<string>;

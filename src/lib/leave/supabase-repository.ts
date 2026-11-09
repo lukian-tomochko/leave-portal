@@ -3,7 +3,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import { LeaveConflictError, type LeaveRepository, type NewRequest } from "./repository";
 import { splitText } from "./balance";
 import { positionLabel } from "./schedule";
-import { trimSeconds } from "./time";
+import { isValidDate, trimSeconds } from "./time";
 import type { LeaveType, Position, PositionKind, RecordStatus, ScheduleBlock } from "./types";
 
 // Адаптер порту LeaveRepository для Supabase. Читання йде під RLS користувача, запис — однією функцією Postgres
@@ -69,6 +69,28 @@ export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>
         startsAt: trimSeconds(row.starts_at),
         endsAt: trimSeconds(row.ends_at),
         status: row.status as RecordStatus,
+      }));
+    },
+
+    async loadClosures(dates) {
+      // Некоректні дати відсіє planRequest (INVALID_INPUT); тут беремо лише коректні, щоб не слати їх у запит.
+      const valid = dates.filter(isValidDate).sort();
+      if (valid.length === 0) {
+        return [];
+      }
+      const { data, error } = await supabase
+        .from("school_closures")
+        .select("name, starts_on, ends_on, closed_from")
+        .lte("starts_on", valid[valid.length - 1])
+        .gte("ends_on", valid[0]);
+      if (error) {
+        throw new Error(`loadClosures failed: ${error.code ?? "unknown"}`);
+      }
+      return data.map((row) => ({
+        name: row.name,
+        startsOn: row.starts_on,
+        endsOn: row.ends_on,
+        closedFrom: row.closed_from === null ? null : trimSeconds(row.closed_from),
       }));
     },
 

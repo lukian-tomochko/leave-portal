@@ -1,3 +1,4 @@
+import { openBlocks, type Closure } from "./closures";
 import { NOT_ALLOWED, type DecideResult } from "./decision";
 import { ALREADY_APPROVED, ONLY_HOURS_CAN_BE_CHANGED, alreadyHaveRequest } from "./messages";
 import { LeaveConflictError } from "./repository";
@@ -25,6 +26,8 @@ export type OwnRecord = {
 export type OwnRecordContext = {
   record: OwnRecord;
   position: Position;
+  // Закриття шкільного календаря на дату запису (вимога 04): години змінюємо лише в межах відкритої частини розкладу.
+  closure?: Closure;
   others: { date: string; startsAt: string; endsAt: string }[];
 };
 
@@ -69,7 +72,7 @@ const overlaps = (a: { startsAt: string; endsAt: string }, b: { startsAt: string
 // Перевірки без запису: лише години, у межах розкладу, без перетину з іншими записами тієї ж посади
 // (саме з собою запис не перевіряється, припущення PM).
 function checkChange(context: OwnRecordContext, input: ChangeInput): EmployeeOutcome | null {
-  const { record, position, others } = context;
+  const { record, position, others, closure } = context;
 
   const requested = input.requested ?? {};
   if (
@@ -83,7 +86,7 @@ function checkChange(context: OwnRecordContext, input: ChangeInput): EmployeeOut
     return statusRefusal(record.status);
   }
 
-  const hours = validateHours(blocksOn(position, record.date), input.startsAt, input.endsAt);
+  const hours = validateHours(openBlocks(blocksOn(position, record.date), closure), input.startsAt, input.endsAt);
   if (!hours.ok) {
     return { ok: false, code: "INVALID_HOURS", message: hours.message };
   }

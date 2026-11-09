@@ -32,11 +32,11 @@
 
 ## 3. Закриття в заявці (AC-CAL-03, 04, 05, 09)
 
-- [ ] 3.1 `src/lib/leave/closures.ts` (`Closure`, `closureOn`, `openBlocks`, валідація назви й дат) із unit-тестами;
+- [x] 3.1 `src/lib/leave/closures.ts` (`Closure`, `closureOn`, `openBlocks`, валідація назви й дат) із unit-тестами;
   додати до `FLOORED` у `vitest.coverage.config.mts`.
-- [ ] 3.2 `PlanContext.closures`, `planRequest`/`checkChange` через `openBlocks`, `skippedClosed`, `SCHOOL_CLOSED`; `use-cases.ts`
+- [x] 3.2 `PlanContext.closures`, `planRequest`/`checkChange` через `openBlocks`, `skippedClosed`, `SCHOOL_CLOSED`; `use-cases.ts`
   і репозиторій читають закриття; повідомлення в `messages.ts`; форма показує закриту дату одразу.
-- [ ] 3.3 Міграція: закриття в `private.create_leave_request_impl` і `private.update_leave_record_hours` (D6); тест бази, що
+- [x] 3.3 Міграція: закриття в `private.create_leave_request_impl` і `private.update_leave_record_hours` (D6); тест бази, що
   пряма заявка на закритий день відхилена; SQL-мутант на цей чек.
   Done when: AC-CAL-03, AC-CAL-04, AC-CAL-05, AC-CAL-09 (половина заявки) — unit і тести бази зелені, мутант убитий.
 

@@ -14,7 +14,8 @@
 const DECIDE = "supabase/migrations/20261027090000_leave_balance.sql";
 const DECISION_DB = "tests/db/leave-decision.test.ts";
 const BALANCE_DB = "tests/db/leave-balance.test.ts";
-const HOURS_END = "supabase/migrations/20261109090000_leave_hours_end_at_block_start.sql";
+const CLOSURES_REQ = "supabase/migrations/20261109150000_closures_in_requests.sql";
+const CLOSURES_REQ_DB = "tests/db/closures-in-requests.test.ts";
 const REQUEST_DB = "tests/db/leave-request.test.ts";
 const CLOSURES = "supabase/migrations/20261109120000_school_closures.sql";
 const CLOSURES_DB = "tests/db/school-calendar.test.ts";
@@ -44,7 +45,7 @@ export const mutants = [
     replace: "    for share;\n  end if;\n",
   },
   {
-    id: "S2", kind: "sql", ac: "AC-DECIDE-12", file: HOURS_END, tests: [DECISION_DB],
+    id: "S2", kind: "sql", ac: "AC-DECIDE-12", file: CLOSURES_REQ, tests: [DECISION_DB],
     what: "update_leave_record_hours: схвалений запис теж можна змінити (статус approved у переліку дозволених)",
     find: "v_record.status not in ('awaiting_decision', 'returned_for_revision')",
     replace: "v_record.status not in ('awaiting_decision', 'returned_for_revision', 'approved')",
@@ -56,13 +57,13 @@ export const mutants = [
     replace: "    true\n    or (select private.current_app_role()) = 'admin'",
   },
   {
-    id: "S4", kind: "sql", ac: "AC-LEAVE-22", file: HOURS_END, tests: [REQUEST_DB],
+    id: "S4", kind: "sql", ac: "AC-LEAVE-22", file: CLOSURES_REQ, tests: [REQUEST_DB],
     what: "create_leave_request_impl: кінець відпустки більше не може дорівнювати початку наступного блоку (09:00–12:30 знову відхиляється)",
     find: " or v_ends = b.starts_at",
     replace: "",
   },
   {
-    id: "S5", kind: "sql", ac: "AC-LEAVE-22", file: HOURS_END, tests: [REQUEST_DB],
+    id: "S5", kind: "sql", ac: "AC-LEAVE-22", file: CLOSURES_REQ, tests: [REQUEST_DB],
     what: "update_leave_record_hours: зміна годин із кінцем на початку наступного блоку знову відхиляється",
     find: " or p_ends_at = b.starts_at",
     replace: "",
@@ -123,5 +124,36 @@ export const mutants = [
     what: "add_school_closure: для скороченого дня блокують усі записи дня, а не лише ті, що мають хвилини після часу закриття",
     find: "greatest(r.starts_at, sb.starts_at, p_closed_from)",
     replace: "greatest(r.starts_at, sb.starts_at)",
+  },
+  {
+    id: "S14", kind: "sql", ac: "AC-CAL-03", file: CLOSURES_REQ, tests: [CLOSURES_REQ_DB],
+    what: "create_leave_request_impl: закритий день більше не відхиляється (пряма заявка на день закриття проходить)",
+    find:
+      "    if v_closed_from = time '00:00' then\n" +
+      "      raise exception 'school_closed' using errcode = '22023';\n" +
+      "    end if;\n",
+    replace: "",
+  },
+  {
+    id: "S15", kind: "sql", ac: "AC-CAL-03", file: CLOSURES_REQ, tests: [CLOSURES_REQ_DB],
+    what: "update_leave_record_hours: зміна годин запису на закритий день більше не відхиляється",
+    find:
+      "  if v_closed_from = time '00:00' then\n" +
+      "    raise exception 'school_closed' using errcode = '22023';\n" +
+      "  end if;\n" +
+      "  v_cut := coalesce(v_closed_from, time '24:00');\n",
+    replace: "  v_cut := time '24:00';\n",
+  },
+  {
+    id: "S16", kind: "sql", ac: "AC-CAL-05", file: CLOSURES_REQ, tests: [CLOSURES_REQ_DB],
+    what: "create_leave_request_impl: кінець відпустки на скороченому дні не обмежений часом закриття (08:30–15:30 проходить)",
+    find: "and ((v_ends > b.starts_at and v_ends <= least(b.ends_at, v_cut)) or v_ends = b.starts_at)",
+    replace: "and ((v_ends > b.starts_at and v_ends <= b.ends_at) or v_ends = b.starts_at)",
+  },
+  {
+    id: "S17", kind: "sql", ac: "AC-CAL-05", file: CLOSURES_REQ, tests: [CLOSURES_REQ_DB],
+    what: "update_leave_record_hours: кінець змінених годин на скороченому дні не обмежений часом закриття",
+    find: "and ((p_ends_at > b.starts_at and p_ends_at <= least(b.ends_at, v_cut)) or p_ends_at = b.starts_at)",
+    replace: "and ((p_ends_at > b.starts_at and p_ends_at <= b.ends_at) or p_ends_at = b.starts_at)",
   },
 ];

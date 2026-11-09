@@ -76,8 +76,12 @@ export type ExistingRecord = {
   status: RecordStatus;
 };
 
+import type { Closure } from "./closures";
+
 export type PlanContext = {
   positions: Position[];
+  // Закриття шкільного календаря, що покривають обрані дати (вимога 04); без них закриттів немає.
+  closures?: Closure[];
   // Записи працівника для перевірки перетинів; без них перетини не перевіряються.
   existing?: ExistingRecord[];
 };
@@ -90,6 +94,7 @@ export type PlanErrorCode =
   | "END_NOT_AFTER_START"
   | "RELATIONSHIP_REQUIRED"
   | "COMMENT_TOO_LONG"
+  | "SCHOOL_CLOSED"
   | "TIME_CONFLICT"
   | "INVALID_INPUT";
 
@@ -102,6 +107,8 @@ export type PlanResult =
       comment?: string;
       // Дати без робочих годин, які не прийнято (AC-LEAVE-21); решта дат заявки створюється.
       skippedDates: string[];
+      // Дати, закриті в шкільному календарі, з назвою закриття (AC-CAL-03); теж не приймаються, решта дат лишається.
+      skippedClosed: { date: string; name: string }[];
     }
   | { ok: false; code: PlanErrorCode; message: string };
 

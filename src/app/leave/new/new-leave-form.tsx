@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
-import { NO_WORKING_HOURS } from "@/lib/leave/messages";
+import type { Closure } from "@/lib/leave/closures";
+import { NO_WORKING_HOURS, schoolClosedOn } from "@/lib/leave/messages";
 import { dateError as checkDate, positionsError } from "@/lib/leave/form-checks";
 import { RELATIONSHIPS } from "@/lib/leave/types";
 import { previewLeaveRequest, submitLeaveRequest } from "../actions";
@@ -42,9 +43,11 @@ function keyOf(values: {
 export function NewLeaveForm({
   positions,
   leaveTypes,
+  closures,
 }: {
   positions: PositionOption[];
   leaveTypes: LeaveTypeOption[];
+  closures: Closure[];
 }) {
   const [preview, previewAction, previewPending] = useActionState(previewLeaveRequest, IDLE);
   const [submit, submitAction, submitPending] = useActionState(submitLeaveRequest, IDLE);
@@ -67,7 +70,7 @@ export function NewLeaveForm({
 
   // Дату не приймаємо, якщо жодна з обраних посад не має розкладу в цей день тижня (AC-LEAVE-06). Жодної обраної посади —
   // окреме повідомлення PM при поданні (AC-LEAVE-10), тож біля дати помилки немає. Правила — у form-checks.ts з тестами.
-  const dateError = (date: string): string | null => checkDate(date, positions, selected);
+  const dateError = (date: string): string | null => checkDate(date, positions, selected, closures);
 
   const acceptedDates = dates.filter((date) => date !== "" && dateError(date) === null);
   const isFamily = leaveType === "family";
@@ -274,6 +277,13 @@ export function NewLeaveForm({
             <Alert key={date} variant="warning" role="status">
               <AlertDescription>
                 {date}: {NO_WORKING_HOURS}
+              </AlertDescription>
+            </Alert>
+          ))}
+          {summary.skippedClosed.map((item) => (
+            <Alert key={item.date} variant="warning" role="status">
+              <AlertDescription>
+                {item.date}: {schoolClosedOn(item.name)}
               </AlertDescription>
             </Alert>
           ))}

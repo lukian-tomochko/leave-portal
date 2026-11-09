@@ -1,6 +1,14 @@
 import { LeaveConflictError, type LeaveRepository } from "./repository";
 import { planRequest } from "./request";
-import type { LeaveRecordView, LeaveType, PlanErrorCode, PlannedRecord, Position, RequestInput } from "./types";
+import type {
+  LeaveRecordView,
+  LeaveType,
+  PlanContext,
+  PlanErrorCode,
+  PlannedRecord,
+  Position,
+  RequestInput,
+} from "./types";
 
 // Сценарії над портом LeaveRepository: тестуються без бази (фейк у пам'яті), а server actions лише викликають їх.
 
@@ -14,10 +22,19 @@ export type PreviewOutcome =
       positions: Position[];
       comment?: string;
       skippedDates: string[];
+      skippedClosed: { date: string; name: string }[];
     }
   | Failure;
 
 export type SubmitOutcome = { ok: true; requestId: string } | Failure;
+
+// Усе, що потрібно планувальнику: посади, наявні записи й закриття шкільного календаря на обрані дати.
+async function loadPlanContext(repository: LeaveRepository, employeeId: string, input: RequestInput): Promise<PlanContext> {
+  const positions = await repository.loadPositions(employeeId);
+  const existing = await repository.loadExistingRecords(employeeId);
+  const closures = await repository.loadClosures(input.dates);
+  return { positions, existing, closures };
+}
 
 // Підсумок перед підтвердженням: лише читає й перевіряє. Нічого не створює, тому до підтвердження жодного запису
 // немає, а введені значення повертає викликач (AC-LEAVE-11).
@@ -26,10 +43,9 @@ export async function previewRequest(
   employeeId: string,
   input: RequestInput,
 ): Promise<PreviewOutcome> {
-  const positions = await repository.loadPositions(employeeId);
-  const existing = await repository.loadExistingRecords(employeeId);
+  const context = await loadPlanContext(repository, employeeId, input);
 
-  const plan = planRequest(input, { positions, existing });
+  const plan = planRequest(input, context);
   if (!plan.ok) {
     return plan;
   }
@@ -37,9 +53,10 @@ export async function previewRequest(
     ok: true,
     leaveType: plan.leaveType,
     records: plan.records,
-    positions,
+    positions: context.positions,
     comment: plan.comment,
     skippedDates: plan.skippedDates,
+    skippedClosed: plan.skippedClosed,
   };
 }
 
@@ -58,10 +75,9 @@ export async function submitRequest(
   employeeId: string,
   input: RequestInput,
 ): Promise<SubmitOutcome> {
-  const positions = await repository.loadPositions(employeeId);
-  const existing = await repository.loadExistingRecords(employeeId);
+  const context = await loadPlanContext(repository, employeeId, input);
 
-  const plan = planRequest(input, { positions, existing });
+  const plan = planRequest(input, context);
   if (!plan.ok) {
     return plan;
   }
@@ -79,7 +95,7 @@ export async function submitRequest(
       throw error;
     }
     const fresh = await repository.loadExistingRecords(employeeId);
-    const replan = planRequest(input, { positions, existing: fresh });
+    const replan = planRequest(input, { ...context, existing: fresh });
     return replan.ok ? { ok: false, code: "INVALID_INPUT", message: "Invalid request" } : replan;
   }
 }

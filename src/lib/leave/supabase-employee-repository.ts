@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { DecisionDeniedError, type DecideResult } from "./decision";
 import type { EmployeeRecordRepository } from "./employee-record";
+import { closureOn } from "./closures";
 import { LeaveConflictError } from "./repository";
 import { trimSeconds } from "./time";
 import { createSupabaseLeaveRepository } from "./supabase-repository";
@@ -48,7 +49,9 @@ export function createSupabaseEmployeeRepository(supabase: SupabaseClient<Databa
         throw new Error(`getOwnRecord(request) failed: ${requestError.code ?? "unknown"}`);
       }
 
-      const positions = await createSupabaseLeaveRepository(supabase).loadPositions(employeeId);
+      const leaveRepository = createSupabaseLeaveRepository(supabase);
+      const positions = await leaveRepository.loadPositions(employeeId);
+      const closure = closureOn(await leaveRepository.loadClosures([row.leave_date]), row.leave_date);
       const position = positions.find((item) => item.id === row.position_id);
       if (!position) {
         throw new Error("getOwnRecord: position of a record is not visible");
@@ -79,6 +82,7 @@ export function createSupabaseEmployeeRepository(supabase: SupabaseClient<Databa
           leaveType: request.leave_type as LeaveType,
         },
         position,
+        closure,
         others: others.map((other) => ({
           date: other.leave_date,
           startsAt: trimSeconds(other.starts_at),

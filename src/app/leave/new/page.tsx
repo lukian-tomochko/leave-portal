@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { LEAVE_TYPE_LABELS } from "@/lib/leave/messages";
 import { positionLabel } from "@/lib/leave/schedule";
 import { createSupabaseLeaveRepository } from "@/lib/leave/supabase-repository";
+import { todayInKyiv } from "@/lib/leave/time";
 import { LEAVE_TYPES } from "@/lib/leave/types";
 import { createClient } from "@/lib/supabase/server";
 import { NewLeaveForm } from "./new-leave-form";
@@ -17,7 +18,11 @@ export default async function NewLeavePage() {
   }
 
   // Під RLS працівник бачить лише власні посади.
-  const positions = await createSupabaseLeaveRepository(supabase).loadPositions(employeeId);
+  const repository = createSupabaseLeaveRepository(supabase);
+  const positions = await repository.loadPositions(employeeId);
+  // Закриття шкільного календаря на найближчі два роки: форма одразу відхиляє закритий день (AC-CAL-03).
+  const today = todayInKyiv();
+  const closures = await repository.loadClosures([today, `${Number(today.slice(0, 4)) + 2}-12-31`]);
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-10">
@@ -32,6 +37,7 @@ export default async function NewLeavePage() {
           weekdays: [...new Set(position.blocks.map((block) => block.weekday))],
         }))}
         leaveTypes={LEAVE_TYPES.map((type) => ({ value: type, label: LEAVE_TYPE_LABELS[type] }))}
+        closures={closures}
       />
     </main>
   );

@@ -32,6 +32,7 @@ describe("planRequest: цілий день", () => {
         },
       ],
       skippedDates: [],
+      skippedClosed: [],
     });
     expect(STATUS_LABELS[expectOk(result).records[0].status]).toBe("Awaiting decision");
   });

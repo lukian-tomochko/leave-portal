@@ -14,7 +14,7 @@ import base from "./vitest.config.mjs";
 // Доменні файли, що вже тримають 90/85/90/90 (звіт npm run coverage:summary на 30.10): розрахунок балансу, планування заявки,
 // перевірки форми й класифікація здоров'я бази. Решта доменних файлів нижче (form.ts і адаптери Supabase — 0 %, бо їх доводять
 // тести бази на PGlite й e2e; use-cases, employee-record, time — гілки або функції під порогом): додаємо сюди, коли підніметься.
-const FLOORED: string[] = ["leave/balance", "leave/request", "leave/form-checks", "health"];
+const FLOORED: string[] = ["leave/balance", "leave/request", "leave/form-checks", "leave/closures", "health"];
 // Фігурні дужки glob розкриваються лише з комою всередині, тож один файл пишемо без них.
 const FLOORED_GLOB = FLOORED.length === 1 ? `src/lib/${FLOORED[0]}.ts` : `src/lib/{${FLOORED.join(",")}}.ts`;
 

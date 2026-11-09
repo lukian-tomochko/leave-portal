@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Closure } from "./closures";
 import { LeaveConflictError, type LeaveRepository, type NewRequest } from "./repository";
 import type { ExistingRecord, LeaveRecordView, Position } from "./types";
 import { listMyRecords, previewRequest, submitRequest } from "./use-cases";
@@ -17,6 +18,8 @@ function fakeRepository(options: {
   existing?: ExistingRecord[];
   // Для гонки: перший createRequest падає конфліктом, а наступне читання повертає ці записи.
   conflictOnCreate?: { existingAfter: ExistingRecord[] };
+  // Закриття шкільного календаря для планування (вимога 04).
+  closures?: Closure[];
   // Що поверне listRecords (фейк не фільтрує за власником, як це робить RLS).
   listed?: LeaveRecordView[];
 }) {
@@ -25,6 +28,7 @@ function fakeRepository(options: {
   const repository: LeaveRepository = {
     loadPositions: async () => [MAIN],
     loadExistingRecords: async () => existing,
+    loadClosures: async () => options.closures ?? [],
     createRequest: async (request) => {
       if (options.conflictOnCreate) {
         existing = options.conflictOnCreate.existingAfter;
@@ -64,6 +68,42 @@ describe("My requests: коментар менеджера", () => {
 
     expect(records).toHaveLength(1);
     expect(records[0]).toMatchObject({ status: "approved", managerComment: "Get well soon" });
+  });
+});
+
+describe("закриття шкільного календаря в заявці", () => {
+  const EARLY_DISMISSAL: Closure = { name: "Teachers' meeting", startsOn: "2026-11-20", endsOn: "2026-11-20", closedFrom: "12:00" };
+  const WINTER_BREAK: Closure = { name: "Winter break", startsOn: "2026-12-28", endsOn: "2027-01-08", closedFrom: null };
+
+  it("AC-CAL-04: цілий день на скороченому дні створює 1 запис 08:30–12:00", async () => {
+    const { repository, created } = fakeRepository({ closures: [EARLY_DISMISSAL] });
+
+    const outcome = await submitRequest(repository, "employee-1", { leaveType: "personal", dates: ["2026-11-20"], positionIds: ["main"] });
+
+    expect(outcome).toEqual({ ok: true, requestId: "request-1" });
+    expect(created[0].records.map((r) => [r.date, r.startsAt, r.endsAt])).toEqual([["2026-11-20", "08:30", "12:00"]]);
+  });
+
+  it("AC-CAL-03: закрита дата в підсумку відкинута з назвою закриття, а відкрита лишається", async () => {
+    const { repository } = fakeRepository({ closures: [WINTER_BREAK] });
+
+    const outcome = await previewRequest(repository, "employee-1", {
+      leaveType: "sick",
+      dates: ["2026-12-29", "2027-01-12"],
+      positionIds: ["main"],
+    });
+
+    expect(outcome).toMatchObject({ ok: true, skippedClosed: [{ date: "2026-12-29", name: "Winter break" }] });
+    expect(expectOk(outcome).records.map((r) => r.date)).toEqual(["2027-01-12"]);
+  });
+
+  it("AC-CAL-03: єдина закрита дата — заявки немає, працівник бачить «The school is closed on this day: Winter break»", async () => {
+    const { repository, created } = fakeRepository({ closures: [WINTER_BREAK] });
+
+    const outcome = await submitRequest(repository, "employee-1", { leaveType: "sick", dates: ["2026-12-29"], positionIds: ["main"] });
+
+    expect(outcome).toEqual({ ok: false, code: "SCHOOL_CLOSED", message: "The school is closed on this day: Winter break" });
+    expect(created).toHaveLength(0);
   });
 });
 
