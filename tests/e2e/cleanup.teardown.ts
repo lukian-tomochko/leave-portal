@@ -3,10 +3,13 @@
 // Без SUPABASE_SECRET_KEY (прогін лише AC, що нічого не пишуть: --grep-invert '@writes') прибирати нічого — тесту немає.
 import { writeFileSync } from "node:fs";
 import { expect, test as teardown } from "@playwright/test";
-import { deleteUatUsers, deletedThisRun, hasAdminKey } from "./support/admin";
+import { deleteSeededRecords, deleteUatUsers, deletedThisRun, hasAdminKey } from "./support/admin";
 
 if (hasAdminKey()) {
   teardown("прибирання: синтетичні uat-*@example.test", async () => {
+    // Спершу засіяні записи (коментар uat-…) для демо-користувачів, потім синтетичні користувачі.
+    const seededLeft = await deleteSeededRecords();
+    expect(seededLeft, "лишились засіяні записи відпустки").toBe(0);
     const result = await deleteUatUsers();
     writeFileSync(
       "test-results/uat-cleanup.json",

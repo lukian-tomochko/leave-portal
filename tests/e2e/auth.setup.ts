@@ -18,6 +18,7 @@ const ROLES = {
   teacher2: "teacher2@example.test",
   manager1: "manager1@example.test",
   manager2: "manager2@example.test",
+  admin: "admin@example.test",
 } as const;
 
 for (const [role, email] of Object.entries(ROLES)) {

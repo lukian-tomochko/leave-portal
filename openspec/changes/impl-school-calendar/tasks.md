@@ -62,7 +62,7 @@
 
 ## 7. UAT на кожен AC зрізу 3
 
-- [ ] 7.1 Специфікації Playwright на AC-CAL-01…15 і AC-LEAVE-22 (`given/when/thenStep`, дослівне «Тоді»); роль `admin` у `auth.setup.ts`;
+- [x] 7.1 Специфікації Playwright на AC-CAL-01…15 і AC-LEAVE-22 (`given/when/thenStep`, дослівне «Тоді»); роль `admin` у `auth.setup.ts`;
   `@writes` з прибиранням у `finally` і teardown (`school_closures`, записи тесту).
 - [ ] 7.2 Прогін на проді, звіт `docs/qa/uat/<дата>/`, негативний контроль, відео вкладенням у PR.
   Done when: усі AC-CAL-01…15 і AC-LEAVE-22 мають рядок звіту UAT або запис у «Не перевірено» з причиною.
