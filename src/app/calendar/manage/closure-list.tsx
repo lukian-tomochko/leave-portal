@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { APPEAR, stagger } from "@/lib/utils";
 import { removeClosure } from "./actions";
 import type { ClosureFormState } from "./state";
 
@@ -38,8 +39,8 @@ export function ClosureList({ rows }: { rows: ClosureRow[] }) {
         aria-busy={pending}
         data-testid="manage-closures"
       >
-        {rows.map((row) => (
-          <li key={row.id} className={`flex flex-wrap items-center justify-between gap-2 p-3 ${listItemCard}`}>
+        {rows.map((row, index) => (
+          <li key={row.id} className={`flex flex-wrap items-center justify-between gap-2 p-3 ${listItemCard} ${APPEAR}`} style={stagger(index)}>
             <span className="font-medium">{row.name}</span>
             <span className="tabular-nums text-muted-foreground">{row.dates}</span>
             <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => setTarget(row)}>

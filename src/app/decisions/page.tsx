@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { NOT_ALLOWED, awaitingEmptyMessage, isDecider, listAwaiting, parsePage } from "@/lib/leave/decision";
 import { createSupabaseDecisionRepository, loadActor } from "@/lib/leave/supabase-decision-repository";
 import { createClient } from "@/lib/supabase/server";
+import { FADE_IN } from "@/lib/utils";
 import { Pager } from "./pager";
 import { RecordsTable } from "./records-table";
 
@@ -47,7 +48,7 @@ export default async function AwaitingDecisionPage({ searchParams }: PageProps<"
         </Link>
       </div>
       {empty ? (
-        <p className="text-sm text-muted-foreground" data-testid="awaiting-empty">
+        <p className={`text-sm text-muted-foreground ${FADE_IN}`} data-testid="awaiting-empty">
           {empty}
         </p>
       ) : (

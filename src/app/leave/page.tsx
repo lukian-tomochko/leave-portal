@@ -8,6 +8,7 @@ import type { RecordStatus } from "@/lib/leave/types";
 import { createSupabaseLeaveRepository } from "@/lib/leave/supabase-repository";
 import { listMyRecords } from "@/lib/leave/use-cases";
 import { createClient } from "@/lib/supabase/server";
+import { APPEAR, FADE_IN, stagger } from "@/lib/utils";
 
 // Колір статусу лише додається до тексту (DESIGN.md): сам статус завжди написано словами.
 const STATUS_VARIANTS = {
@@ -41,7 +42,7 @@ export default async function MyRequestsPage() {
       </Link>
 
       {records.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Заявок ще немає.</p>
+        <p className={`text-sm text-muted-foreground ${FADE_IN}`}>Заявок ще немає.</p>
       ) : (
         <Table data-testid="my-requests">
           <TableHeader>
@@ -59,8 +60,8 @@ export default async function MyRequestsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {records.map((record) => (
-              <TableRow key={record.id}>
+            {records.map((record, index) => (
+              <TableRow key={record.id} className={APPEAR} style={stagger(index)}>
                 <TableCell className="tabular-nums">{record.date}</TableCell>
                 <TableCell className="tabular-nums">
                   {record.startsAt}–{record.endsAt}
