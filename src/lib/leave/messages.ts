@@ -36,6 +36,12 @@ export function alreadyHaveRequest(record: { date: string; startsAt: string; end
   return `You already have a request for this time: ${record.date} ${record.startsAt}–${record.endsAt}`;
 }
 
+// ── Вимога 04: шкільний календар (requirements/04-school-calendar.md) ─────────────────────────────────────
+// AC-CAL-03
+export function schoolClosedOn(name: string): string {
+  return `The school is closed on this day: ${name}`;
+}
+
 // ── Вимога 02: рішення менеджера (requirements/02-leave-decision.md) ───────────
 // AC-DECIDE-04
 export const TELL_EMPLOYEE_WHAT_TO_FIX = "Tell the employee what to fix";

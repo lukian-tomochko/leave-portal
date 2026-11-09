@@ -20,5 +20,6 @@ export type LeaveFormState =
       leaveTypeLabel: string;
       comment?: string; // показується в підсумку (AC-LEAVE-17)
       skippedDates: string[]; // дати без робочих годин, не прийняті (AC-LEAVE-21)
+      skippedClosed: { date: string; name: string }[]; // закриті шкільним календарем, не прийняті (AC-CAL-03)
       lines: SummaryLine[];
     };

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import type { Closure } from "./closures";
 import type { DecideResult } from "./decision";
 import {
   RECORD_NOT_EDITABLE,
@@ -38,7 +39,7 @@ function ownRecord(overrides: Partial<OwnRecord> = {}): OwnRecord {
 function fakeRepository(
   record: OwnRecord,
   others: { date: string; startsAt: string; endsAt: string }[] = [],
-  options: { conflictOnUpdate?: boolean } = {},
+  options: { conflictOnUpdate?: boolean; closure?: Closure } = {},
 ) {
   const current = { ...record };
   const EDITABLE: RecordStatus[] = ["awaiting_decision", "returned_for_revision"];
@@ -63,7 +64,7 @@ function fakeRepository(
   });
   const repository: EmployeeRecordRepository = {
     getOwnRecord: async (employeeId, recordId): Promise<OwnRecordContext | null> =>
-      employeeId === current.employeeId && recordId === current.id ? { record: { ...current }, position: MAIN, others } : null,
+      employeeId === current.employeeId && recordId === current.id ? { record: { ...current }, position: MAIN, others, closure: options.closure } : null,
     updateHours,
     cancel,
   };
@@ -239,5 +240,38 @@ describe("скасування власного запису", () => {
     expect(outcome.ok).toBe(false);
     expect(cancel).not.toHaveBeenCalled();
     expect(current.status).toBe("approved");
+  });
+});
+
+describe("зміна годин запису на скороченому дні", () => {
+  // 2026-11-20 — п'ятниця; скорочений день 'Teachers' meeting' з 12:00 (requirements/04-school-calendar.md).
+  const EARLY_DISMISSAL: Closure = { name: "Teachers' meeting", startsOn: "2026-11-20", endsOn: "2026-11-20", closedFrom: "12:00" };
+  const before = () => ownRecord({ date: "2026-11-20", startsAt: "09:00", endsAt: "10:00" });
+
+  it("AC-CAL-05: години 13:00–14:00 після часу закриття 12:00 відхиляються з повідомленням про відкриту частину розкладу", async () => {
+    const { repository, updateHours } = fakeRepository(before(), [], { closure: EARLY_DISMISSAL });
+
+    const outcome = await changeHours(repository, "teacher1", { recordId: "r1", startsAt: "13:00", endsAt: "14:00" });
+
+    expect(outcome).toEqual({ ok: false, code: "INVALID_HOURS", message: "Hours must be within your schedule: 08:30–12:00" });
+    expect(updateHours).not.toHaveBeenCalled();
+  });
+
+  it("AC-CAL-05: кінець 13:00 за часом закриття 12:00 відхиляється навіть із початком у відкритій частині", async () => {
+    const { repository, updateHours } = fakeRepository(before(), [], { closure: EARLY_DISMISSAL });
+
+    const outcome = await changeHours(repository, "teacher1", { recordId: "r1", startsAt: "11:00", endsAt: "13:00" });
+
+    expect(outcome).toMatchObject({ ok: false, code: "INVALID_HOURS" });
+    expect(updateHours).not.toHaveBeenCalled();
+  });
+
+  it("AC-CAL-04: години до часу закриття (09:00–12:00) приймаються", async () => {
+    const { repository, current } = fakeRepository(before(), [], { closure: EARLY_DISMISSAL });
+
+    const outcome = await changeHours(repository, "teacher1", { recordId: "r1", startsAt: "09:00", endsAt: "12:00" });
+
+    expect(outcome).toEqual({ ok: true, status: "awaiting_decision" });
+    expect(current.endsAt).toBe("12:00");
   });
 });

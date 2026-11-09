@@ -78,6 +78,7 @@ export async function previewLeaveRequest(_previous: LeaveFormState, formData: F
     leaveTypeLabel: LEAVE_TYPE_LABELS[outcome.leaveType],
     comment: outcome.comment,
     skippedDates: outcome.skippedDates,
+    skippedClosed: outcome.skippedClosed,
     lines: outcome.records.map((record) => {
       const position = outcome.positions.find((p) => p.id === record.positionId);
       return {
