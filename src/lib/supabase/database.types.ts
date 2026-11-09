@@ -276,11 +276,65 @@ export type Database = {
           },
         ];
       };
+      school_closures: {
+        Row: {
+          id: string;
+          name: string;
+          starts_on: string;
+          ends_on: string;
+          closed_from: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        // Запис лише функціями add_school_closure / remove_school_closure: authenticated не має insert/update/delete.
+        Insert: {
+          id?: string;
+          name: string;
+          starts_on: string;
+          ends_on: string;
+          closed_from?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          starts_on?: string;
+          ends_on?: string;
+          closed_from?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "school_closures_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      add_school_closure: {
+        Args: {
+          p_name: string;
+          p_starts_on: string;
+          p_ends_on: string;
+          p_closed_from?: string;
+        };
+        Returns: Json;
+      };
+      remove_school_closure: {
+        Args: {
+          p_id: string;
+        };
+        Returns: Json;
+      };
       cancel_leave_record: {
         Args: {
           p_record_id: string;
