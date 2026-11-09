@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ViewTransition } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,7 +85,9 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-lg">
             {record.employeeName}
-            <Badge variant={STATUS_VARIANTS[record.status]}>{STATUS_LABELS[record.status]}</Badge>
+            <ViewTransition name={`status-${record.id}`} share="status-morph" default="none">
+              <Badge variant={STATUS_VARIANTS[record.status]}>{STATUS_LABELS[record.status]}</Badge>
+            </ViewTransition>
           </CardTitle>
         </CardHeader>
         <CardContent>

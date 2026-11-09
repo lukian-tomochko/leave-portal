@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -69,7 +70,9 @@ export default async function MyRequestsPage() {
                 <TableCell>{record.positionLabel}</TableCell>
                 <TableCell>{LEAVE_TYPE_LABELS[record.leaveType]}</TableCell>
                 <TableCell>
-                  <Badge variant={STATUS_VARIANTS[record.status]}>{STATUS_LABELS[record.status]}</Badge>
+                  <ViewTransition name={`status-${record.id}`} share="status-morph" default="none">
+                    <Badge variant={STATUS_VARIANTS[record.status]}>{STATUS_LABELS[record.status]}</Badge>
+                  </ViewTransition>
                   {record.split ? (
                     <p className="mt-1 text-xs text-muted-foreground" data-testid="record-split">
                       {record.split}

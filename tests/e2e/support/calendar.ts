@@ -103,7 +103,13 @@ export async function fillRequest(
   options: { date: string; type: "sick" | "personal"; hours?: { from: string; to: string } },
 ) {
   await page.goto("/leave/new");
-  await page.getByLabel("Дата 1").fill(options.date);
+  // Форма — клієнтський компонент: значення, введене до гідратації, скидається станом React. Тому повторюємо введення
+  // дати, поки вона не лишиться в полі (loading.tsx і ViewTransition трохи зсувають гідратацію).
+  const dateInput = page.getByLabel("Дата 1");
+  await expect(async () => {
+    await dateInput.fill(options.date);
+    await expect(dateInput).toHaveValue(options.date, { timeout: 750 });
+  }).toPass({ timeout: 15_000 });
   for (const box of await page.getByRole("checkbox").all()) {
     await box.check();
   }

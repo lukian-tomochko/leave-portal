@@ -150,6 +150,28 @@
   }
 }
 
+/* Переходи між сторінками (View Transitions, React 19.3 <ViewTransition>): кросфейд за токенами руху; шапка — нерухомий якір,
+   статус запису (клас status-morph) плавно переїжджає зі списку на сторінку запису. */
+::view-transition-old(.page-fade),
+::view-transition-new(.page-fade) {
+  animation-duration: var(--motion-slow);
+  animation-timing-function: var(--motion-ease);
+}
+::view-transition-group(.status-morph) {
+  animation-duration: var(--motion-slow);
+  animation-timing-function: var(--motion-ease);
+}
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+
 /* Менше руху: ті, хто вимкнув анімації в системі, і UAT-запис (Playwright reducedMotion) бачать кінцевий стан одразу,
    без напівпрозорих кадрів. Спінер і скелетон лишаються на місці, але без обертання й пульсації. */
 @media (prefers-reduced-motion: reduce) {

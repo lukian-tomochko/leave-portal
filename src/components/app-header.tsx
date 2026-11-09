@@ -24,7 +24,7 @@ export async function AppHeader() {
     : null;
 
   return (
-    <header className="bg-header text-header-foreground">
+    <header className="bg-header text-header-foreground" style={{ viewTransitionName: "site-header" }}>
       <div className="mx-auto flex min-h-14 w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-2">
         <Link href="/" className="flex items-center gap-2 font-semibold outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
           <CalendarDaysIcon aria-hidden="true" className="size-5" />
