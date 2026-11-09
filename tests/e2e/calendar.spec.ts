@@ -195,7 +195,7 @@ test.describe("адміністратор", () => {
       page,
       {
         clause: 'the administrator sees the message "The end date cannot be earlier than the start date"',
-        visible: ["червоне повідомлення «The end date cannot be earlier than the start date»", "закриття не додано: список закриттів порожній"],
+        visible: ["червоне повідомлення «The end date cannot be earlier than the start date»"],
         hidden: ["назва й обидві дати лишилися у формі (перевіряє твердження)"],
       },
       async () => {

@@ -370,3 +370,29 @@ it("AC-CAL-01: назва: назва зі 100 символів зберігає
   expect(result.ok).toBe(true);
   expect((await closureRows()).map((row) => row.name)).toEqual([name]);
 });
+
+it("AC-CAL-01: скорочений день із часом не кратним 5 хвилинам, 00:00, із секундами чи на кілька днів — invalid_time, закриття не зберігається", async () => {
+  const before = await closureCount();
+
+  const offStep = await addClosure("admin", "Teachers' meeting", "2026-11-20", "2026-11-20", "12:03");
+  const midnight = await addClosure("admin", "Teachers' meeting", "2026-11-20", "2026-11-20", "00:00");
+  const seconds = await addClosure("admin", "Teachers' meeting", "2026-11-20", "2026-11-20", "12:00:30");
+  const manyDays = await addClosure("admin", "Teachers' meeting", "2026-11-20", "2026-11-21", "12:00");
+
+  for (const result of [offStep, midnight, seconds, manyDays]) {
+    expect(result).toMatchObject({ ok: false, code: "invalid_time" });
+  }
+  expect(await closureCount()).toBe(before);
+  // Допустиме значення з того самого набору приймається: «12:05» кратне 5 хвилинам.
+  expect(await addClosure("admin", "Teachers' meeting", "2026-11-20", "2026-11-20", "12:05")).toMatchObject({ ok: true });
+});
+
+it("AC-CAL-09: видалення вже видаленого закриття — not_found, календар не змінюється", async () => {
+  const id = await seedClosure("Winter break", "2026-12-28", "2027-01-08");
+  expect(await removeClosure("admin", id)).toMatchObject({ ok: true });
+
+  const again = await removeClosure("admin", id);
+
+  expect(again).toMatchObject({ ok: false, code: "not_found" });
+  expect(await closureCount()).toBe(0);
+});

@@ -136,7 +136,7 @@ it("AC-LEAVE-22: кінець на початку наступного блок�
   expect(rows).toEqual([{ starts_at: "09:00", ends_at: "12:30" }]);
 });
 
-it("AC-DECIDE-16: працівник змінює години так, що кінець припадає на початок наступного блоку (AC-LEAVE-22)", async () => {
+it("AC-LEAVE-22: зміна годин запису (AC-DECIDE-16) — кінець на початку наступного блоку приймається", async () => {
   // 2027-03-09 — вівторок; блоки посади teacher2: 08:30–12:00 і 12:30–15:30.
   await submit("teacher2", [rec(POSITION_T2_MAIN, "2027-03-09", "09:00", "10:00")]);
   const [record] = await t.asUser<{ id: string }>(

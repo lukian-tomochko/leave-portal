@@ -131,8 +131,10 @@ export const mutants = [
     find:
       "    if v_closed_from = time '00:00' then\n" +
       "      raise exception 'school_closed' using errcode = '22023';\n" +
-      "    end if;\n",
-    replace: "",
+      "    end if;\n" +
+      "    v_cut := coalesce(v_closed_from, time '24:00');\n",
+    // Без обох рядків закритий день не відхиляється й не стає «поза розкладом»: заявка проходить, як описує `what`.
+    replace: "    v_cut := time '24:00';\n",
   },
   {
     id: "S15", kind: "sql", ac: "AC-CAL-03", file: CLOSURES_REQ, tests: [CLOSURES_REQ_DB],

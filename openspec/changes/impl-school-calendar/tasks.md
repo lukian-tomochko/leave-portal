@@ -21,7 +21,7 @@
 
 ## 2. База й права: таблиця закриттів і функції (AC-CAL-01, 07, 08, 10, 11, 13)
 
-- [x] 2.1 Міграція: `public.school_closures` (D4), RLS і `grant select`, exclusion за діапазоном дат, `private.closed_from(date)`.
+- [x] 2.1 Міграція: `public.school_closures` (D4), RLS і `grant select`, exclusion за діапазоном дат. Допоміжну `private.closed_from(date)` створює міграція задачі 3 (`20261109150000_closures_in_requests.sql`).
 - [x] 2.2 `private.add_school_closure` і `private.remove_school_closure` (D5) з обгортками `public.*`; типи в `database.types.ts`; ADR 0007.
 - [x] 2.3 Тести бази на PGlite (`tests/db/school-calendar.test.ts`), кожна відмова перевіряє незмінні дані: AC-CAL-07
   (затверджений запис блокує), AC-CAL-08 (відхилений не блокує), AC-CAL-10 (кінець раніше за початок), AC-CAL-11
