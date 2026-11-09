@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import { listItemCard } from "@/components/ui/card";
 import { balancesOn } from "@/lib/leave/balance";
 import { isDecider } from "@/lib/leave/decision";
 import { loadBalanceInputs } from "@/lib/leave/supabase-balance-repository";
@@ -54,7 +55,7 @@ export default async function BalancesPage() {
           </h2>
           <ul className="flex flex-col gap-2 text-sm" data-testid="balance-employees">
             {employees.map((employee) => (
-              <li key={employee.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-3">
+              <li key={employee.id} className={`flex items-center justify-between p-3 ${listItemCard}`}>
                 <span>{employee.name}</span>
                 <Link href={`/balances/${employee.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                   Відкрити

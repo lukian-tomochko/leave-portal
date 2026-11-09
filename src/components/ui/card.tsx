@@ -91,7 +91,12 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+// Рядок списку у вигляді картки (записи, закриття, працівники): плавна реакція на наведення без зсуву макета.
+const listItemCard =
+  "rounded-lg border border-border bg-card transition-[border-color,box-shadow] duration-(--motion-fast) ease-soft hover:border-foreground/25 hover:shadow-sm"
+
 export {
+  listItemCard,
   Card,
   CardHeader,
   CardFooter,
