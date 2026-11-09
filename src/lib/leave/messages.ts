@@ -42,6 +42,27 @@ export function schoolClosedOn(name: string): string {
   return `The school is closed on this day: ${name}`;
 }
 
+// AC-CAL-12: сторінка зміни календаря для не-адміністратора.
+export const ONLY_ADMIN_CALENDAR = "Only an administrator can change the school calendar";
+// AC-CAL-10
+export const END_BEFORE_START = "The end date cannot be earlier than the start date";
+// AC-CAL-07: пари «дата email» через «, » за датами (порядок дає база).
+export function closureBlocked(records: { date: string; email: string }[]): string {
+  return `These days have leave records and cannot be closed: ${records.map((record) => `${record.date} ${record.email}`).join(", ")}`;
+}
+// AC-CAL-11: перша спільна дата й назва закриття, яке її вже закриває.
+export function alreadyClosed(overlaps: { date: string; name: string }[]): string {
+  const [first] = overlaps;
+  return `${first.date} is already closed: ${first.name}`;
+}
+// PM тексту для цих відмов не дав (питання #24): нейтральні українські фрази.
+export const CLOSURE_NAME_REQUIRED = "Вкажіть назву закриття";
+export const CLOSURE_NAME_TOO_LONG = "Назва закриття має бути не довшою за 100 символів";
+export const CLOSURE_DATE_INVALID = "Вкажіть коректну дату";
+export const CLOSURE_TIME_INVALID = "Вкажіть час закриття після 00:00 з кроком 5 хвилин, наприклад 12:00";
+export const CLOSURE_TECHNICAL_ERROR = "Не вдалося зберегти зміну календаря. Спробуйте ще раз.";
+export const CLOSURE_ALREADY_REMOVED = "Закриття вже видалено. Оновіть сторінку.";
+
 // ── Вимога 02: рішення менеджера (requirements/02-leave-decision.md) ───────────
 // AC-DECIDE-04
 export const TELL_EMPLOYEE_WHAT_TO_FIX = "Tell the employee what to fix";
