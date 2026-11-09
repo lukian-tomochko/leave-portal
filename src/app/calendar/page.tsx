@@ -14,9 +14,12 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   const { year: yearParam } = await searchParams;
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
-  if (!data?.claims?.sub) {
+  const userId = data?.claims?.sub;
+  if (!userId) {
     redirect("/login");
   }
+  // Посилання на керування лише для адміністратора: це UX, права перевіряють сторінка керування, дії й база.
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
 
   const year = parseSchoolYear(yearParam, schoolYearOf(todayInKyiv()));
   const { data: rows, error } = await supabase
@@ -39,7 +42,14 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-10">
-      <h1 className="text-2xl font-semibold">Шкільний календар</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold">Шкільний календар</h1>
+        {profile?.role === "admin" ? (
+          <Link href="/calendar/manage" className={buttonVariants({ size: "sm" })}>
+            Керувати календарем
+          </Link>
+        ) : null}
+      </div>
       <nav aria-label="Навчальний рік" className="flex items-center justify-between gap-2">
         <Link href={`/calendar?year=${year - 1}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
           ← {schoolYearLabel(year - 1)}
