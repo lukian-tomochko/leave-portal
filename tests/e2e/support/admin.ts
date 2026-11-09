@@ -16,7 +16,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  * on delete cascade (інакше Auth відповідає «Database error deleting user»). У демо: leave_requests.employee_id.
  * Якщо таких таблиць немає (або всі FK — cascade), лишіть порожнім.
  */
-const OWNED_ROWS: { table: string; column: string }[] = [];
+const OWNED_ROWS: { table: string; column: string }[] = [{ table: "leave_requests", column: "employee_id" }];
 
 /** Лише такі адреси прибирання має право видалити: uat-<run>[-<суфікс>]@example.test. */
 export const UAT_EMAIL = /^uat-[0-9a-z-]+@example\.test$/;
@@ -108,4 +108,108 @@ export async function deleteUatUsers(onlyEmail?: string): Promise<CleanupResult>
     `${JSON.stringify({ at: new Date().toISOString(), scope: onlyEmail ?? "uat-*", deleted, remaining, leftoverRequests })}\n`,
   );
   return { deleted, remaining, leftoverRequests };
+}
+
+// ── Синтетичні дані шкільного календаря (WS9) ───────────────────────────────────────────────────────────────
+export type ScheduleBlock = { weekday: number; startsAt: string; endsAt: string };
+
+/** Позиції сиду (supabase/seed.sql): основна посада teacher1 — пн–пт 08:30–15:30. */
+export const POSITION_T1_MAIN = "00000000-0000-4000-8000-000000000101";
+
+async function profileIdOf(supabase: SupabaseClient, email: string): Promise<string> {
+  const { data, error } = await supabase.from("profiles").select("id").eq("email", email).single();
+  if (error) throw error;
+  return data.id as string;
+}
+
+/**
+ * Синтетичний працівник uat-<run>-<суфікс>@example.test з однією основною посадою, розкладом і відповідальним менеджером.
+ * Його видаляє прибирання (deleteUatUsers): посади, заявки й записи йдуть каскадом. Пароль — випадковий, лише в пам'яті.
+ */
+export async function createSyntheticEmployee(
+  suffix: string,
+  blocks: ScheduleBlock[],
+  managerEmail = "manager1@example.test",
+): Promise<{ id: string; email: string; password: string; positionId: string }> {
+  const supabase = adminClient();
+  const email = uatEmail(suffix);
+  const password = randomPassword();
+  const { data, error } = await supabase.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { full_name: `UAT ${suffix}` },
+  });
+  if (error) throw error;
+  const id = data.user.id;
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .upsert({ id, email, full_name: `UAT ${suffix}`, role: "employee" }, { onConflict: "id" });
+  if (profileError) throw profileError;
+  const { data: position, error: positionError } = await supabase
+    .from("positions")
+    .insert({ employee_id: id, kind: "main", division: "Elementary school", job_title: "Teacher" })
+    .select("id")
+    .single();
+  if (positionError) throw positionError;
+  const positionId = position.id as string;
+  const { error: blocksError } = await supabase
+    .from("schedule_blocks")
+    .insert(blocks.map((b) => ({ position_id: positionId, weekday: b.weekday, starts_at: b.startsAt, ends_at: b.endsAt })));
+  if (blocksError) throw blocksError;
+  const { error: managerError } = await supabase
+    .from("position_managers")
+    .insert({ position_id: positionId, manager_id: await profileIdOf(supabase, managerEmail) });
+  if (managerError) throw managerError;
+  return { id, email, password, positionId };
+}
+
+export type SeedRecord = {
+  employeeEmail: string;
+  positionId: string;
+  date: string;
+  startsAt: string;
+  endsAt: string;
+  status: "awaiting_decision" | "approved" | "rejected";
+  leaveType?: "sick" | "personal";
+};
+
+/** Запис відпустки з потрібним статусом (Given). Коментар uat-<run> позначає його для прибирання deleteSeededRecords. */
+export async function seedRecord(input: SeedRecord): Promise<{ requestId: string; recordId: string; employeeId: string }> {
+  const supabase = adminClient();
+  const employeeId = await profileIdOf(supabase, input.employeeEmail);
+  const { data: request, error } = await supabase
+    .from("leave_requests")
+    .insert({ employee_id: employeeId, leave_type: input.leaveType ?? "personal", comment: `uat-${process.env.UAT_RUN ?? "manual"}` })
+    .select("id")
+    .single();
+  if (error) throw error;
+  const { data: record, error: recordError } = await supabase
+    .from("leave_records")
+    .insert({
+      request_id: request.id,
+      employee_id: employeeId,
+      position_id: input.positionId,
+      leave_date: input.date,
+      starts_at: input.startsAt,
+      ends_at: input.endsAt,
+      status: input.status,
+    })
+    .select("id")
+    .single();
+  if (recordError) throw recordError;
+  return { requestId: request.id as string, recordId: record.id as string, employeeId };
+}
+
+/** Видаляє всі засіяні заявки (коментар uat-…) разом із записами; повертає, скільки лишилось. */
+export async function deleteSeededRecords(): Promise<number> {
+  const supabase = adminClient();
+  const { error } = await supabase.from("leave_requests").delete().like("comment", "uat-%");
+  if (error) throw error;
+  const { count, error: countError } = await supabase
+    .from("leave_requests")
+    .select("*", { count: "exact", head: true })
+    .like("comment", "uat-%");
+  if (countError) throw countError;
+  return count ?? 0;
 }
