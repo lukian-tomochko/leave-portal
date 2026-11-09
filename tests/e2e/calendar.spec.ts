@@ -35,9 +35,14 @@ const WINTER_BREAK = { name: "Winter break", startsOn: "2026-12-28", endsOn: "20
 const TEACHERS_MEETING = { name: "Teachers' meeting", date: "2026-11-20", time: "12:00" };
 const EMPTY_2026 = "No closed days in school year 2026–2027";
 
+// Сценарії з кількома сесіями й прибиранням довші за типові 60 с (в таймаут входить і afterEach).
+test.describe.configure({ timeout: 180_000 });
+
 // Помилки сторінки до звіту, потім прибирання після тестів, що писали: закриття (через інтерфейс адміністратора) і засіяні записи.
 test.afterEach(async ({ page, browser }, testInfo) => {
-  await attachRuntimeErrors(page);
+  // Після actAs (підміна cookie) якийсь запит може лишитись без відповіді, і r.response() у attachRuntimeErrors чекав би
+  // вічно: обмежуємо збір помилок 10 с, а не тримаємо тест до таймауту.
+  await Promise.race([attachRuntimeErrors(page).catch(() => {}), new Promise((resolve) => setTimeout(resolve, 10_000))]);
   if (!testInfo.tags.includes("@writes")) return;
   await removeUatClosures(browser);
   if (hasAdminKey()) await deleteSeededRecords();
