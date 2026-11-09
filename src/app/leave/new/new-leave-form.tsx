@@ -7,11 +7,13 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import type { Closure } from "@/lib/leave/closures";
 import { NO_WORKING_HOURS, schoolClosedOn } from "@/lib/leave/messages";
 import { dateError as checkDate, positionsError } from "@/lib/leave/form-checks";
 import { RELATIONSHIPS } from "@/lib/leave/types";
+import { APPEAR, FADE_IN, stagger } from "@/lib/utils";
 import { previewLeaveRequest, submitLeaveRequest } from "../actions";
 import type { LeaveFormState } from "../state";
 
@@ -201,7 +203,7 @@ export function NewLeaveForm({
             Години
           </label>
           {mode === "hours" ? (
-            <div className="flex items-center gap-3">
+            <div className={`flex items-center gap-3 ${FADE_IN}`}>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="starts-at">З</Label>
                 <Input id="starts-at" type="time" step={300} required value={startsAt} onChange={(event) => setStartsAt(event.target.value)} className="w-auto" />
@@ -256,7 +258,8 @@ export function NewLeaveForm({
           </Alert>
         ) : null}
 
-        <Button type="submit" disabled={previewPending || isTransition} className="self-start">
+        <Button type="submit" disabled={previewPending || isTransition} aria-busy={previewPending || isTransition} className="self-start">
+          {previewPending || isTransition ? <Spinner /> : null}
           Показати підсумок
         </Button>
       </form>
@@ -288,8 +291,8 @@ export function NewLeaveForm({
             </Alert>
           ))}
           <ul className="flex flex-col gap-2 text-sm" data-testid="summary-lines">
-            {summary.lines.map((line) => (
-              <li key={`${line.date}-${line.position}`} className="rounded-lg border border-border bg-card p-3 text-card-foreground">
+            {summary.lines.map((line, index) => (
+              <li key={`${line.date}-${line.position}`} className={`rounded-lg border border-border bg-card p-3 text-card-foreground ${APPEAR}`} style={stagger(index)}>
                 {line.date}, {line.hours} ({line.duration}), {line.position}: {line.status}
               </li>
             ))}
@@ -322,7 +325,8 @@ export function NewLeaveForm({
             ) : null}
 
             <div className="flex items-center gap-4">
-              <Button type="submit" disabled={submitPending}>
+              <Button type="submit" disabled={submitPending} aria-busy={submitPending}>
+                {submitPending ? <Spinner /> : null}
                 Підтвердити
               </Button>
               <Link href="/leave/new" className={buttonVariants({ variant: "link" })}>

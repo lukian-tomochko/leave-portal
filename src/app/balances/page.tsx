@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import { listItemCard } from "@/components/ui/card";
 import { balancesOn } from "@/lib/leave/balance";
 import { isDecider } from "@/lib/leave/decision";
 import { loadBalanceInputs } from "@/lib/leave/supabase-balance-repository";
 import { loadActor } from "@/lib/leave/supabase-decision-repository";
 import { todayInKyiv } from "@/lib/leave/time";
 import { createClient } from "@/lib/supabase/server";
+import { APPEAR, stagger } from "@/lib/utils";
 import { BalanceView } from "./balance-view";
 
 // «Баланс»: власний баланс для кожного, а менеджер і адміністратор ще й список працівників, чиї баланси вони можуть
@@ -53,8 +55,8 @@ export default async function BalancesPage() {
             Баланси працівників
           </h2>
           <ul className="flex flex-col gap-2 text-sm" data-testid="balance-employees">
-            {employees.map((employee) => (
-              <li key={employee.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-3">
+            {employees.map((employee, index) => (
+              <li key={employee.id} className={`flex items-center justify-between p-3 ${listItemCard} ${APPEAR}`} style={stagger(index)}>
                 <span>{employee.name}</span>
                 <Link href={`/balances/${employee.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                   Відкрити
