@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { FADE_IN } from "@/lib/utils";
 import { addClosure } from "./actions";
 import type { ClosureFormState } from "./state";
 
@@ -53,7 +54,7 @@ export function ClosureForm() {
       </fieldset>
 
       {kind === "whole" ? (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className={`grid gap-4 sm:grid-cols-2 ${FADE_IN}`}>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="closure-starts-on">Початкова дата</Label>
             <Input id="closure-starts-on" name="startsOn" type="date" required defaultValue={values?.startsOn} />
@@ -64,7 +65,7 @@ export function ClosureForm() {
           </div>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className={`grid gap-4 sm:grid-cols-2 ${FADE_IN}`}>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="closure-date">Дата</Label>
             <Input id="closure-date" name="date" type="date" required defaultValue={values?.date} />

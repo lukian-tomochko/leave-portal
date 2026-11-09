@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import type { DecisionRecord } from "@/lib/leave/decision";
 import { LEAVE_TYPE_LABELS, STATUS_LABELS } from "@/lib/leave/messages";
 import type { RecordStatus } from "@/lib/leave/types";
+import { APPEAR, stagger } from "@/lib/utils";
 
 // Колір статусу лише додається до тексту (DESIGN.md): сам статус завжди написано словами.
 const STATUS_VARIANTS = {
@@ -33,8 +34,8 @@ export function RecordsTable({ records, testId }: { records: DecisionRecord[]; t
         </TableRow>
       </TableHeader>
       <TableBody>
-        {records.map((record) => (
-          <TableRow key={record.id}>
+        {records.map((record, index) => (
+          <TableRow key={record.id} className={APPEAR} style={stagger(index)}>
             <TableCell>{record.employeeName}</TableCell>
             <TableCell>{record.positionLabel}</TableCell>
             <TableCell className="tabular-nums">{record.date}</TableCell>
