@@ -12,9 +12,10 @@
 // Наші мутанти — на правила SQL за AC, які ми доводимо у WS8 (docs/qa/proof-pack.md): AC-DECIDE-12, AC-BALANCE-13 і (додатково) AC-DECIDE-08.
 // Правило AC-DECIDE-14 (порожній список) живе в TS (src/lib/leave/decision.ts) — його перевіряє Stryker (npm run mutation:ts).
 const DECIDE = "supabase/migrations/20261027090000_leave_balance.sql";
-const HOURS = "supabase/migrations/20261026080000_leave_hours_in_schedule.sql";
 const DECISION_DB = "tests/db/leave-decision.test.ts";
 const BALANCE_DB = "tests/db/leave-balance.test.ts";
+const HOURS_END = "supabase/migrations/20261109090000_leave_hours_end_at_block_start.sql";
+const REQUEST_DB = "tests/db/leave-request.test.ts";
 
 export const mutants = [
   {
@@ -41,7 +42,7 @@ export const mutants = [
     replace: "    for share;\n  end if;\n",
   },
   {
-    id: "S2", kind: "sql", ac: "AC-DECIDE-12", file: HOURS, tests: [DECISION_DB],
+    id: "S2", kind: "sql", ac: "AC-DECIDE-12", file: HOURS_END, tests: [DECISION_DB],
     what: "update_leave_record_hours: схвалений запис теж можна змінити (статус approved у переліку дозволених)",
     find: "v_record.status not in ('awaiting_decision', 'returned_for_revision')",
     replace: "v_record.status not in ('awaiting_decision', 'returned_for_revision', 'approved')",
@@ -51,5 +52,17 @@ export const mutants = [
     what: "employee_balance_inputs: будь-який користувач з входом отримує баланс будь-якого працівника (умова «сам працівник» завжди істинна)",
     find: "    v_uid = p_employee_id\n    or (select private.current_app_role()) = 'admin'",
     replace: "    true\n    or (select private.current_app_role()) = 'admin'",
+  },
+  {
+    id: "S4", kind: "sql", ac: "AC-LEAVE-22", file: HOURS_END, tests: [REQUEST_DB],
+    what: "create_leave_request_impl: кінець відпустки більше не може дорівнювати початку наступного блоку (09:00–12:30 знову відхиляється)",
+    find: " or v_ends = b.starts_at",
+    replace: "",
+  },
+  {
+    id: "S5", kind: "sql", ac: "AC-LEAVE-22", file: HOURS_END, tests: [REQUEST_DB],
+    what: "update_leave_record_hours: зміна годин із кінцем на початку наступного блоку знову відхиляється",
+    find: " or p_ends_at = b.starts_at",
+    replace: "",
   },
 ];

@@ -32,7 +32,7 @@ export function wholeDay(blocks: ScheduleBlock[]): { startsAt: string; endsAt: s
 
 // Перевіряє години відпустки за блоками розкладу дня й рахує тривалість у хвилинах лише всередині блоків.
 // Правила PM (Assumptions у вимозі 01): блок включає початок і не включає кінець; початок і кінець мають припадати на
-// блок (кінець може збігатися з кінцем блоку); час — з точністю 5 хвилин.
+// блок (кінець може збігатися з кінцем блоку або з початком наступного блоку); час — з точністю 5 хвилин.
 // Порядок перевірок (за прикладами PM): початок → «кінець пізніше за початок» → кінець.
 export function validateHours(blocks: ScheduleBlock[], startsAt: string, endsAt: string): HoursCheck {
   let start: number;
@@ -61,7 +61,9 @@ export function validateHours(blocks: ScheduleBlock[], startsAt: string, endsAt:
   if (end <= start) {
     return { ok: false, code: "END_NOT_AFTER_START", message: END_MUST_BE_LATER };
   }
-  if (!ranges.some((r) => end > r.start && end <= r.end)) {
+  // Кінець припадає на блок (початок блоку ні, кінець блоку так) або збігається з початком наступного блоку
+  // (AC-LEAVE-22: 09:00–12:30 при блоках 08:30–12:00 і 12:30–15:30); тривалість нижче рахує лише хвилини в блоках.
+  if (!ranges.some((r) => (end > r.start && end <= r.end) || end === r.start)) {
     return outside;
   }
 

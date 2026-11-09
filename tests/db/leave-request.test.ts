@@ -123,6 +123,42 @@ it("AC-LEAVE-16: конфлікт на одній даті скасовує вс
   expect(onFreeDate).toHaveLength(0);
 });
 
+it("AC-LEAVE-22: кінець на початку наступного блоку (12:30) приймається, запис 09:00–12:30 створено", async () => {
+  // 2026-11-03 — вівторок; блоки посади teacher2: 08:30–12:00 і 12:30–15:30.
+  await submit("teacher2", [rec(POSITION_T2_MAIN, "2026-11-03", "09:00", "12:30")]);
+
+  const rows = await t.asUser<{ starts_at: string; ends_at: string }>(
+    user("teacher2"),
+    `select to_char(starts_at, 'HH24:MI') as starts_at, to_char(ends_at, 'HH24:MI') as ends_at
+     from public.leave_records where leave_date = '2026-11-03'`,
+  );
+
+  expect(rows).toEqual([{ starts_at: "09:00", ends_at: "12:30" }]);
+});
+
+it("AC-DECIDE-16: працівник змінює години так, що кінець припадає на початок наступного блоку (AC-LEAVE-22)", async () => {
+  // 2027-03-09 — вівторок; блоки посади teacher2: 08:30–12:00 і 12:30–15:30.
+  await submit("teacher2", [rec(POSITION_T2_MAIN, "2027-03-09", "09:00", "10:00")]);
+  const [record] = await t.asUser<{ id: string }>(
+    user("teacher2"),
+    "select id from public.leave_records where leave_date = '2027-03-09'",
+  );
+
+  const [changed] = await t.asUser<{ r: { ok: boolean } }>(
+    user("teacher2"),
+    "select public.update_leave_record_hours($1, '09:00', '12:30') as r",
+    [record.id],
+  );
+  const [stored] = await t.asUser<{ ends_at: string }>(
+    user("teacher2"),
+    "select to_char(ends_at, 'HH24:MI') as ends_at from public.leave_records where id = $1",
+    [record.id],
+  );
+
+  expect(changed.r.ok).toBe(true);
+  expect(stored.ends_at).toBe("12:30");
+});
+
 it("AC-LEAVE-14: RLS віддає працівнику лише власні записи", async () => {
   await submit("teacher1", [rec(POSITION_T1_MAIN, "2027-03-02", "09:00", "10:00")]);
   await submit("teacher2", [rec(POSITION_T2_MAIN, "2027-03-03", "09:00", "10:00")]);
