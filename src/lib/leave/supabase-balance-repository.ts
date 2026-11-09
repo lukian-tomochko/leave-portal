@@ -62,24 +62,19 @@ export async function loadBalanceInputs(supabase: SupabaseClient<Database>, empl
     unpaidCents: cents(record.unpaid_share),
   }));
 
-  // Закриття на дати записів (AC-CAL-06): читаємо клієнтом користувача, `school_closures` доступна всім авторизованим (AC-CAL-02).
-  let closures: Closure[] = [];
-  if (records.length > 0) {
-    const dates = records.map((record) => record.date).sort();
-    const { data: closureRows, error: closureError } = await supabase
-      .from("school_closures")
-      .select("name, starts_on, ends_on, closed_from")
-      .lte("starts_on", dates[dates.length - 1])
-      .gte("ends_on", dates[0]);
-    if (closureError) {
-      throw new Error(`loadBalanceInputs closures failed: ${closureError.code ?? "unknown"}`);
-    }
-    closures = closureRows.map((row) => ({
-      name: row.name,
-      startsOn: row.starts_on,
-      endsOn: row.ends_on,
-      closedFrom: row.closed_from === null ? null : trimSeconds(row.closed_from),
-    }));
+  // Усі закриття календаря (AC-CAL-06): їх мало, а розрахунок потребує й дат нової заявки чи запису, не лише схвалених.
+  // `school_closures` доступна всім авторизованим (AC-CAL-02).
+  const { data: closureRows, error: closureError } = await supabase
+    .from("school_closures")
+    .select("name, starts_on, ends_on, closed_from");
+  if (closureError) {
+    throw new Error(`loadBalanceInputs closures failed: ${closureError.code ?? "unknown"}`);
   }
+  const closures: Closure[] = closureRows.map((row) => ({
+    name: row.name,
+    startsOn: row.starts_on,
+    endsOn: row.ends_on,
+    closedFrom: row.closed_from === null ? null : trimSeconds(row.closed_from),
+  }));
   return { positions, records, closures };
 }

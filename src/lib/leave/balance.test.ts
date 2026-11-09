@@ -79,6 +79,7 @@ const inputs = (records: ApprovedRecord[], positions: Position[] = [MAIN], closu
   records,
   closures,
 });
+const WHOLE_DAY_EARLY = (date: string) => ({ positionId: "main", date, startsAt: "08:30", endsAt: "12:00" });
 const WHOLE_DAY = (date: string, positionId = "main") => ({
   positionId,
   date,
@@ -296,5 +297,15 @@ describe("схвалення з розподілом", () => {
     expect(balancesForYear(inputs([record], [MAIN], [earlyDismissal]), 2026).sick).toMatchObject({ used: 1, remaining: 17 });
     // Без закриття ті самі 210 хв — половина робочого дня (420 хв): 0.50.
     expect(balancesForYear(inputs([record]), 2026).sick.used).toBe(0.5);
+  });
+
+  it("AC-CAL-06: попередження про перевищення рахує частку нової заявки на скороченому дні без закритих хвилин", () => {
+    const earlyDismissal: Closure = { name: "Early dismissal", startsOn: "2026-11-20", endsOn: "2026-11-20", closedFrom: "12:00" };
+    const state = inputs(used("personal", 18), [MAIN], [earlyDismissal]);
+
+    // 08:30–12:00 — це 210 із 210 відкритих хвилин, тобто 1.00 дня, а не 0.50.
+    expect(requestWarning(state, "personal", [WHOLE_DAY_EARLY("2026-11-20")])).toBe(
+      "Your Personal leave balance is 0.00 day. Another 1.00 day will be counted as Unpaid leave",
+    );
   });
 });
