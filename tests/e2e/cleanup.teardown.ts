@@ -8,14 +8,19 @@ import { deleteSeededRecords, deleteUatUsers, deletedThisRun, hasAdminKey } from
 if (hasAdminKey()) {
   teardown("прибирання: синтетичні uat-*@example.test", async () => {
     // Спершу засіяні записи (коментар uat-…) для демо-користувачів, потім синтетичні користувачі.
-    const seededLeft = await deleteSeededRecords();
-    expect(seededLeft, "лишились засіяні записи відпустки").toBe(0);
+    // Обидва прибирання й запис підсумку виконуються до будь-якої перевірки: помилка першого не лишає користувачів у проді.
+    const seeded = await deleteSeededRecords().then(
+      (left) => ({ left, error: undefined as unknown }),
+      (error: unknown) => ({ left: -1, error }),
+    );
     const result = await deleteUatUsers();
     writeFileSync(
       "test-results/uat-cleanup.json",
       // deleted — усе, що прибрав цей прогін: afterAll специфікацій і цей teardown.
       JSON.stringify({ at: new Date().toISOString(), ...result, deleted: deletedThisRun() }, null, 2),
     );
+    expect(seeded.error, "прибирання засіяних записів не вдалося").toBeUndefined();
+    expect(seeded.left, "лишились засіяні записи відпустки").toBe(0);
     expect(result.remaining, "лишились синтетичні користувачі").toEqual([]);
     expect(result.leftoverRequests, "лишились заявки синтетичних користувачів").toBe(0);
   });
