@@ -76,3 +76,8 @@ export const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {
   unpaid: "Unpaid leave",
   family: "Family celebration",
 };
+
+// Порожній шкільний календар навчального року (AC-CAL-15): «No closed days in school year 2026–2027».
+export function noClosuresInYear(year: number): string {
+  return `No closed days in school year ${year}–${year + 1}`;
+}

@@ -29,3 +29,29 @@ export function openBlocks(blocks: ScheduleBlock[], closure: Closure | undefined
     .filter((block) => parseTime(block.startsAt) < cut)
     .map((block) => (parseTime(block.endsAt) > cut ? { ...block, endsAt: formatTime(cut) } : block));
 }
+
+// Закриття навчального року `year` (з 1 вересня `year` до 31 серпня `year + 1`): перетин діапазону з вікном року, тож закриття
+// через 31.08 потрапляє в обидва роки (AC-CAL-02). Упорядковано за датою початку.
+export function closuresInSchoolYear(closures: Closure[], year: number): Closure[] {
+  const from = `${year}-09-01`;
+  const to = `${year + 1}-08-31`;
+  return closures.filter((closure) => closure.startsOn <= to && closure.endsOn >= from).sort((a, b) => a.startsOn.localeCompare(b.startsOn));
+}
+
+// Дати закриття для списку: цілі дні — «2026-12-28 – 2027-01-08» (один день — «2026-11-20»), скорочений день — «2026-11-20 з 12:00».
+export function describeClosure(closure: Closure): string {
+  if (closure.closedFrom !== null) {
+    return `${closure.startsOn} з ${closure.closedFrom}`;
+  }
+  return closure.startsOn === closure.endsOn ? closure.startsOn : `${closure.startsOn} – ${closure.endsOn}`;
+}
+
+// Навчальний рік із параметра `?year=`: ціле 2000–2100, інакше `fallback` (поточний навчальний рік).
+export function parseSchoolYear(value: string | string[] | undefined, fallback: number): number {
+  const text = Array.isArray(value) ? value[0] : value;
+  if (!text || !/^\d{4}$/.test(text)) {
+    return fallback;
+  }
+  const year = Number(text);
+  return year >= 2000 && year <= 2100 ? year : fallback;
+}

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { closureOn, openBlocks, type Closure } from "./closures";
+import { closuresInSchoolYear, closureOn, describeClosure, openBlocks, parseSchoolYear, type Closure } from "./closures";
+import { noClosuresInYear } from "./messages";
 import { planRequest } from "./request";
 import type { Position, RequestInput, ScheduleBlock } from "./types";
 import { expectOk } from "../../../tests/support/expect-ok";
@@ -220,5 +221,45 @@ describe("planRequest із закриттями школи", () => {
     const resultOk = expectOk(result);
     expect(resultOk.records).toHaveLength(1);
     expect(resultOk.records[0]).toMatchObject({ date: "2026-12-29", startsAt: "08:30", endsAt: "15:30", minutes: 420 });
+  });
+});
+
+describe("шкільний календар за навчальний рік", () => {
+  const summer: Closure = { name: "Summer break", startsOn: "2027-08-25", endsOn: "2027-09-03", closedFrom: null };
+
+  it("AC-CAL-02: «Winter break» 2026-12-28 – 2027-01-08 потрапляє в навчальний рік 2026–2027, а закриття за датою йдуть упорядковано", () => {
+    const rows = closuresInSchoolYear([WINTER_BREAK, TEACHERS_MEETING], 2026);
+
+    expect(rows.map((row) => row.name)).toEqual(["Teachers' meeting", "Winter break"]);
+    expect(describeClosure(WINTER_BREAK)).toBe("2026-12-28 – 2027-01-08");
+    expect(describeClosure(TEACHERS_MEETING)).toBe("2026-11-20 з 12:00");
+  });
+
+  it("AC-CAL-02: закриття через 31.08 показується в обох навчальних роках, а закриття поза роком — ні", () => {
+    expect(closuresInSchoolYear([summer], 2026)).toEqual([summer]);
+    expect(closuresInSchoolYear([summer], 2027)).toEqual([summer]);
+    expect(closuresInSchoolYear([summer], 2025)).toEqual([]);
+    expect(closuresInSchoolYear([summer], 2028)).toEqual([]);
+    // Межі року: 2026-08-31 ще 2025–2026, 2026-09-01 уже 2026–2027.
+    const edge: Closure = { name: "Edge", startsOn: "2026-08-31", endsOn: "2026-08-31", closedFrom: null };
+    expect(closuresInSchoolYear([edge], 2025)).toEqual([edge]);
+    expect(closuresInSchoolYear([edge], 2026)).toEqual([]);
+    const firstDay: Closure = { name: "First day", startsOn: "2026-09-01", endsOn: "2026-09-01", closedFrom: null };
+    expect(closuresInSchoolYear([firstDay], 2026)).toEqual([firstDay]);
+    expect(closuresInSchoolYear([firstDay], 2025)).toEqual([]);
+  });
+
+  it("AC-CAL-15: у навчальному році без закриттів повідомлення «No closed days in school year 2026–2027»", () => {
+    expect(closuresInSchoolYear([], 2026)).toEqual([]);
+    expect(noClosuresInYear(2026)).toBe("No closed days in school year 2026–2027");
+  });
+
+  it("AC-CAL-02: параметр року приймає чотири цифри 2000–2100, а некоректне значення дає поточний навчальний рік", () => {
+    expect(parseSchoolYear("2027", 2026)).toBe(2027);
+    expect(parseSchoolYear(["2025", "2027"], 2026)).toBe(2025);
+    expect(parseSchoolYear(undefined, 2026)).toBe(2026);
+    expect(parseSchoolYear("abc", 2026)).toBe(2026);
+    expect(parseSchoolYear("1999", 2026)).toBe(2026);
+    expect(parseSchoolYear("20277", 2026)).toBe(2026);
   });
 });
