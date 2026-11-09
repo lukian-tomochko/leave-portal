@@ -67,7 +67,7 @@ export async function adminAddsClosure(browser: Browser, input: ClosureInput) {
 /** Видаляє закриття за назвою через діалог підтвердження (як адміністратор у браузері). */
 export async function removeClosureByName(page: Page, name: string) {
   await page.goto("/calendar/manage");
-  const row = page.getByTestId("manage-closures").getByRole("listitem").filter({ hasText: name });
+  const row = page.getByTestId("manage-closures").getByRole("listitem").filter({ has: page.getByText(name, { exact: true }) });
   await row.getByRole("button", { name: "Видалити" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Видалити" }).click();
   await expect(page.getByTestId("manage-closures").getByText(name, { exact: true })).toHaveCount(0);
@@ -80,7 +80,8 @@ export async function removeUatClosures(browser: Browser) {
     const page = await context.newPage();
     await page.goto("/calendar/manage");
     for (const name of UAT_CLOSURE_NAMES) {
-      const rows = page.getByTestId("manage-closures").getByRole("listitem").filter({ hasText: name });
+      // Точна назва, а не підрядок: справжнє закриття зі схожою назвою (наприклад, «Winter break 2027») не видаляємо.
+      const rows = page.getByTestId("manage-closures").getByRole("listitem").filter({ has: page.getByText(name, { exact: true }) });
       while ((await rows.count()) > 0) {
         await rows.first().getByRole("button", { name: "Видалити" }).click();
         await page.getByRole("dialog").getByRole("button", { name: "Видалити" }).click();
