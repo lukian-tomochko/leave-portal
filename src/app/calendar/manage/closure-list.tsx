@@ -33,7 +33,11 @@ export function ClosureList({ rows }: { rows: ClosureRow[] }) {
           <AlertDescription>{state.message}</AlertDescription>
         </Alert>
       ) : null}
-      <ul className="flex flex-col gap-2 text-sm" data-testid="manage-closures">
+      <ul
+        className={`flex flex-col gap-2 text-sm transition-opacity duration-(--motion-base) ease-soft ${pending ? "opacity-60" : ""}`}
+        aria-busy={pending}
+        data-testid="manage-closures"
+      >
         {rows.map((row) => (
           <li key={row.id} className={`flex flex-wrap items-center justify-between gap-2 p-3 ${listItemCard}`}>
             <span className="font-medium">{row.name}</span>

@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 
 const IDLE: DecisionFormState = { status: "idle" };
@@ -25,6 +26,9 @@ export function DecisionForm({ recordId, splitSuggested }: { recordId: string; s
   const [state, formAction, pending] = useActionState(decideLeaveRecord, IDLE);
   // split: схвалення з розподілом (запис "Personal leave" перевищує баланс, AC-BALANCE-10).
   const [confirm, setConfirm] = useState<{ decision: "approved" | "rejected"; split: boolean } | null>(null);
+  // Яка дія зараз виконується (рішення:розподіл): спінер показуємо лише на ній, а не на всіх кнопках.
+  const [active, setActive] = useState<string | null>(null);
+  const busy = (key: string) => pending && active === key;
 
   return (
     <>
@@ -32,6 +36,7 @@ export function DecisionForm({ recordId, splitSuggested }: { recordId: string; s
         id="decision-form"
         // Діалог закриваємо в момент відправки: FormData вже зібрано (разом із decision), а помилку дії видно у формі.
         action={(formData) => {
+          setActive(`${String(formData.get("decision") ?? "")}:${String(formData.get("split") ?? "0")}`);
           setConfirm(null);
           formAction(formData);
         }}
@@ -50,7 +55,8 @@ export function DecisionForm({ recordId, splitSuggested }: { recordId: string; s
         ) : null}
         <div className="flex flex-wrap gap-2">
           {splitSuggested ? (
-            <Button type="button" disabled={pending} onClick={() => setConfirm({ decision: "approved", split: true })}>
+            <Button type="button" disabled={pending} aria-busy={busy("approved:1")} onClick={() => setConfirm({ decision: "approved", split: true })}>
+              {busy("approved:1") ? <Spinner /> : null}
               Approve with the suggested split
             </Button>
           ) : null}
@@ -58,19 +64,24 @@ export function DecisionForm({ recordId, splitSuggested }: { recordId: string; s
             type="button"
             variant={splitSuggested ? "outline" : "default"}
             disabled={pending}
+            aria-busy={busy("approved:0")}
             onClick={() => setConfirm({ decision: "approved", split: false })}
           >
+            {busy("approved:0") ? <Spinner /> : null}
             Approve
           </Button>
           <Button
             type="button"
             variant="destructive"
             disabled={pending}
+            aria-busy={busy("rejected:0")}
             onClick={() => setConfirm({ decision: "rejected", split: false })}
           >
+            {busy("rejected:0") ? <Spinner /> : null}
             Reject
           </Button>
-          <Button type="submit" name="decision" value="returned_for_revision" variant="outline" disabled={pending}>
+          <Button type="submit" name="decision" value="returned_for_revision" variant="outline" disabled={pending} aria-busy={busy("returned_for_revision:0")}>
+            {busy("returned_for_revision:0") ? <Spinner /> : null}
             Return for revision
           </Button>
         </div>

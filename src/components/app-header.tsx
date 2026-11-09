@@ -2,9 +2,9 @@ import { CalendarDaysIcon } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "@/app/login/actions";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { NavLinks } from "./nav-links";
+import { SubmitButton } from "./submit-button";
 
 // Шапка застосунку: назва порталу, навігація, хто увійшов і вихід.
 // Без сесії (сторінка входу) показуємо лише назву. Це UX, а не захист: права перевіряють сторінки й база.
@@ -37,14 +37,13 @@ export async function AppHeader() {
               <span className="hidden text-header-muted sm:inline">{profile?.email ?? claims.email ?? ""}</span>
               {profile?.role ? <Badge variant="secondary">{profile.role}</Badge> : null}
               <form action={signOut}>
-                <Button
-                  type="submit"
+                <SubmitButton
                   variant="ghost"
                   size="sm"
                   className="text-header-muted hover:bg-header-foreground/10 hover:text-header-foreground"
                 >
                   Вийти
-                </Button>
+                </SubmitButton>
               </form>
             </div>
           </>

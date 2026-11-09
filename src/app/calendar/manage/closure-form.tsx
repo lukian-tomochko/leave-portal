@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { addClosure } from "./actions";
 import type { ClosureFormState } from "./state";
 
@@ -81,7 +82,8 @@ export function ClosureForm() {
         </Alert>
       ) : null}
       <div>
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending} aria-busy={pending}>
+          {pending ? <Spinner /> : null}
           Додати закриття
         </Button>
       </div>
