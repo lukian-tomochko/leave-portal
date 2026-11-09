@@ -64,11 +64,11 @@
 
 - [x] 7.1 Специфікації Playwright на AC-CAL-01…15 і AC-LEAVE-22 (`given/when/thenStep`, дослівне «Тоді»); роль `admin` у `auth.setup.ts`;
   `@writes` з прибиранням в `afterEach` (закриття через інтерфейс адміністратора, засіяні записи) і teardown (синтетичні користувачі).
-- [ ] 7.2 Прогін на проді, звіт `docs/qa/uat/<дата>/`, негативний контроль, відео вкладенням у PR.
+- [x] 7.2 Прогін на проді, звіт `docs/qa/uat/<дата>/`, негативний контроль, відео вкладенням у PR.
   Done when: усі AC-CAL-01…15 і AC-LEAVE-22 мають рядок звіту UAT або запис у «Не перевірено» з причиною.
 
 ## 8. Proof pack, акаунти й ретро
 
-- [ ] 8.1 `docs/qa/proof-pack.md` за шаблоном WS9 (рядок на кожен AC і розділ «Не перевірено»), `docs/conformance.md`,
+- [x] 8.1 `docs/qa/proof-pack.md` за шаблоном WS9 (рядок на кожен AC і розділ «Не перевірено»), `docs/conformance.md`,
   `docs/qa/retro-ws9.md`; архів `impl-school-calendar` в останньому PR.
   Done when: рядок на кожен AC-CAL-01…15 і AC-LEAVE-22; `npm run ac:coverage` зелений; `/api/health` = SHA `main`.

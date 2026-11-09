@@ -1,130 +1,92 @@
-# QA proof pack: зріз 2 — рішення менеджера й баланс (leave-portal)
+# QA proof pack: зріз 3 — шкільний календар (leave-portal)
 
 <!--
-Шаблон з koldovsky/2026-quitcode-08-quality-hw/materials/templates/proof-pack.template.md.
-Заповнюється по кроках WS8 (A → B → C → D). Посилання — на файли на коміті (…/blob/<SHA>/…#L<N>), на PR і на прогони.
+Шаблон з koldovsky/2026-quitcode-09-software-factory-hw/materials/templates/proof-pack.template.md.
+Proof pack WS8 — docs/qa/proof-pack-ws8.md. Посилання на тести й мутанти — на коміт `4b1a973` (код тестів, з яким зроблено прогін UAT).
 Жодних паролів і пароля від accounts.zip. Акаунти — лише адреси *@example.test.
-Цей файл — вхід для конвеєра WS9: на кожен AC видно, чим він доведений.
 -->
 
 - Прод-URL: https://leave-portal-blush.vercel.app
-- Вимоги: https://github.com/mkozlovskyi-ops/course-staff-management-spec · джерело: docs · знімок 2026-10-24
-- `/api/health` на момент UAT: `{"ok":true,"sha":"22b8afe…","env":"production","db":"ok"}` (коміт `22b8afe`, прогін 02.11.2026 18:16)
+- Зріз 3: адміністратор веде шкільний календар закриттів (цілі дні й скорочені дні), а закриття діють у заявках і в балансі; плюс AC-LEAVE-22 (кінець відпустки на початку наступного блоку розкладу).
+- Вимоги: https://github.com/mkozlovskyi-ops/course-staff-management-spec · джерело: docs · знімок 2026-11-07
+- Спека: [openspec/specs/school-calendar/spec.md](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/openspec/specs/school-calendar/spec.md)
+- `/api/health` на момент UAT: sha `4b1a973`, db ok, 09.11.2026 13:23 (Київ)
 
-## 3 AC
+## Доказ на кожен AC зрізу 3
 
-| AC | Вид | «Тоді» (дослівно з вимоги PM) |
-|---|---|---|
-| AC-BALANCE-13 | відмова в браузері (чужі дані): працівник відкриває баланс іншого працівника | "Then the balances are not shown." |
-| AC-DECIDE-14 | стан інтерфейсу (порожній стан): менеджер без записів, що чекають рішення | "Then the manager sees the message "No records awaiting decision"." |
-| AC-BALANCE-01 | базовий сценарій, лише читання: працівник без погоджених записів дивиться свої баланси | "Then the employee sees: "Sick leave" — granted 18.00, used 0.00, remaining 18.00; "Personal leave" — granted 18.00, used 0.00, remaining 18.00; "Unpaid leave" and "Family celebration" — used 0.00 only." |
+Рівні: unit (Vitest), база (PGlite, `tests/db`), e2e/UAT (Playwright на проді). «Здатен упасти»: SQL-мутант KILLED (`npm run mutation:sql`: **17 з 18 вбито**, S1b — прийнятий еквівалентний), Stryker чи ручний мутант із PR. Вердикт і кадр — зі [звіту UAT](uat/2026-11-09/report.md) (правила R1–R6).
 
-Додатково доведено мутацією (без UAT-запису):
-- AC-DECIDE-08 (менеджер чужої посади не вирішує запис): його «Тоді» («the status does not change, and the decision is not saved») невидиме в браузері, тож UAT-записом його не довести; правило в базі доведено SQL-мутантом нижче.
-- AC-DECIDE-12 (зміна годин схваленого запису): UAT-доказ потребує схваленого запису, тобто запису в спільний прод, а прибирання за собою для цього AC ми не будували; тому він доведений тестами бази, unit-тестом і мутантами S2 та ручним.
+| AC | Вид | Тест (рівень, посилання) | Здатен упасти | Специфікація UAT | Вердикт UAT і кадр | PR і SHA злиття |
+|---|---|---|---|---|---|---|
+| AC-CAL-01 | основний (адмін додає закриття) | unit [calendar-admin.test.ts#L16](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/calendar-admin.test.ts#L16); база [school-calendar.test.ts#L107](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/school-calendar.test.ts#L107) | ручний мутант `endsOn < startsOn` → `>` у `parseClosureForm`: тести AC-CAL-01/10 червоні ([#51](https://github.com/lukian-tomochko/leave-portal/pull/51)) | [calendar.spec.ts#L60](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L60) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-01-then-1.png) | [#47](https://github.com/lukian-tomochko/leave-portal/pull/47) `41faf29`, [#51](https://github.com/lukian-tomochko/leave-portal/pull/51) `80fda0b` |
+| AC-CAL-02 | основний (працівник бачить закриття) | unit [closures.test.ts#L230](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/closures.test.ts#L230); база [school-calendar.test.ts#L117](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/school-calendar.test.ts#L117) | ручний мутант `endsOn >= from` → `>`: тест на межі 1 вересня червоний ([#50](https://github.com/lukian-tomochko/leave-portal/pull/50)) | [calendar.spec.ts#L245](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L245) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-02-then-1.png) | [#50](https://github.com/lukian-tomochko/leave-portal/pull/50) `d93f4da` |
+| AC-CAL-03 | відмова (закритий день у заявці) | unit [closures.test.ts#L123](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/closures.test.ts#L123); база [closures-in-requests.test.ts#L97](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/closures-in-requests.test.ts#L97) | SQL-мутанти S14, S15 KILLED ([mutants.mjs#L129](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/scripts/mutants.mjs#L129)); Stryker `closures.ts` 96,97 % ([#48](https://github.com/lukian-tomochko/leave-portal/pull/48)) | [calendar.spec.ts#L269](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L269) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-03-then-1.png) | [#48](https://github.com/lukian-tomochko/leave-portal/pull/48) `dc4ba87` |
+| AC-CAL-04 | основний (скорочений день, цілий день) | unit [closures.test.ts#L91](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/closures.test.ts#L91); база [closures-in-requests.test.ts#L138](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/closures-in-requests.test.ts#L138) | Stryker `closures.ts` і ручні мутанти `planRequest` ([#48](https://github.com/lukian-tomochko/leave-portal/pull/48)) | [calendar.spec.ts#L292](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L292) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-04-then-1.png) | [#48](https://github.com/lukian-tomochko/leave-portal/pull/48) `dc4ba87` |
+| AC-CAL-05 | відмова (години після закриття) | unit [closures.test.ts#L183](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/closures.test.ts#L183); база [closures-in-requests.test.ts#L146](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/closures-in-requests.test.ts#L146) | SQL-мутанти S16, S17 KILLED ([mutants.mjs#L147](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/scripts/mutants.mjs#L147)) | [calendar.spec.ts#L320](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L320) | NEEDS-HUMAN (R4: обидва агенти PASS, але цитату — підпис перемикача «Години» — не знайдено в aria; перевірки зелені), [кадр 1](uat/2026-11-09/frames/AC-CAL-05-then-1.png), [кадр 2](uat/2026-11-09/frames/AC-CAL-05-then-2.png) | [#48](https://github.com/lukian-tomochko/leave-portal/pull/48) `dc4ba87` |
+| AC-CAL-06 | основний (частка дня на скороченому дні) | unit [balance.test.ts#L292](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/balance.test.ts#L292) | ручний мутант: закриття прибрано з `blocksOn`, тест червоний ([#49](https://github.com/lukian-tomochko/leave-portal/pull/49)) | [calendar.spec.ts#L522](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L522) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-06-then-1.png) | [#49](https://github.com/lukian-tomochko/leave-portal/pull/49) `1bcd620` |
+| AC-CAL-07 | відмова (блокуючий запис) | unit [calendar-admin.test.ts#L55](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/calendar-admin.test.ts#L55); база [school-calendar.test.ts#L129](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/school-calendar.test.ts#L129) | SQL-мутанти S9, S13 KILLED ([mutants.mjs#L99](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/scripts/mutants.mjs#L99)) | [calendar.spec.ts#L83](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L83) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-07-then-1.png), [кадр 2](uat/2026-11-09/frames/AC-CAL-07-then-2.png) | [#47](https://github.com/lukian-tomochko/leave-portal/pull/47) `41faf29` |
+| AC-CAL-08 | основний (відхилений запис не блокує) | база [school-calendar.test.ts#L179](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/school-calendar.test.ts#L179) | SQL-мутант S10 KILLED ([mutants.mjs#L105](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/scripts/mutants.mjs#L105)) | [calendar.spec.ts#L117](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L117) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-08-then-1.png) | [#47](https://github.com/lukian-tomochko/leave-portal/pull/47) `41faf29` |
+| AC-CAL-09 | основний (видалення повертає робочі дні) | unit [closures.test.ts#L82](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/closures.test.ts#L82); база [closures-in-requests.test.ts#L208](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/closures-in-requests.test.ts#L208) | SQL-мутанти S7, S14 KILLED ([mutants.mjs#L82](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/scripts/mutants.mjs#L82)) | [calendar.spec.ts#L141](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L141) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-09-then-1.png), [кадр 2](uat/2026-11-09/frames/AC-CAL-09-then-2.png) | [#48](https://github.com/lukian-tomochko/leave-portal/pull/48) `dc4ba87`, [#51](https://github.com/lukian-tomochko/leave-portal/pull/51) `80fda0b` |
+| AC-CAL-10 | відмова (кінець раніше за початок) | unit [calendar-admin.test.ts#L30](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/calendar-admin.test.ts#L30); база [school-calendar.test.ts#L199](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/school-calendar.test.ts#L199) | SQL-мутант S11 KILLED ([mutants.mjs#L111](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/scripts/mutants.mjs#L111)); ручний мутант `parseClosureForm` ([#51](https://github.com/lukian-tomochko/leave-portal/pull/51)) | [calendar.spec.ts#L186](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L186) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-10-then-1.png), [кадр 2](uat/2026-11-09/frames/AC-CAL-10-then-2.png) | [#47](https://github.com/lukian-tomochko/leave-portal/pull/47) `41faf29`, [#54](https://github.com/lukian-tomochko/leave-portal/pull/54) `ca3ed60` |
+| AC-CAL-11 | відмова (дата вже закрита) | unit [calendar-admin.test.ts#L70](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/calendar-admin.test.ts#L70); база [school-calendar.test.ts#L209](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/school-calendar.test.ts#L209) | SQL-мутант S12 KILLED ([mutants.mjs#L117](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/scripts/mutants.mjs#L117)) | [calendar.spec.ts#L219](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L219) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-11-then-1.png) | [#47](https://github.com/lukian-tomochko/leave-portal/pull/47) `41faf29`, [#54](https://github.com/lukian-tomochko/leave-portal/pull/54) `ca3ed60` |
+| AC-CAL-12 | відмова (заборонена роль, сторінка) | e2e (рівень сторінки; правило ролі в базі доводить AC-CAL-13) | лише e2e: мутанта на перевірку ролі на сторінці немає, див. «Не перевірено» | [calendar.spec.ts#L351](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L351) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-12-then-1.png), [кадр 2](uat/2026-11-09/frames/AC-CAL-12-then-2.png) | [#51](https://github.com/lukian-tomochko/leave-portal/pull/51) `80fda0b` |
+| AC-CAL-13 | відмова напряму (роль у базі) | база [school-calendar.test.ts#L238](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/school-calendar.test.ts#L238) | SQL-мутанти S6, S8 KILLED ([mutants.mjs#L72](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/scripts/mutants.mjs#L72)) | [calendar.spec.ts#L382](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L382) | NEEDS-HUMAN (R3: на кадрі 2 не видно, хто увійшов; заявку подає працівник, а не manager1; перевірки зелені), [кадр 1](uat/2026-11-09/frames/AC-CAL-13-then-1.png), [кадр 2](uat/2026-11-09/frames/AC-CAL-13-then-2.png) | [#47](https://github.com/lukian-tomochko/leave-portal/pull/47) `41faf29` |
+| AC-CAL-14 | відмова (не увійшов) | e2e (редирект proxy і `getClaims()` на сторінці) | лише e2e: мутанта на proxy немає, див. «Не перевірено» | [calendar.spec.ts#L495](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L495) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-14-then-1.png) | [#50](https://github.com/lukian-tomochko/leave-portal/pull/50) `d93f4da` |
+| AC-CAL-15 | стан (порожній календар) | unit [closures.test.ts#L252](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/closures.test.ts#L252) | unit перевіряє дослівний текст; мутанта на `noClosuresInYear` не робили | [calendar.spec.ts#L432](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L432) | PASS (R6), [кадр 1](uat/2026-11-09/frames/AC-CAL-15-then-1.png) | [#50](https://github.com/lukian-tomochko/leave-portal/pull/50) `d93f4da` |
+| AC-LEAVE-22 | основний (кінець на початку наступного блоку) | unit [hours.test.ts#L92](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/src/lib/leave/hours.test.ts#L92); база [leave-request.test.ts#L126](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/db/leave-request.test.ts#L126) | SQL-мутанти S4, S5 KILLED ([mutants.mjs#L60](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/scripts/mutants.mjs#L60)); ручний мутант `validateHours` ([#46](https://github.com/lukian-tomochko/leave-portal/pull/46)) | [calendar.spec.ts#L452](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/tests/e2e/calendar.spec.ts#L452) | PASS (R6; Haiku NEEDS-HUMAN, Sonnet PASS), [кадр 1](uat/2026-11-09/frames/AC-LEAVE-22-then-1.png), [кадр 2](uat/2026-11-09/frames/AC-LEAVE-22-then-2.png) | [#46](https://github.com/lukian-tomochko/leave-portal/pull/46) `53c8a2a` |
 
-## A. Ворота
+Підсумок UAT: 19 AC у звіті (16 зрізу 3 і 3 з WS8) — PASS 17, FAIL 0, NEEDS-HUMAN 2 (AC-CAL-05, AC-CAL-13): їх вирішує PM у браузері. Перший прогін з агентом (13 PASS, 6 NEEDS-HUMAN) знайшов справжню ваду: після помилки форма закриття порожніла (AC-CAL-10, 11) — виправлено в [#54](https://github.com/lukian-tomochko/leave-portal/pull/54).
 
-- PR воріт: https://github.com/lukian-tomochko/leave-portal/pull/36
-- Зелений `quality` на `main`: https://github.com/lukian-tomochko/leave-portal/actions/runs/41413581234
-- Обов'язкові перевірки в `solo-main` з 03.11.2026 (ruleset оновлено о 10:37 за Києвом): «Ворота: fallow audit» і «Покриття: доменна підлога» — разом зі `spec`, `app`, `conformance`, `db-check`. «Порада: вразливі залежності» не обовʼязкова ніколи.
+## Не перевірено
 
-Розбір першого повного прогону `fallow` (той самий — в описі PR воріт):
-
-| Група знахідок | Скільки | Справжня / навмисна / хибна | Дія і причина |
+| AC чи частина | Чому не перевірено | Що зроблено замість | Ризик на проді |
 |---|---|---|---|
-| Невикористаний файл `src/lib/supabase/client.ts` | 1 | справжня, навмисна | `ignorePatterns` з причиною: браузерний клієнт із шаблону, уся робота з базою — із сервера |
-| Невикористаний файл `src/components/ui/select.tsx` | 1 | справжня | `ignorePatterns` з причиною: компонент дизайн-системи, видаляти — окреме рішення |
-| Невикористаний експорт `AC_ID_GLOBAL` у `scripts/lib/spec-lib.mjs` | 1 | справжня, скрипт шаблону | `ignoreExports` з причиною: файл шаблону не змінюємо |
-| Дублі коду | 7 груп | лишено | `fallow audit` валить лише нові дублі |
-| Складність | 39 функцій | справжня | лишено: `new-only`, рефакторинг окремо |
+| AC-CAL-12: правило ролі на сторінці `/calendar/manage` | Мутант на умову `role !== "admin"` у `page.tsx` не робили: Stryker не запускали на сторінках, а SQL-мутант тут неможливий | e2e (UAT PASS) і мутанти S6, S8 на роль у базі: зміни все одно відхилить база (AC-CAL-13) | низький: сторінка без форми, а запис захищено базою |
+| AC-CAL-14: редирект гостя в `proxy.ts` | Мутанта на `PUBLIC_PATHS` і `getClaims()` не робили | e2e: гість бачить `/login` без назв і дат (UAT PASS), сторінка ще й сама перевіряє `getClaims()` | низький |
+| AC-CAL-15: дослівний текст повідомлення | Мутанта на `noClosuresInYear` не робили | unit-тест на дослівний текст, UAT PASS | низький |
+| AC-CAL-05, AC-CAL-13: вердикт агента | NEEDS-HUMAN у звіті (див. таблицю); це не «не перевірено», а рішення PM | перевірки Playwright зелені; кадри в звіті | вирішує PM |
 
-## B. Якість тестів
+## A. Вимоги й спека
 
-### Рівень для кожного AC
+- `/requirements-sync` — PR «Оновлення вимог»: [#44](https://github.com/lukian-tomochko/leave-portal/pull/44) (знімок 07.11); PM після цього вимоги не змінював (останній коміт PM 03.11), тож повторної синхронізації не було.
+- Спека `add-school-calendar` і план `impl-school-calendar` — PR «Специфікація»: [#45](https://github.com/lukian-tomochko/leave-portal/pull/45).
+- Зміна `clarify-school-calendar`: не потрібна, PM AC не змінював.
+- Питання PM: власних питань не було; питання іншого розробника враховано: [#20](https://github.com/mkozlovskyi-ops/course-staff-management-spec/issues/20) (AC-CAL-07), [#21](https://github.com/mkozlovskyi-ops/course-staff-management-spec/issues/21) (AC-LEAVE-22), [#22–#24](https://github.com/mkozlovskyi-ops/course-staff-management-spec/issues/24) — в Open questions спеки.
 
-| AC | Де живе правило | Рівень | Чому | Тест |
+## B. Реалізація
+
+| PR «Реалізація» | Задача з `tasks.md` | AC | Відповіді на знахідки CodeRabbit | CI і `db-deploy` |
 |---|---|---|---|---|
-| AC-BALANCE-13 | функція бази `private.employee_balance_inputs` (обгортка `public.employee_balance_inputs`), `supabase/migrations/20261027090000_leave_balance.sql`; сторінка `src/app/balances/[id]/page.tsx` лише показує відмову | база (PGlite) + e2e | «Хто не може» — правило даних: відмову дає база, а не TS-копія; те, що людина бачить, доводить e2e | `tests/db/leave-balance.test.ts` (рядок 93), UAT — крок C |
-| AC-DECIDE-14 | TS: `awaitingEmptyMessage` у `src/lib/leave/decision.ts`; показує `src/app/decisions/page.tsx` | unit + e2e | Вибір тексту порожнього стану — чиста функція; те, що текст видно на сторінці, доводить e2e | `src/lib/leave/decision.test.ts` (рядок 116), UAT — крок C |
-| AC-BALANCE-01 | TS: `balancesForYear` (`GRANTED_CENTS`, залишок = надано + перенесено − використано) у `src/lib/leave/balance.ts`; таблицю показує `src/app/balances/balance-view.tsx` | unit + e2e | Розрахунок — чиста функція без бази; те, що рядки й числа видно людині на сторінці, доводить e2e | `src/lib/leave/balance.test.ts` (рядок 85), UAT — `tests/e2e/balances.spec.ts` |
-| AC-DECIDE-12 (додатково) | SQL: `private.update_leave_record_hours` (перелік дозволених статусів), `supabase/migrations/20261109090000_leave_hours_end_at_block_start.sql (актуальне визначення; першу версію дала 20261026080000_leave_hours_in_schedule.sql)`; TS: `changeHours` і `statusRefusal` у `src/lib/leave/employee-record.ts` (текст PM) | база (PGlite) + unit + e2e | Дані не змінилися — перевіряє база; повідомлення PM підбирає TS; обидва видно на сторінці запису | `tests/db/leave-decision.test.ts` (рядок 186), `src/lib/leave/employee-record.test.ts` (рядок 92), UAT — крок C |
-| AC-DECIDE-08 (додатково) | SQL: `private.decide_leave_record` (відповідальність за посаду) | база (PGlite) | Права на дію — правило бази; тест `src/lib/leave/decision.test.ts:239` працює на фейку, що повторює правило SQL, тож доводом відмови його не рахуємо | `tests/db/leave-decision.test.ts` (рядок 151) |
+| [#46](https://github.com/lukian-tomochko/leave-portal/pull/46) | 1. Кінець відпустки на початку блоку | AC-LEAVE-22 | 1 знахідка: виправлено в [#56](https://github.com/lukian-tomochko/leave-portal/pull/56) (відповідь у треді) | [CI](https://github.com/lukian-tomochko/leave-portal/actions/runs/42561617305), db-deploy success |
+| [#47](https://github.com/lukian-tomochko/leave-portal/pull/47) | 2. База й права календаря | AC-CAL-01, 07, 08, 10, 11, 13 | 3 знахідки: відповіді й виправлення в [#56](https://github.com/lukian-tomochko/leave-portal/pull/56) | [CI](https://github.com/lukian-tomochko/leave-portal/actions/runs/42564652490), db-deploy success |
+| [#48](https://github.com/lukian-tomochko/leave-portal/pull/48) | 3. Закриття в заявці | AC-CAL-03, 04, 05, 09 | 1 знахідка: виправлено в [#56](https://github.com/lukian-tomochko/leave-portal/pull/56) | [CI](https://github.com/lukian-tomochko/leave-portal/actions/runs/42578142619), db-deploy success |
+| [#49](https://github.com/lukian-tomochko/leave-portal/pull/49) | 4. Баланс | AC-CAL-06 | 1 знахідка: виправлено в тому ж PR | [CI](https://github.com/lukian-tomochko/leave-portal/actions/runs/42580078598) |
+| [#50](https://github.com/lukian-tomochko/leave-portal/pull/50) | 5. Сторінка календаря | AC-CAL-02, 15 (14 — e2e) | знахідок немає | [CI](https://github.com/lukian-tomochko/leave-portal/actions/runs/42581244275) |
+| [#51](https://github.com/lukian-tomochko/leave-portal/pull/51) | 6. Керування календарем | AC-CAL-01, 07, 09–12 | CodeRabbit пропустив рев'ю (ліміт безкоштовних перевірок) | [CI](https://github.com/lukian-tomochko/leave-portal/actions/runs/42583894930) |
+| [#52](https://github.com/lukian-tomochko/leave-portal/pull/52), [#53](https://github.com/lukian-tomochko/leave-portal/pull/53), [#54](https://github.com/lukian-tomochko/leave-portal/pull/54), [#55](https://github.com/lukian-tomochko/leave-portal/pull/55) | 7. UAT-специфікації, їх правки й виправлення форми | усі AC зрізу 3 | #52: 3 знахідки виправлено в #53; #54: рев'ю не відбулось (PR злито раніше); #55: відповідь у треді | [CI](https://github.com/lukian-tomochko/leave-portal/actions/runs/42608363946) |
 
-### Покриття
-
-| Файл за AC | Рядки | Гілки | Чим доведено, якщо 0 % |
-|---|---|---|---|
-| `src/lib/leave/decision.ts` | 92 % | 86 % | — |
-| `src/lib/leave/employee-record.ts` | 94 % | 84 % | — |
-| `src/lib/leave/balance.ts` (підлога 90/85/90/90) | 98 % | 94 % | — |
-| `src/lib/leave/messages.ts` | 100 % | — | — |
-| `src/app/decisions/page.tsx`, `src/app/records/[id]/page.tsx`, `src/app/balances/[id]/page.tsx` | 0 % | 0 % | e2e (UAT, крок C) і тести бази; сторінки лише показують те, що вирішили функції бази та домен |
-| правила в SQL (`decide_leave_record`, `update_leave_record_hours`, `employee_balance_inputs`) | не міряється v8 | — | тести бази на PGlite + SQL-мутанти нижче |
-
-Поріг на загальний відсоток не ставимо (≈36 %): сторінки й дії доводять тести бази та e2e, а не Vitest.
-
-### Доказ мутацією
-
-| Мутант (файл:рядок, що змінено) | AC під загрозою | До | Тест, посилений з тексту AC | Після |
-|---|---|---|---|---|
-| `src/lib/leave/decision.ts:183` `if (error instanceof DecisionDeniedError)` → `if (true)` (будь-який збій бази видається за відмову в правах) | AC-DECIDE-08 | вижив | `src/lib/leave/decision.test.ts:253` «AC-DECIDE-08: збій бази під час рішення не видається за відмову в правах і не ковтається»: статус лишається `awaiting_decision` (межа з AC), помилка не підміняється | убитий |
-| `src/lib/leave/decision.ts:96` `NOT_ALLOWED = "Недостатньо прав…"` → `""` (відмова без жодного пояснення) | AC-DECIDE-08 | вижив | `src/lib/leave/decision.test.ts:239`: додано перевірку, що повідомлення відмови не порожнє | убитий |
-| SQL **S1** `supabase/migrations/20261027090000_leave_balance.sql`: прибрано обидві перевірки відповідальності за посаду в `decide_leave_record` | AC-DECIDE-08 | — (SQL-мутант) | `tests/db/leave-decision.test.ts:151`, і варіант з акаунтами PM | KILLED |
-| SQL **S2** `20261109090000_leave_hours_end_at_block_start.sql` (функція перевизначена; раніше мутант стояв на `20261026080000_leave_hours_in_schedule.sql`): статус `approved` дозволено в `update_leave_record_hours` | AC-DECIDE-12 | — | `tests/db/leave-decision.test.ts:186` | KILLED |
-| SQL **S3** `20261027090000_leave_balance.sql`: умова «сам працівник» у `employee_balance_inputs` завжди істинна | AC-BALANCE-13 | — | `tests/db/leave-balance.test.ts:93` (і AC-BALANCE-12) | KILLED |
-| ручний, `decision.ts:152` `awaitingEmptyMessage`: `records.length === 0` → `<= 1` (межа «0 записів» з AC) | AC-DECIDE-14 | — | `decision.test.ts:116` | убитий |
-| ручний, `employee-record.ts` `statusRefusal`: `status === "approved"` → `"rejected"` | AC-DECIDE-12 | — | `employee-record.test.ts:92` | убитий |
-| ручний, `balance.ts:19` `GRANTED_CENTS = 1800` → `1700` (межа «granted 18.00» з AC) | AC-BALANCE-01 | — | `balance.test.ts:85` (і ще 4 тести балансу) | убитий |
-| ручний, `balance.ts`: `personal.granted: toDays(GRANTED_CENTS)` → `toDays(0)` | AC-BALANCE-01 | — | `balance.test.ts:85` | убитий |
-| ручний, `balance.ts`: `unpaid: { used: toDays(used.unpaid) }` → `toDays(used.family)` («Unpaid leave» — лише використано) | AC-BALANCE-01 | — | `balance.test.ts` AC-BALANCE-05, 10, 19 | убитий |
-
-- Stryker (`npm run mutation:ts -- --mutate <файл>`): `decision.ts` 74,82 % → 76,26 % (вижилих 16 → 14, убито на 2 більше); `employee-record.ts` 84,40 %, на рядках AC-DECIDE-12 (`statusRefusal`, перевірка статусу в `checkChange`) вижилих немає: вижили лише `overlaps` (межа перетину годин — AC-DECIDE-22, не наш AC), гонка (рядок 117) і нейтральний текст `RECORD_NOT_EDITABLE`. Рядки AC-DECIDE-14 (`awaitingEmptyMessage`) без вижилих.
-- Stryker на `balance.ts` (AC-BALANCE-01): 84,46 %, на рядках початкових значень (`GRANTED_CENTS`, надано / використано / залишок) вижилих немає. Вижили мутанти на перенесенні **Personal leave** в наступний рік (рядки 140 і 161) та на розподілі «Personal/Unpaid» (AC-BALANCE-08–10): це поза текстом AC-BALANCE-01, а вимога PM про перенесення Personal leave не описана, тож тест на неї не вигадуємо.
-- SQL-мутації (`npm run mutation:sql`): у WS8 було 3 з 4 вбито (S1, S2, S3), 1 еквівалентний прийнято (S1b), 75 %. У WS9 додано S4 і S5 (AC-LEAVE-22), S2 перенесено на актуальне визначення функції; станом на 09.11.2026 — 5 з 6 вбито, 1 еквівалентний прийнято.
-- Еквівалентні мутанти: **S1b** — друга перевірка відповідальності за посаду в `decide_leave_record` (після `for share`) еквівалентна першій (перед блокуванням): перша вже відхиляє менеджера чужої посади, друга лише фіксує призначення блокуванням. Тому S1 знімає обидві одразу.
+- Чесно: PR #45–#48 злито до закінчення рев'ю CodeRabbit, тому відповіді на їхні знахідки (11 тредів) дано після злиття, 09.11: слушні виправлено в [#56](https://github.com/lukian-tomochko/leave-portal/pull/56), решту закрито аргументом у треді.
+- Ворота на `main` (`quality`): [прогін](https://github.com/lukian-tomochko/leave-portal/actions/runs/42608363802).
+- Мутації: `npm run mutation:sql` — 17 з 18 вбито, S1b — еквівалентний (вивід у описі [#56](https://github.com/lukian-tomochko/leave-portal/pull/56)); Stryker `closures.ts` 96,97 % ([#48](https://github.com/lukian-tomochko/leave-portal/pull/48)).
 
 ## C. UAT на проді
 
-Специфікації (Playwright, лише читання, тег `@uat`, «Тоді» дослівно з AC PM):
+- Звіт: [docs/qa/uat/2026-11-09/report.md](uat/2026-11-09/report.md)
+- Відео: вкладенням в описі PR зі звітом (у git не додаємо).
+- Рецензент: `claude-haiku-5-5`, суперечки — `claude-sonnet-5-5`; вартість розбору останнього прогону — $0.1598 (ціни API).
+- Негативний контроль: див. опис PR зі звітом (NC-1 → FAIL).
+- Дані: `@writes` — закриття через інтерфейс адміністратора, синтетичні `uat-<запуск>@example.test` і засіяні записи teacher1 із коментарем `uat-…`; прибирання зі звіту: видалено 8, лишилось 0.
+- Про запуск рецензента на Windows: `spawn("claude")` не знаходить `claude.cmd`, а `os.tmpdir()` повертає короткий шлях `DEVELO~1`, який інструмент Read відхиляє. Скрипт `scripts/uat/review.mjs` не змінювали; на час кроку додавали теку з `claude.exe` у `PATH` і задавали `TEMP`/`TMP` повним шляхом.
 
-| AC | Специфікація | Роль | Дані |
-|---|---|---|---|
-| AC-BALANCE-01 | `tests/e2e/balances.spec.ts` | teacher2@example.test (працівник без записів) | лише читання |
-| AC-BALANCE-13 | `tests/e2e/balances.spec.ts` | teacher1@example.test; адресу сторінки балансу teacher2 бере manager1 | лише читання |
-| AC-DECIDE-14 | `tests/e2e/decisions.spec.ts` | manager2@example.test (відповідає лише за додаткову посаду teacher1, записів немає) | лише читання |
+### Приймання PM
 
-Негативний контроль: `tests/e2e/negative-controls.spec.ts` (NC-1: хибний текст у перевірці → очікуємо FAIL; NC-2: інший текст AC при тих самих перевірках → очікуємо NEEDS-HUMAN).
+| AC | Рішення PM | Посилання |
+|---|---|---|
+| усі AC зрізу 3 | очікується | оцінки PM — у таблиці приймання; коментар-підпис і issues — у PR зі звітом UAT |
 
-Результати прогону на проді 02.11.2026 о 18:16 за Києвом (`npm run uat -- --url https://leave-portal-blush.vercel.app --grep-invert "@writes"`, `/api/health`: коміт `22b8afe`, `"db":"ok"`). Усі три твердження Playwright пройшли, рецензент «наосліп» (`claude-haiku-5-5`, `claude -p`, лише Read) погодився з кожним кадром, цитати знайдено на сторінці. Підсумок за кодом — правило R6, вердикти вручну не правилися. Перший прогін того ж дня (коміт `2336860`) дав NEEDS-HUMAN за R2: `claude` не було в PATH; його замінено цим повторним прогоном після встановлення CLI.
+## D. Прод і ретро
 
-| AC | Специфікація | Тест (твердження) | Агент | Вердикт | Кадр |
-|---|---|---|---|---|---|
-| AC-BALANCE-01 | `tests/e2e/balances.spec.ts` | passed | Haiku: PASS | **PASS**, R6 | `docs/qa/uat/2026-11-02/frames/AC-BALANCE-01-then-1.png` |
-| AC-BALANCE-13 | `tests/e2e/balances.spec.ts` | passed | Haiku: PASS | **PASS**, R6 | `docs/qa/uat/2026-11-02/frames/AC-BALANCE-13-then-1.png` |
-| AC-DECIDE-14 | `tests/e2e/decisions.spec.ts` | passed | Haiku: PASS | **PASS**, R6 | `docs/qa/uat/2026-11-02/frames/AC-DECIDE-14-then-1.png` |
-
-- Звіт: `docs/qa/uat/2026-11-02/report.md` (разом із `manifest.json` і `frames/`)
-- Відео (вкладення PR #39, не в git): [AC-BALANCE-01](https://github.com/user-attachments/assets/ce64e054-c626-41ee-b533-90a0e55013ee), [AC-BALANCE-13](https://github.com/user-attachments/assets/3c9ee872-0c4e-4cda-81fc-c5c4a7404ff0), [AC-DECIDE-14](https://github.com/user-attachments/assets/56709014-1938-4582-8940-eb474a687334). Локальні оригінали — `test-results/artifacts/…/video.webm`.
-- Рецензент: `claude-haiku-5-5`, суперечки → `claude-sonnet-5-5`; вартість розбору $0.3041 за ціною API (за підпискою — у межах ліміту плану).
-- Негативний контроль (`npm run uat:nc`, 02.11.2026 18:20): **NC-1** (AC-DECIDE-14, навмисно хибний текст «Nothing is waiting for your decision» у перевірці): Playwright впав, агент (Haiku) сказав PASS, але підсумок — **FAIL, R1** (перевірка впала, агент її не перекриває). **NC-2** (змінений текст AC при тих самих перевірках): агент не погодився (Haiku FAIL, суперечка → Sonnet FAIL), підсумок — **NEEDS-HUMAN, R3**. Так видно, що наш UAT уміє падати й що агент не пропускає неправдивий «Тоді».
-- Дані: лише читання; прибирання синтетичних `uat-*@example.test` не знадобилось (видалено 0, лишилось 0).
-
-## D. Eval рецензента
-
-- PR з вадами (не злитий): https://github.com/lukian-tomochko/leave-portal/pull/40
-- Ключ і таблиця: https://github.com/lukian-tomochko/leave-portal/pull/40#issuecomment-6598424934
-
-Вади пройшли всі обов'язкові перевірки (lint, typecheck, 215 тестів, build, `ac:coverage`, `check:boundary`, `check:design`, `quality`, `db-check`), тож дійшли до рецензентів. Ключ опубліковано після того, як відпрацювали обидва.
-
-| # | Вада (ключ) | CodeRabbit | `/code-review high` |
-|---|---|---|---|
-| 1 | авторизація в дії: `src/app/api/decisions/awaiting-count/route.ts:10` — `getSession()` замість `getClaims()` | знайшов: «**Перевіряйте claims замість сесії з cookie.** `getSession()` читає сесію з cookie без перевірки її автентичності.» | знайшов: «Route Handler authorizes with getSession() instead of getClaims() and checks no role» |
-| 2 | логіка: `src/lib/leave/decision.ts:138` — «History» лишає тільки `approved` і `rejected` | **пропустив**: у підсумку лише переказав зміну («У режимі `history` залишаються лише записи зі статусом `approved` або `rejected`.»), без зауваження | знайшов: «silently removes returned_for_revision and cancelled records from /decisions/history» |
-| 3 | права в даних: `supabase/migrations/20261103100000_awaiting_decision_count.sql:24` — `security definer` без `search_path`, `grant … to anon`, без перевірки ролі | знайшов: «**Обмежте доступ до лічильника в базі.** `anon` і будь-який `authenticated` можуть викликати RPC напряму … Перенесіть `security definer` у `private`, додайте `set search_path = ''`» | знайшов: «public.awaiting_decision_count is security definer with no search_path, no role check, and executable by anon» |
-| П | приманка: `private.is_decider()` — правильно оформлена `security definer`, у коді не використовується | без хибної тривоги: згадав лише як хелпер, який варто викликати | дрібна знахідка «private.is_decider() is added but never used» (факт правильний, вадою не є, на безпеку не натякає) |
-
-- Інші знахідки: CodeRabbit — «**Рахуйте лише записи посад менеджера.** Запит рахує записи всіх посад.» (слушна, лічильник глобальний); `/code-review` — глобальний лічильник (слушна), немає тесту й рядка `conformance.md` для нового ендпойнта (слушна), помилка RPC без логування (дрібниця).
-- Застереження: `/code-review high` запускався в тій самій сесії Claude Code, у якій писалися вади, тож це не «наосліп»; незалежний лише CodeRabbit (знайшов 2 з 3, без хибної тривоги на приманці).
-- Правило, що закриває пропуск: рядок в `AGENTS.md`: «Фільтри статусів у списках рішень (`loadPage`, `listPage`): «History» — усі інші статуси: `approved`, `rejected`, `returned_for_revision`, `cancelled`. Звуження переліку статусів у фільтрі «History» — помилка рівня «must fix» (AC-DECIDE-11), навіть якщо тести зелені.» — https://github.com/lukian-tomochko/leave-portal/pull/41 (коміт `e78a5a79731fe40e3053fbf85cefc99ab0afed23`)
-- Повторний прогін (CodeRabbit, `@coderabbitai full review` о 10:53 за Києвом після злиття правила; перший запит о 10:08 відхилено через ліміт запитів): **знайшов ваду 2**: інлайн-коментар до `src/lib/leave/decision.ts:138` (Major): «**Не звужуйте `History` до двох статусів.** … записи зі статусами `returned_for_revision` та `cancelled` зникають зі списку. Це порушує AC-DECIDE-11.» і «As per coding guidelines: `History` має містити всі статуси, крім `awaiting_decision`» (джерело — новий рядок `AGENTS.md`): https://github.com/lukian-tomochko/leave-portal/pull/40#discussion_r4452606967, підсумок: https://github.com/lukian-tomochko/leave-portal/pull/40#issuecomment-6599444888. Після правила CodeRabbit знайшов 3 з 3 вад. PR #40 не злито, закрито.
+- `/api/health` після злиття всіх задач: sha `4b1a973`, db ok.
+- Нові ролі й акаунти: нових ролей зріз 3 не додав (адміністратор `admin@example.test` створено раніше); [accounts.zip](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/accounts.zip)
+- `docs/conformance.md`: [conformance.md](https://github.com/lukian-tomochko/leave-portal/blob/4b1a973d100d51669d8b9ba284f6c5cd9e64f1fc/docs/conformance.md)
+- Ретро: [retro-ws9.md](retro-ws9.md)
