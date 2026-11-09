@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import { listItemCard } from "@/components/ui/card";
 import { type Closure, closuresInSchoolYear, describeClosure, parseSchoolYear } from "@/lib/leave/closures";
 import { schoolYearLabel, schoolYearOf } from "@/lib/leave/balance";
 import { noClosuresInYear } from "@/lib/leave/messages";
@@ -69,7 +70,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
           {closures.map((closure) => (
             <li
               key={`${closure.startsOn}-${closure.name}`}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3"
+              className={`flex flex-wrap items-center justify-between gap-2 p-3 ${listItemCard}`}
             >
               <span className="font-medium">{closure.name}</span>
               <span className="tabular-nums text-muted-foreground">{describeClosure(closure)}</span>

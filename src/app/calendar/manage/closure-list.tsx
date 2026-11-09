@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { listItemCard } from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -34,7 +35,7 @@ export function ClosureList({ rows }: { rows: ClosureRow[] }) {
       ) : null}
       <ul className="flex flex-col gap-2 text-sm" data-testid="manage-closures">
         {rows.map((row) => (
-          <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3">
+          <li key={row.id} className={`flex flex-wrap items-center justify-between gap-2 p-3 ${listItemCard}`}>
             <span className="font-medium">{row.name}</span>
             <span className="tabular-nums text-muted-foreground">{row.dates}</span>
             <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => setTarget(row)}>
