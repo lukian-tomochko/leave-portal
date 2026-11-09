@@ -101,18 +101,18 @@
 | AC-BALANCE-20 | Менеджер додаткової посади бачить повний баланс | `supabase/migrations/20261027090000_leave_balance.sql` (private.employee_balance_inputs), `src/app/balances/page.tsx` | `tests/db/leave-balance.test.ts` | реалізовано |
 | AC-BALANCE-21 | Пізнє погодження за минулий рік | `src/lib/leave/balance.ts` (schoolYearOf, balancesForYear) | `src/lib/leave/balance.test.ts` | реалізовано |
 | AC-BALANCE-22 | Заявка на два навчальні роки | `src/lib/leave/balance.ts` (schoolYearOf, usageByYear) | `src/lib/leave/balance.test.ts` | реалізовано |
-| AC-CAL-01 | Закриття на цілі дні | — | — | відкладено (чекає реалізації) |
-| AC-CAL-02 | Працівник бачить закриття | — | — | відкладено (чекає реалізації) |
+| AC-CAL-01 | Закриття на цілі дні | `supabase/migrations/20261109120000_school_closures.sql` (add_school_closure, remove_school_closure) | `tests/db/school-calendar.test.ts` | відкладено (база й права готові, інтерфейс — задача 6 плану impl-school-calendar) |
+| AC-CAL-02 | Працівник бачить закриття | `supabase/migrations/20261109120000_school_closures.sql` (add_school_closure, remove_school_closure) | `tests/db/school-calendar.test.ts` | відкладено (база й права готові, інтерфейс — задача 6 плану impl-school-calendar) |
 | AC-CAL-03 | Закритий день у новій заявці | — | — | відкладено (чекає реалізації) |
 | AC-CAL-04 | Цілий день на скороченому дні | — | — | відкладено (чекає реалізації) |
 | AC-CAL-05 | Години після часу закриття | — | — | відкладено (чекає реалізації) |
 | AC-CAL-06 | Частка дня на скороченому дні | — | — | відкладено (чекає реалізації) |
-| AC-CAL-07 | Погоджений запис блокує закриття | — | — | відкладено (чекає реалізації) |
-| AC-CAL-08 | Відхилений запис не блокує закриття | — | — | відкладено (чекає реалізації) |
-| AC-CAL-09 | Видалене закриття повертає робочі дні | — | — | відкладено (чекає реалізації) |
-| AC-CAL-10 | Кінцева дата раніше за початкову | — | — | відкладено (чекає реалізації) |
-| AC-CAL-11 | Дата вже закрита | — | — | відкладено (чекає реалізації) |
+| AC-CAL-07 | Погоджений запис блокує закриття | `supabase/migrations/20261109120000_school_closures.sql` (add_school_closure, remove_school_closure) | `tests/db/school-calendar.test.ts` | відкладено (база й права готові, інтерфейс — задача 6 плану impl-school-calendar) |
+| AC-CAL-08 | Відхилений запис не блокує закриття | `supabase/migrations/20261109120000_school_closures.sql` (add_school_closure, remove_school_closure) | `tests/db/school-calendar.test.ts` | відкладено (база й права готові, інтерфейс — задача 6 плану impl-school-calendar) |
+| AC-CAL-09 | Видалене закриття повертає робочі дні | `supabase/migrations/20261109120000_school_closures.sql` (add_school_closure, remove_school_closure) | `tests/db/school-calendar.test.ts` | відкладено (база й права готові, інтерфейс — задача 6 плану impl-school-calendar) |
+| AC-CAL-10 | Кінцева дата раніше за початкову | `supabase/migrations/20261109120000_school_closures.sql` (add_school_closure, remove_school_closure) | `tests/db/school-calendar.test.ts` | відкладено (база й права готові, інтерфейс — задача 6 плану impl-school-calendar) |
+| AC-CAL-11 | Дата вже закрита | `supabase/migrations/20261109120000_school_closures.sql` (add_school_closure, remove_school_closure) | `tests/db/school-calendar.test.ts` | відкладено (база й права готові, інтерфейс — задача 6 плану impl-school-calendar) |
 | AC-CAL-12 | Працівник відкриває сторінку зміни | — | — | відкладено (чекає реалізації) |
-| AC-CAL-13 | Менеджер закриває день напряму | — | — | відкладено (чекає реалізації) |
+| AC-CAL-13 | Менеджер закриває день напряму | `supabase/migrations/20261109120000_school_closures.sql` (add_school_closure, remove_school_closure) | `tests/db/school-calendar.test.ts` | відкладено (база й права готові, інтерфейс — задача 6 плану impl-school-calendar) |
 | AC-CAL-14 | Відвідувач без входу | — | — | відкладено (чекає реалізації) |
 | AC-CAL-15 | Календар без закриттів | — | — | відкладено (чекає реалізації) |

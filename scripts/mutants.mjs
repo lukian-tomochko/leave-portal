@@ -16,6 +16,8 @@ const DECISION_DB = "tests/db/leave-decision.test.ts";
 const BALANCE_DB = "tests/db/leave-balance.test.ts";
 const HOURS_END = "supabase/migrations/20261109090000_leave_hours_end_at_block_start.sql";
 const REQUEST_DB = "tests/db/leave-request.test.ts";
+const CLOSURES = "supabase/migrations/20261109120000_school_closures.sql";
+const CLOSURES_DB = "tests/db/school-calendar.test.ts";
 
 export const mutants = [
   {
@@ -64,5 +66,62 @@ export const mutants = [
     what: "update_leave_record_hours: зміна годин із кінцем на початку наступного блоку знову відхиляється",
     find: " or p_ends_at = b.starts_at",
     replace: "",
+  },
+  {
+    id: "S6", kind: "sql", ac: "AC-CAL-13", file: CLOSURES, tests: [CLOSURES_DB],
+    what: "add_school_closure: прибрано перевірку ролі admin (менеджер чи працівник напряму додає закриття)",
+    find:
+      "  if (select private.current_app_role()) is distinct from 'admin' then\n" +
+      "    raise exception 'forbidden' using errcode = '42501';\n" +
+      "  end if;\n" +
+      "  if p_starts_on is null",
+    replace: "  if p_starts_on is null",
+  },
+  {
+    id: "S7", kind: "sql", ac: "AC-CAL-09", file: CLOSURES, tests: [CLOSURES_DB],
+    what: "remove_school_closure: прибрано перевірку ролі admin (будь-хто з входом видаляє закриття)",
+    find:
+      "  if (select private.current_app_role()) is distinct from 'admin' then\n" +
+      "    raise exception 'forbidden' using errcode = '42501';\n" +
+      "  end if;\n\n" +
+      "  perform pg_advisory_xact_lock(hashtext('school_closures'));\n\n" +
+      "  delete",
+    replace: "  perform pg_advisory_xact_lock(hashtext('school_closures'));\n\n  delete",
+  },
+  {
+    id: "S8", kind: "sql", ac: "AC-CAL-13", file: CLOSURES, tests: [CLOSURES_DB],
+    what: "school_closures: authenticated отримує прямі insert і delete на таблицю (обхід функцій)",
+    find: "grant select on table public.school_closures to authenticated;",
+    replace: "grant select, insert, delete on table public.school_closures to authenticated;",
+  },
+  {
+    id: "S9", kind: "sql", ac: "AC-CAL-07", file: CLOSURES, tests: [CLOSURES_DB],
+    what: "add_school_closure: погоджений запис більше не блокує закриття дня (статус approved прибрано з блокуючих)",
+    find: "      and r.status in ('awaiting_decision', 'returned_for_revision', 'approved')",
+    replace: "      and r.status in ('awaiting_decision', 'returned_for_revision')",
+  },
+  {
+    id: "S10", kind: "sql", ac: "AC-CAL-08", file: CLOSURES, tests: [CLOSURES_DB],
+    what: "add_school_closure: відхилений запис теж блокує закриття (статус rejected додано до блокуючих)",
+    find: "      and r.status in ('awaiting_decision', 'returned_for_revision', 'approved')",
+    replace: "      and r.status in ('awaiting_decision', 'returned_for_revision', 'approved', 'rejected')",
+  },
+  {
+    id: "S11", kind: "sql", ac: "AC-CAL-10", file: CLOSURES, tests: [CLOSURES_DB],
+    what: "add_school_closure: прибрано перевірку «кінець не раніше початку» (замість відповіді — помилка обмеження)",
+    find: "  if p_ends_on < p_starts_on then",
+    replace: "  if false then",
+  },
+  {
+    id: "S12", kind: "sql", ac: "AC-CAL-11", file: CLOSURES, tests: [CLOSURES_DB],
+    what: "add_school_closure: прибрано відповідь про перетин із закриттям (лишається лише обмеження виключення)",
+    find: "  if jsonb_array_length(v_overlaps) > 0 then",
+    replace: "  if false then",
+  },
+  {
+    id: "S13", kind: "sql", ac: "AC-CAL-07", file: CLOSURES, tests: [CLOSURES_DB],
+    what: "add_school_closure: для скороченого дня блокують усі записи дня, а не лише ті, що мають хвилини після часу закриття",
+    find: "greatest(r.starts_at, sb.starts_at, p_closed_from)",
+    replace: "greatest(r.starts_at, sb.starts_at)",
   },
 ];

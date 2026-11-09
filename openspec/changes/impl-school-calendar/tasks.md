@@ -21,12 +21,12 @@
 
 ## 2. База й права: таблиця закриттів і функції (AC-CAL-01, 07, 08, 10, 11, 13)
 
-- [ ] 2.1 Міграція: `public.school_closures` (D4), RLS і `grant select`, exclusion за діапазоном дат, `private.closed_from(date)`.
-- [ ] 2.2 `private.add_school_closure` і `private.remove_school_closure` (D5) з обгортками `public.*`; типи в `database.types.ts`; ADR 0007.
-- [ ] 2.3 Тести бази на PGlite (`tests/db/school-calendar.test.ts`), кожна відмова перевіряє незмінні дані: AC-CAL-07
+- [x] 2.1 Міграція: `public.school_closures` (D4), RLS і `grant select`, exclusion за діапазоном дат, `private.closed_from(date)`.
+- [x] 2.2 `private.add_school_closure` і `private.remove_school_closure` (D5) з обгортками `public.*`; типи в `database.types.ts`; ADR 0007.
+- [x] 2.3 Тести бази на PGlite (`tests/db/school-calendar.test.ts`), кожна відмова перевіряє незмінні дані: AC-CAL-07
   (затверджений запис блокує), AC-CAL-08 (відхилений не блокує), AC-CAL-10 (кінець раніше за початок), AC-CAL-11
   (перетин), AC-CAL-13 (менеджер напряму → `42501`, календар не змінився); позитивний AC-CAL-01 на рівні даних.
-- [ ] 2.4 SQL-мутанти: прибрана перевірка ролі; `rejected` додано до блокуючих статусів; `<` → `<=` у порівнянні дат;
+- [x] 2.4 SQL-мутанти: прибрана перевірка ролі; `rejected` додано до блокуючих статусів; `<` → `<=` у порівнянні дат;
   прибраний чек перетину → `KILLED`.
   Done when: AC-CAL-01 (дані), AC-CAL-07, AC-CAL-08, AC-CAL-10, AC-CAL-11, AC-CAL-13 — тести бази зелені, мутанти вбиті, `db-deploy` застосовує міграцію.
 
