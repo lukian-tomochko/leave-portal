@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ViewTransition } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppHeader } from "@/components/app-header";
 import "./globals.css";
@@ -26,7 +27,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <AppHeader />
-        {children}
+        {/* Кросфейд між сторінками (DESIGN.md, розділ 10); шапка не анімується (globals.css, site-header). */}
+        <ViewTransition default="page-fade">{children}</ViewTransition>
       </body>
     </html>
   );

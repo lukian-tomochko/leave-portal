@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -44,7 +45,9 @@ export function RecordsTable({ records, testId }: { records: DecisionRecord[]; t
             </TableCell>
             <TableCell>{LEAVE_TYPE_LABELS[record.leaveType]}</TableCell>
             <TableCell>
-              <Badge variant={STATUS_VARIANTS[record.status]}>{STATUS_LABELS[record.status]}</Badge>
+              <ViewTransition name={`status-${record.id}`} share="status-morph" default="none">
+                <Badge variant={STATUS_VARIANTS[record.status]}>{STATUS_LABELS[record.status]}</Badge>
+              </ViewTransition>
             </TableCell>
             <TableCell>
               <Link href={`/records/${record.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
