@@ -2,26 +2,17 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ViewTransition } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/bento/page-header";
+import { Tile } from "@/components/bento/tile";
+import { StatusBadge } from "@/components/status-badge";
 import { BalanceDeniedError, type SplitSuggestion, suggestSplit } from "@/lib/leave/balance";
 import { formatDecisionLine, getRecord, isDecider, isRecordId } from "@/lib/leave/decision";
-import { LEAVE_TYPE_LABELS, STATUS_LABELS } from "@/lib/leave/messages";
+import { LEAVE_TYPE_LABELS } from "@/lib/leave/messages";
 import { loadBalanceInputs } from "@/lib/leave/supabase-balance-repository";
 import { createSupabaseDecisionRepository, loadActor } from "@/lib/leave/supabase-decision-repository";
-import type { RecordStatus } from "@/lib/leave/types";
 import { createClient } from "@/lib/supabase/server";
-import { APPEAR, stagger } from "@/lib/utils";
 import { DecisionForm } from "./decision-form";
 import { EmployeeActions } from "./employee-actions";
-
-const STATUS_VARIANTS = {
-  awaiting_decision: "awaiting",
-  approved: "approved",
-  rejected: "rejected",
-  returned_for_revision: "returned",
-  cancelled: "cancelled",
-} as const satisfies Record<RecordStatus, "awaiting" | "approved" | "rejected" | "returned" | "cancelled">;
 
 // Сторінка запису для власника, відповідального менеджера й адміністратора: деталі, коментар працівника
 // (AC-DECIDE-20), історія рішень (AC-DECIDE-15) і форма рішення. Чужий запис RLS не віддає, тож це notFound().
@@ -75,23 +66,21 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
     record.employeeId === actor.id && (record.status === "awaiting_decision" || record.status === "returned_for_revision");
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-10">
-      <Link href={isDecider(actor.role) ? "/decisions" : "/leave"} className="text-sm text-muted-foreground underline">
+    <main className="flex w-full max-w-3xl flex-1 flex-col gap-4 py-2">
+      <Link href={isDecider(actor.role) ? "/decisions" : "/leave"} className="w-fit px-1 text-sm text-muted-foreground underline">
         ← Назад
       </Link>
-      <h1 className="text-2xl font-semibold">Leave record</h1>
+      <PageHeader title="Leave record" />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-lg">
-            {record.employeeName}
-            <ViewTransition name={`status-${record.id}`} share="status-morph" default="none">
-              <Badge variant={STATUS_VARIANTS[record.status]}>{STATUS_LABELS[record.status]}</Badge>
-            </ViewTransition>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
+      <Tile index={0}>
+        <div className="mb-4 flex flex-wrap items-center gap-3 text-lg font-semibold">
+          {record.employeeName}
+          <ViewTransition name={`status-${record.id}`} share="status-morph" default="none">
+            <StatusBadge status={record.status} />
+          </ViewTransition>
+        </div>
+        <div>
+          <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-3 text-sm">
             <dt className="text-muted-foreground">Position</dt>
             <dd>{record.positionLabel}</dd>
             <dt className="text-muted-foreground">Date</dt>
@@ -105,9 +94,10 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
             <dt className="text-muted-foreground">Employee&apos;s comment</dt>
             <dd data-testid="employee-comment">{record.requestComment ?? "—"}</dd>
           </dl>
-        </CardContent>
-      </Card>
+        </div>
+      </Tile>
 
+      <Tile index={1} className="flex flex-col gap-3">
       <section aria-labelledby="history-title" className="flex flex-col gap-3">
         <h2 id="history-title" className="text-lg font-semibold">
           Decision history
@@ -119,8 +109,8 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
             {record.entries.map((entry, index) => (
               <li
                 key={`${entry.decidedAt}-${entry.decidedByName}`}
-                className={`rounded-lg border border-border bg-card p-3 text-card-foreground ${APPEAR}`}
-                style={stagger(index)}
+                className="animate-rise rounded-2xl border border-border bg-muted p-3 text-foreground"
+                style={{ animationDelay: `${Math.min(index, 8) * 60 + 300}ms` }}
               >
                 <p>{formatDecisionLine(entry)}</p>
                 {entry.comment ? <p className="text-muted-foreground">{entry.comment}</p> : null}
@@ -129,8 +119,10 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
           </ul>
         )}
       </section>
+      </Tile>
 
       {canEdit ? (
+        <Tile index={2}>
         <section aria-labelledby="edit-title" className="flex flex-col gap-3">
           <h2 id="edit-title" className="text-lg font-semibold">
             Ваш запис
@@ -140,9 +132,11 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
           </p>
           <EmployeeActions recordId={record.id} startsAt={record.startsAt} endsAt={record.endsAt} />
         </section>
+        </Tile>
       ) : null}
 
       {canDecide ? (
+        <Tile index={3}>
         <section aria-labelledby="decide-title" className="flex flex-col gap-3">
           <h2 id="decide-title" className="text-lg font-semibold">
             Decision
@@ -154,6 +148,7 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
           ) : null}
           <DecisionForm recordId={record.id} splitSuggested={suggestion !== null} />
         </section>
+        </Tile>
       ) : null}
     </main>
   );

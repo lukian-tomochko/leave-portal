@@ -160,6 +160,23 @@ export function createSupabaseDecisionRepository(supabase: SupabaseClient<Databa
   };
 }
 
+// Скільки записів чекає рішення в того, хто діє (бейдж у сайдбарі). Ті самі межі, що в listPage: менеджер — записи своїх посад,
+// адміністратор — усі, працівник — нуль. Лише лічильник, без підготовки записів.
+export async function countAwaiting(supabase: SupabaseClient<Database>, actor: Actor): Promise<number> {
+  if (actor.role === "employee" || (actor.role === "manager" && actor.managedPositionIds.length === 0)) {
+    return 0;
+  }
+  let query = supabase.from("leave_records").select("id", { count: "exact", head: true }).eq("status", "awaiting_decision");
+  if (actor.role === "manager") {
+    query = query.in("position_id", actor.managedPositionIds);
+  }
+  const { count, error } = await query;
+  if (error) {
+    throw new Error(`countAwaiting failed: ${error.code ?? "unknown"}`);
+  }
+  return count ?? 0;
+}
+
 // Хто діє: id із claims, роль із profiles (ніколи з user_metadata) і посади, за які відповідає. Без профілю — null.
 export async function loadActor(supabase: SupabaseClient<Database>, userId: string): Promise<Actor | null> {
   const { data: profile, error } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();

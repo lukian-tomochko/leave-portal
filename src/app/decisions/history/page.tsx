@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PageHeader } from "@/components/bento/page-header";
+import { Tile } from "@/components/bento/tile";
 import { buttonVariants } from "@/components/ui/button";
-import { NOT_ALLOWED, isDecider, listHistory, parsePage } from "@/lib/leave/decision";
+import { isDecider, listHistory, parsePage } from "@/lib/leave/decision";
 import { createSupabaseDecisionRepository, loadActor } from "@/lib/leave/supabase-decision-repository";
 import { createClient } from "@/lib/supabase/server";
+import { NotAllowed } from "../not-allowed";
 import { Pager } from "../pager";
 import { RecordsTable } from "../records-table";
 
@@ -21,22 +23,15 @@ export default async function HistoryPage({ searchParams }: PageProps<"/decision
 
   const actor = await loadActor(supabase, userId);
   if (!actor || !isDecider(actor.role)) {
-    return (
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-10">
-        <h1 className="text-2xl font-semibold">History</h1>
-        <Alert variant="destructive">
-          <AlertDescription>{NOT_ALLOWED}</AlertDescription>
-        </Alert>
-      </main>
-    );
+    return <NotAllowed title="History" />;
   }
 
   const { records, hasNext } = await listHistory(createSupabaseDecisionRepository(supabase), actor, page);
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-10">
-      <h1 className="text-2xl font-semibold">History</h1>
-      <div className="flex gap-2">
+    <main className="flex flex-1 flex-col gap-4 py-2">
+      <PageHeader title="History" />
+      <div className="flex gap-2 px-1">
         <Link href="/decisions" className={buttonVariants({ variant: "outline", size: "sm" })}>
           Awaiting decision
         </Link>
@@ -45,7 +40,9 @@ export default async function HistoryPage({ searchParams }: PageProps<"/decision
         </Link>
       </div>
       {records.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Рішень ще немає.</p>
+        <Tile index={0}>
+          <p className="py-6 text-center text-sm text-muted-foreground">Рішень ще немає.</p>
+        </Tile>
       ) : (
         <>
           <RecordsTable records={records} testId="history-records" />

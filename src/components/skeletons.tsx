@@ -5,21 +5,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 const WIDTHS = {
   "2xl": "max-w-2xl",
   "3xl": "max-w-3xl",
-  "5xl": "max-w-5xl",
+  "5xl": "",
 } as const;
 
 type Variant = "table" | "list" | "form" | "detail";
 
 function Title() {
-  return <Skeleton className="h-8 w-56" />;
+  return <Skeleton className="h-9 w-56 rounded-2xl" />;
 }
 
 function TableRows({ rows = 5 }: { rows?: number }) {
   return (
     <div className="flex flex-col gap-2">
-      <Skeleton className="h-9 w-full" />
+      <Skeleton className="h-9 w-full rounded-2xl" />
       {Array.from({ length: rows }, (_, index) => (
-        <Skeleton key={index} className="h-11 w-full" />
+        <Skeleton key={index} className="h-11 w-full rounded-2xl" />
       ))}
     </div>
   );
@@ -29,7 +29,7 @@ function ListRows({ rows = 3 }: { rows?: number }) {
   return (
     <div className="flex flex-col gap-2">
       {Array.from({ length: rows }, (_, index) => (
-        <Skeleton key={index} className="h-14 w-full rounded-lg" />
+        <Skeleton key={index} className="h-14 w-full rounded-2xl" />
       ))}
     </div>
   );
@@ -41,17 +41,17 @@ function FormFields() {
       {[0, 1, 2].map((index) => (
         <div key={index} className="flex flex-col gap-2">
           <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-10 w-full rounded-xl" />
         </div>
       ))}
-      <Skeleton className="h-8 w-40" />
+      <Skeleton className="h-9 w-40 rounded-full" />
     </div>
   );
 }
 
 export function PageSkeleton({ width, variant }: { width: keyof typeof WIDTHS; variant: Variant }) {
   return (
-    <main aria-busy="true" className={`mx-auto flex w-full ${WIDTHS[width]} flex-1 flex-col gap-6 px-6 py-10`}>
+    <main aria-busy="true" className={`flex w-full ${WIDTHS[width]} flex-1 flex-col gap-4 py-2`}>
       <Title />
       {variant === "table" ? <TableRows /> : null}
       {variant === "list" ? <ListRows /> : null}

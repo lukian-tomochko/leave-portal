@@ -13,7 +13,6 @@ import type { Closure } from "@/lib/leave/closures";
 import { NO_WORKING_HOURS, schoolClosedOn } from "@/lib/leave/messages";
 import { dateError as checkDate, positionsError } from "@/lib/leave/form-checks";
 import { RELATIONSHIPS } from "@/lib/leave/types";
-import { APPEAR, FADE_IN, stagger } from "@/lib/utils";
 import { previewLeaveRequest, submitLeaveRequest } from "../actions";
 import type { LeaveFormState } from "../state";
 
@@ -138,7 +137,7 @@ export function NewLeaveForm({
     <div className="flex flex-col gap-8">
       <form onSubmit={onPreview} className="flex flex-col gap-4">
         <fieldset className="flex flex-col gap-2 text-sm">
-          <legend className="mb-1">Дати відсутності</legend>
+          <legend className="mb-1 font-medium">Дати відсутності</legend>
           {dates.map((date, index) => {
             const error = dateError(date);
             return (
@@ -176,7 +175,7 @@ export function NewLeaveForm({
         </fieldset>
 
         <fieldset className="flex flex-col gap-2 text-sm">
-          <legend className="mb-1">Посади</legend>
+          <legend className="mb-1 font-medium">Посади</legend>
           {positions.map((position) => (
             <label key={position.id} className="flex items-center gap-2">
               <input
@@ -193,7 +192,7 @@ export function NewLeaveForm({
         </fieldset>
 
         <fieldset className="flex flex-col gap-2 text-sm">
-          <legend className="mb-1">Скільки часу</legend>
+          <legend className="mb-1 font-medium">Скільки часу</legend>
           <label className="flex items-center gap-2">
             <input type="radio" className={CHOICE_CLASS} name="mode" value="whole-day" checked={mode === "whole-day"} onChange={() => setMode("whole-day")} />
             Цілий день
@@ -203,7 +202,7 @@ export function NewLeaveForm({
             Години
           </label>
           {mode === "hours" ? (
-            <div className={`flex items-center gap-3 ${FADE_IN}`}>
+            <div className="flex animate-rise items-center gap-3">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="starts-at">З</Label>
                 <Input id="starts-at" type="time" step={300} required value={startsAt} onChange={(event) => setStartsAt(event.target.value)} className="w-auto" />
@@ -292,7 +291,7 @@ export function NewLeaveForm({
           ))}
           <ul className="flex flex-col gap-2 text-sm" data-testid="summary-lines">
             {summary.lines.map((line, index) => (
-              <li key={`${line.date}-${line.position}`} className={`rounded-lg border border-border bg-card p-3 text-card-foreground ${APPEAR}`} style={stagger(index)}>
+              <li key={`${line.date}-${line.position}`} className="animate-rise rounded-2xl border border-border bg-muted p-3 text-foreground" style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}>
                 {line.date}, {line.hours} ({line.duration}), {line.position}: {line.status}
               </li>
             ))}

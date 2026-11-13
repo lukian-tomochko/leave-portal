@@ -2,20 +2,26 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Токени описані в DESIGN.md (розділ 2). Темна тема — лише за системою (prefers-color-scheme). */
+/* Токени описані в DESIGN.md (розділ 2). Тема: скрипт у layout.tsx до першого малювання ставить data-theme на <html> (збережений
+   вибір або системна тема), перемикач у сайдбарі змінює його (ADR 0008). Без JS діє світла тема. */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-heading: var(--font-sans);
+  --font-display: var(--font-onest), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-display);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-link: var(--link);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -28,9 +34,6 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-overlay: var(--overlay);
-  --color-header: var(--header);
-  --color-header-foreground: var(--header-foreground);
-  --color-header-muted: var(--header-muted);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-status-awaiting: var(--status-awaiting);
@@ -43,6 +46,19 @@
   --color-status-returned-foreground: var(--status-returned-foreground);
   --color-status-cancelled: var(--status-cancelled);
   --color-status-cancelled-foreground: var(--status-cancelled-foreground);
+  --color-fill-awaiting: var(--fill-awaiting);
+  --color-fill-approved: var(--fill-approved);
+  --color-fill-rejected: var(--fill-rejected);
+  --color-fill-returned: var(--fill-returned);
+  --color-fill-cancelled: var(--fill-cancelled);
+  --color-leave-sick: var(--leave-sick);
+  --color-leave-personal: var(--leave-personal);
+  --color-leave-unpaid: var(--leave-unpaid);
+  --color-leave-family: var(--leave-family);
+  --color-blob-a: var(--blob-a);
+  --color-blob-b: var(--blob-b);
+  --color-blob-c: var(--blob-c);
+  --shadow-tile: var(--tile-shadow);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -52,90 +68,120 @@
   --radius-4xl: calc(var(--radius) * 2.6);
   /* Рух (DESIGN.md, розділ 10): утиліта ease-soft; тривалості — у :root як --motion-*. */
   --ease-soft: var(--motion-ease);
+  --animate-bloom: bloom var(--motion-enter) var(--motion-ease) both;
+  --animate-rise: rise var(--motion-slow) var(--motion-ease) both;
+  --animate-drift: drift 24s ease-in-out infinite alternate;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-ping-soft: ping-soft 2.2s ease-out infinite;
+  --animate-beat: beat 2.2s ease-in-out infinite;
+  --animate-wobble: wobble 6s ease-in-out infinite;
+  --animate-grow-x: grow-x 1.4s var(--motion-ease) both;
+  --animate-pop: pop 0.6s var(--motion-ease) both;
+  --animate-ring-fill: ring-fill var(--motion-chart) var(--motion-ease) 0.55s both;
+  --animate-stack-grow: grow-x var(--motion-chart) var(--motion-ease) 0.55s both;
 }
 
 :root {
-  /* Рух: короткий і спокійний. fast — hover/active, base — поява й зсув, slow — діалоги й переходи сторінок. */
+  /* Рух: прискорювач для дрібниць (fast, base, slow) і повільний вхід блоків (enter, exit, chart). */
   --motion-fast: 120ms;
   --motion-base: 180ms;
-  --motion-slow: 240ms;
+  --motion-slow: 400ms;
+  --motion-enter: 1150ms;
+  --motion-exit: 800ms;
+  --motion-chart: 1800ms;
   --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --background: oklch(0.972 0.012 258);
-  --foreground: oklch(0.2 0.04 262);
+  --background: oklch(0.949 0.008 271);
+  --foreground: oklch(0.21 0.041 278);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.04 262);
+  --card-foreground: oklch(0.21 0.041 278);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.04 262);
-  --primary: oklch(0.47 0.19 263);
-  --primary-foreground: oklch(0.985 0.005 258);
-  --secondary: oklch(0.93 0.025 258);
-  --secondary-foreground: oklch(0.26 0.06 262);
-  --muted: oklch(0.95 0.015 258);
-  --muted-foreground: oklch(0.45 0.04 260);
-  --accent: oklch(0.92 0.04 258);
-  --accent-foreground: oklch(0.25 0.07 262);
-  --destructive: oklch(0.5 0.2 27);
+  --popover-foreground: oklch(0.21 0.041 278);
+  --primary: oklch(0.683 0.209 36);
+  --primary-foreground: oklch(0.21 0.041 278);
+  --primary-soft: oklch(0.936 0.034 41);
+  --link: oklch(0.55 0.253 278);
+  --secondary: oklch(0.94 0.014 276);
+  --secondary-foreground: oklch(0.21 0.041 278);
+  --muted: oklch(0.971 0.007 277);
+  --muted-foreground: oklch(0.454 0.051 277);
+  --accent: oklch(0.924 0.039 290);
+  --accent-foreground: oklch(0.21 0.041 278);
+  --destructive: oklch(0.496 0.177 18);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.89 0.02 258);
-  --input: oklch(0.58 0.04 260);
-  --ring: oklch(0.55 0.19 263);
-  --header: oklch(0.27 0.07 265);
-  --header-foreground: oklch(0.97 0.01 258);
-  --header-muted: oklch(0.8 0.035 260);
-  --overlay: oklch(0 0 0 / 10%);
-  --warning: oklch(0.96 0.06 90);
-  --warning-foreground: oklch(0.38 0.08 70);
-  --status-awaiting: oklch(0.95 0.06 90);
-  --status-awaiting-foreground: oklch(0.38 0.08 70);
-  --status-approved: oklch(0.94 0.06 150);
-  --status-approved-foreground: oklch(0.36 0.09 150);
-  --status-rejected: oklch(0.94 0.05 25);
-  --status-rejected-foreground: oklch(0.42 0.16 27);
-  --status-returned: oklch(0.94 0.05 300);
-  --status-returned-foreground: oklch(0.4 0.13 300);
-  --status-cancelled: oklch(0.94 0.005 255);
-  --status-cancelled-foreground: oklch(0.42 0.02 255);
-  --radius: 0.625rem;
+  --border: oklch(0.917 0.015 274);
+  --input: oklch(0.603 0.044 277);
+  --ring: oklch(0.55 0.253 278);
+  --overlay: oklch(0.17 0.03 278 / 55%);
+  --warning: oklch(0.95 0.047 81);
+  --warning-foreground: oklch(0.499 0.114 63);
+  --status-awaiting: oklch(0.95 0.047 81);
+  --status-awaiting-foreground: oklch(0.499 0.114 63);
+  --status-approved: oklch(0.939 0.031 168);
+  --status-approved-foreground: oklch(0.515 0.106 163);
+  --status-rejected: oklch(0.932 0.033 6);
+  --status-rejected-foreground: oklch(0.496 0.177 18);
+  --status-returned: oklch(0.921 0.039 303);
+  --status-returned-foreground: oklch(0.483 0.178 296);
+  --status-cancelled: oklch(0.932 0.011 275);
+  --status-cancelled-foreground: oklch(0.472 0.036 275);
+  --fill-awaiting: oklch(0.807 0.148 77);
+  --fill-approved: oklch(0.718 0.141 164);
+  --fill-rejected: oklch(0.665 0.179 13);
+  --fill-returned: oklch(0.643 0.17 297);
+  --fill-cancelled: oklch(0.734 0.031 275);
+  --leave-sick: oklch(0.665 0.179 13);
+  --leave-personal: oklch(0.55 0.253 278);
+  --leave-unpaid: oklch(0.734 0.031 275);
+  --leave-family: oklch(0.718 0.141 164);
+  --blob-a: oklch(0.829 0.098 38);
+  --blob-b: oklch(0.785 0.116 288);
+  --blob-c: oklch(0.857 0.072 172);
+  --tile-shadow: 0 1px 2px oklch(0.21 0.041 278 / 5%), 0 8px 24px oklch(0.21 0.041 278 / 6%);
+  --radius: 0.875rem;
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.16 0.03 265);
-    --foreground: oklch(0.95 0.01 258);
-    --card: oklch(0.21 0.035 265);
-    --card-foreground: oklch(0.95 0.01 258);
-    --popover: oklch(0.21 0.035 265);
-    --popover-foreground: oklch(0.95 0.01 258);
-    --primary: oklch(0.74 0.14 258);
-    --primary-foreground: oklch(0.16 0.03 265);
-    --secondary: oklch(0.27 0.04 265);
-    --secondary-foreground: oklch(0.93 0.015 258);
-    --muted: oklch(0.25 0.035 265);
-    --muted-foreground: oklch(0.75 0.04 260);
-    --accent: oklch(0.31 0.07 262);
-    --accent-foreground: oklch(0.95 0.015 258);
-    --destructive: oklch(0.72 0.17 25);
-    --destructive-foreground: oklch(0.17 0.02 255);
-    --border: oklch(0.3 0.035 265);
-    --input: oklch(0.55 0.05 262);
-    --ring: oklch(0.7 0.15 258);
-    --header: oklch(0.12 0.035 265);
-    --header-foreground: oklch(0.95 0.01 258);
-    --header-muted: oklch(0.76 0.04 260);
-    --overlay: oklch(0 0 0 / 50%);
-    --warning: oklch(0.3 0.06 85);
-    --warning-foreground: oklch(0.88 0.1 90);
-    --status-awaiting: oklch(0.3 0.06 85);
-    --status-awaiting-foreground: oklch(0.88 0.1 90);
-    --status-approved: oklch(0.3 0.06 150);
-    --status-approved-foreground: oklch(0.86 0.1 150);
-    --status-rejected: oklch(0.3 0.07 25);
-    --status-rejected-foreground: oklch(0.86 0.09 25);
-    --status-returned: oklch(0.3 0.07 300);
-    --status-returned-foreground: oklch(0.86 0.08 300);
-    --status-cancelled: oklch(0.28 0.01 255);
-    --status-cancelled-foreground: oklch(0.8 0.02 255);
-  }
+:root[data-theme="dark"] {
+  --background: oklch(0.169 0.027 276);
+  --foreground: oklch(0.958 0.02 280);
+  --card: oklch(0.223 0.045 277);
+  --card-foreground: oklch(0.958 0.02 280);
+  --popover: oklch(0.223 0.045 277);
+  --popover-foreground: oklch(0.958 0.02 280);
+  --primary: oklch(0.727 0.173 39);
+  --primary-foreground: oklch(0.17 0.03 40);
+  --primary-soft: oklch(0.28 0.043 38);
+  --link: oklch(0.72 0.17 285);
+  --secondary: oklch(0.3 0.06 277);
+  --secondary-foreground: oklch(0.958 0.02 280);
+  --muted: oklch(0.267 0.063 276);
+  --muted-foreground: oklch(0.764 0.049 277);
+  --accent: oklch(0.294 0.1 281);
+  --accent-foreground: oklch(0.958 0.02 280);
+  --destructive: oklch(0.769 0.139 13);
+  --destructive-foreground: oklch(0.16 0.03 13);
+  --border: oklch(0.323 0.073 276);
+  --input: oklch(0.607 0.059 275);
+  --ring: oklch(0.72 0.17 285);
+  --overlay: oklch(0 0 0 / 60%);
+  --warning: oklch(0.3 0.049 82);
+  --warning-foreground: oklch(0.864 0.128 79);
+  --status-awaiting: oklch(0.3 0.049 82);
+  --status-awaiting-foreground: oklch(0.864 0.128 79);
+  --status-approved: oklch(0.309 0.05 170);
+  --status-approved-foreground: oklch(0.828 0.133 166);
+  --status-rejected: oklch(0.266 0.064 5);
+  --status-rejected-foreground: oklch(0.769 0.139 13);
+  --status-returned: oklch(0.287 0.085 293);
+  --status-returned-foreground: oklch(0.783 0.129 299);
+  --status-cancelled: oklch(0.299 0.049 277);
+  --status-cancelled-foreground: oklch(0.77 0.035 274);
+  --leave-personal: oklch(0.72 0.17 285);
+  --blob-a: oklch(0.409 0.11 36);
+  --blob-b: oklch(0.373 0.173 276);
+  --blob-c: oklch(0.42 0.075 169);
+  --tile-shadow: 0 1px 2px oklch(0 0 0 / 30%), 0 10px 28px oklch(0 0 0 / 35%);
+  color-scheme: dark;
 }
 
 @layer base {
@@ -150,26 +196,128 @@
   }
 }
 
-/* Переходи між сторінками (View Transitions, React 19.3 <ViewTransition>): кросфейд за токенами руху; шапка — нерухомий якір,
-   статус запису (клас status-morph) плавно переїжджає зі списку на сторінку запису. */
-::view-transition-old(.page-fade),
-::view-transition-new(.page-fade) {
-  animation-duration: var(--motion-slow);
-  animation-timing-function: var(--motion-ease);
+/* Ключові кадри руху (DESIGN.md, розділ 10). Усе вимикає блок prefers-reduced-motion унизу. */
+@keyframes bloom {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--bloom-x, 0px), 34px, 0) scale(0.95);
+    filter: blur(10px);
+  }
+  60% {
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+  }
+}
+@keyframes drift {
+  to {
+    transform: translate3d(6vmax, 4vmax, 0) scale(1.15);
+  }
+}
+@keyframes float {
+  50% {
+    transform: translate(-14px, 16px) scale(1.06);
+  }
+}
+@keyframes ping-soft {
+  to {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+@keyframes beat {
+  50% {
+    transform: scale(1.14);
+  }
+}
+@keyframes wobble {
+  50% {
+    transform: rotate(-8deg) scale(1.06);
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+@keyframes ring-fill {
+  from {
+    stroke-dasharray: 0 100;
+  }
+}
+
+/* Плитка (компонент Tile): м'яке підсвічування, що йде за курсором, і легкий нахил. Змінні --mx, --my, --rx, --ry
+   ставить Tile на pointermove. Градієнт лише з токенів. */
+.tile-spot {
+  position: relative;
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition:
+    transform 0.35s var(--motion-ease),
+    box-shadow 0.3s;
+}
+.tile-spot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), var(--primary-soft), transparent 70%);
+}
+.tile-spot:hover::before {
+  opacity: 0.9;
+}
+.tile-spot > * {
+  position: relative;
+}
+.tile-spot[data-hero="true"]::before {
+  background: radial-gradient(
+    300px circle at var(--mx, 70%) var(--my, 10%),
+    color-mix(in oklch, var(--primary) 45%, transparent),
+    transparent 70%
+  );
+}
+
+/* Штриховка «школа закрита»: сірі діагональні смуги. */
+.hatch {
+  background-image: repeating-linear-gradient(135deg, var(--status-cancelled) 0 5px, transparent 5px 10px);
+}
+
+/* Перехід між сторінками (View Transitions, React 19.3 <ViewTransition>): повільне перетікання. Стара сторінка
+   відпливає з розмиттям, нова з'являється блоками (bloom). Лише на зміні маршруту; оновлення параметрів не анімується. */
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translate3d(-48px, -10px, 0) scale(0.985);
+    filter: blur(10px);
+  }
+}
+::view-transition-old(.page-out) {
+  animation: page-out var(--motion-exit) var(--motion-ease) both;
+}
+::view-transition-new(.page-in) {
+  animation: none;
+}
+::view-transition-group(.page-out),
+::view-transition-group(.page-in) {
+  animation-duration: var(--motion-exit);
 }
 ::view-transition-group(.status-morph) {
   animation-duration: var(--motion-slow);
   animation-timing-function: var(--motion-ease);
-}
-::view-transition-group(site-header) {
-  animation: none;
-  z-index: 100;
-}
-::view-transition-old(site-header) {
-  display: none;
-}
-::view-transition-new(site-header) {
-  animation: none;
 }
 
 /* Менше руху: ті, хто вимкнув анімації в системі, і UAT-запис (Playwright reducedMotion) бачать кінцевий стан одразу,
@@ -190,4 +338,15 @@
   ::view-transition-new(*) {
     animation: none !important;
   }
+}
+
+/* Режим «спокійний» (перемикач у сайдбарі): те саме, що reduced-motion, але за вибором користувача. */
+:root[data-motion="calm"] *,
+:root[data-motion="calm"] ::before,
+:root[data-motion="calm"] ::after {
+  animation-duration: 0.01ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0ms !important;
 }

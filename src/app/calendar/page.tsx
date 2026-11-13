@@ -1,85 +1,98 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PageHeader } from "@/components/bento/page-header";
+import { Tile } from "@/components/bento/tile";
+import { CalendarNav, ClosuresList } from "@/components/calendar/calendar-nav";
+import { CalendarLegend, MonthGrid } from "@/components/calendar/month-grid";
+import { YearTimeline } from "@/components/calendar/year-timeline";
 import { buttonVariants } from "@/components/ui/button";
-import { listItemCard } from "@/components/ui/card";
-import { type Closure, closuresInSchoolYear, describeClosure, parseSchoolYear } from "@/lib/leave/closures";
-import { schoolYearLabel, schoolYearOf } from "@/lib/leave/balance";
-import { noClosuresInYear } from "@/lib/leave/messages";
-import { todayInKyiv, trimSeconds } from "@/lib/leave/time";
+import { buildDayMap, resolveCalendar } from "@/lib/leave/calendar-view";
+import { closuresInSchoolYear } from "@/lib/leave/closures";
+import { groupAbsences } from "@/lib/leave/dashboard";
+import { isDecider } from "@/lib/leave/decision";
+import { loadClosures, loadTeam } from "@/lib/leave/supabase-dashboard-repository";
+import { loadActor } from "@/lib/leave/supabase-decision-repository";
+import { createSupabaseLeaveRepository } from "@/lib/leave/supabase-repository";
+import { todayInKyiv } from "@/lib/leave/time";
+import { listMyRecords } from "@/lib/leave/use-cases";
 import { createClient } from "@/lib/supabase/server";
-import { APPEAR, FADE_IN, stagger } from "@/lib/utils";
 
-// «Шкільний календар»: закриття навчального року (цілі дні й скорочені дні). Бачать усі авторизовані (AC-CAL-02);
-// гостя перенаправляє на /login без даних (AC-CAL-14: proxy і перевірка тут). Читання йде клієнтом користувача, RLS пускає
-// лише authenticated.
+const PENDING_OR_APPROVED = ["approved", "awaiting_decision"];
+
+// «Шкільний календар»: місячна сітка (закриття, власні записи, для менеджера — відсутні працівники), стрічка навчального року
+// і список закриттів. Бачать усі авторизовані (AC-CAL-02); гостя перенаправляє на /login без даних (AC-CAL-14: proxy і перевірка
+// тут). Читання йде клієнтом користувача, RLS пускає лише authenticated, а команду бачить лише менеджер чи адміністратор.
 export default async function CalendarPage({ searchParams }: PageProps<"/calendar">) {
-  const { year: yearParam } = await searchParams;
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
   if (!userId) {
     redirect("/login");
   }
-  // Посилання на керування лише для адміністратора: це UX, права перевіряють сторінка керування, дії й база.
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
+  const today = todayInKyiv();
+  const { year, month, view } = resolveCalendar(await searchParams, today);
+  const actor = await loadActor(supabase, userId);
+  const deciding = actor !== null && isDecider(actor.role);
 
-  const year = parseSchoolYear(yearParam, schoolYearOf(todayInKyiv()));
-  const { data: rows, error } = await supabase
-    .from("school_closures")
-    .select("name, starts_on, ends_on, closed_from")
-    .lte("starts_on", `${year + 1}-08-31`)
-    .gte("ends_on", `${year}-09-01`);
-  if (error) {
-    throw new Error(`calendar failed: ${error.code ?? "unknown"}`);
-  }
-  const closures: Closure[] = closuresInSchoolYear(
-    (rows ?? []).map((row) => ({
-      name: row.name,
-      startsOn: row.starts_on,
-      endsOn: row.ends_on,
-      closedFrom: row.closed_from === null ? null : trimSeconds(row.closed_from),
-    })),
-    year,
-  );
+  const [allClosures, records, teamData] = await Promise.all([
+    loadClosures(supabase, year),
+    listMyRecords(createSupabaseLeaveRepository(supabase), userId),
+    actor && deciding ? loadTeam(supabase, actor, year) : Promise.resolve({ team: [], records: [] }),
+  ]);
+  const closures = closuresInSchoolYear(allClosures, year);
+
+  const mine = records.map((record) => ({ date: record.date, status: record.status, leaveType: record.leaveType }));
+  const teamActive = teamData.records.filter((record) => PENDING_OR_APPROVED.includes(record.status));
+  const nameOf = new Map(teamData.team.map((member) => [member.id, member.name]));
+  const dayMap = buildDayMap({
+    month,
+    closures,
+    mine,
+    team: teamActive.flatMap((record) => {
+      const name = nameOf.get(record.employeeId);
+      return name ? [{ name, date: record.date, status: record.status }] : [];
+    }),
+  });
+  const teamRows = teamData.team.map((member) => ({
+    name: member.name,
+    absences: groupAbsences(teamActive.filter((record) => record.employeeId === member.id)),
+  }));
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Шкільний календар</h1>
-        {profile?.role === "admin" ? (
-          <Link href="/calendar/manage" className={buttonVariants({ size: "sm" })}>
-            Керувати календарем
-          </Link>
-        ) : null}
-      </div>
-      <nav aria-label="Навчальний рік" className="flex items-center justify-between gap-2">
-        <Link href={`/calendar?year=${year - 1}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-          ← {schoolYearLabel(year - 1)}
-        </Link>
-        <h2 className="text-lg font-semibold tabular-nums">{schoolYearLabel(year)}</h2>
-        <Link href={`/calendar?year=${year + 1}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-          {schoolYearLabel(year + 1)} →
-        </Link>
-      </nav>
+    <main className="flex flex-1 flex-col gap-4 py-2">
+      <PageHeader
+        title="Шкільний календар"
+        description="Закриття школи, ваші відпустки й команда на одній поверхні."
+        actions={
+          actor?.role === "admin" ? (
+            <Link href="/calendar/manage" className={buttonVariants({ size: "sm" })}>
+              Керувати календарем
+            </Link>
+          ) : null
+        }
+      />
 
-      {closures.length === 0 ? (
-        <p className={`text-sm text-muted-foreground ${FADE_IN}`} data-testid="calendar-empty">
-          {noClosuresInYear(year)}
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-2 text-sm" data-testid="calendar-closures">
-          {closures.map((closure, index) => (
-            <li
-              key={`${closure.startsOn}-${closure.name}`}
-              className={`flex flex-wrap items-center justify-between gap-2 p-3 ${listItemCard} ${APPEAR}`}
-              style={stagger(index)}
-            >
-              <span className="font-medium">{closure.name}</span>
-              <span className="tabular-nums text-muted-foreground">{describeClosure(closure)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <Tile index={0}>
+        <CalendarNav view={view} month={month} year={year} />
+        <div className="flex flex-col gap-4">
+          {view === "month" ? (
+            <MonthGrid key={month} month={month} today={today} days={dayMap} />
+          ) : (
+            <YearTimeline
+              year={year}
+              today={today}
+              closures={closures}
+              mine={groupAbsences(mine.filter((record) => record.status !== "cancelled"))}
+              team={deciding ? teamRows : undefined}
+            />
+          )}
+          <CalendarLegend team={deciding && view === "month"} />
+        </div>
+      </Tile>
+
+      <Tile index={1}>
+        <ClosuresList year={year} closures={closures} />
+      </Tile>
     </main>
   );
 }

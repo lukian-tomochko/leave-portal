@@ -3,7 +3,6 @@
 import { useActionState, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { listItemCard } from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -13,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { APPEAR, stagger } from "@/lib/utils";
 import { removeClosure } from "./actions";
 import type { ClosureFormState } from "./state";
 
@@ -40,7 +38,7 @@ export function ClosureList({ rows }: { rows: ClosureRow[] }) {
         data-testid="manage-closures"
       >
         {rows.map((row, index) => (
-          <li key={row.id} className={`flex flex-wrap items-center justify-between gap-2 p-3 ${listItemCard} ${APPEAR}`} style={stagger(index)}>
+          <li key={row.id} className="flex animate-rise flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-muted p-3" style={{ animationDelay: `${Math.min(index, 8) * 60 + 400}ms` }}>
             <span className="font-medium">{row.name}</span>
             <span className="tabular-nums text-muted-foreground">{row.dates}</span>
             <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => setTarget(row)}>

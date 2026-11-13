@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PageHeader } from "@/components/bento/page-header";
+import { Tile } from "@/components/bento/tile";
 import { buttonVariants } from "@/components/ui/button";
-import { listItemCard } from "@/components/ui/card";
 import { balancesOn } from "@/lib/leave/balance";
 import { isDecider } from "@/lib/leave/decision";
 import { loadBalanceInputs } from "@/lib/leave/supabase-balance-repository";
 import { loadActor } from "@/lib/leave/supabase-decision-repository";
 import { todayInKyiv } from "@/lib/leave/time";
 import { createClient } from "@/lib/supabase/server";
-import { APPEAR, stagger } from "@/lib/utils";
 import { BalanceView } from "./balance-view";
 
 // «Баланс»: власний баланс для кожного, а менеджер і адміністратор ще й список працівників, чиї баланси вони можуть
@@ -45,18 +45,19 @@ export default async function BalancesPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-10">
-      <h1 className="text-2xl font-semibold">Баланс відпусток</h1>
+    <main className="flex w-full max-w-3xl flex-1 flex-col gap-4 py-2">
+      <PageHeader title="Баланс відпусток" />
       <BalanceView balances={balances} />
 
       {employees.length > 0 ? (
+        <Tile index={3}>
         <section aria-labelledby="employees-title" className="flex flex-col gap-3">
-          <h2 id="employees-title" className="text-lg font-semibold">
+          <h2 id="employees-title" className="text-sm font-semibold">
             Баланси працівників
           </h2>
           <ul className="flex flex-col gap-2 text-sm" data-testid="balance-employees">
             {employees.map((employee, index) => (
-              <li key={employee.id} className={`flex items-center justify-between p-3 ${listItemCard} ${APPEAR}`} style={stagger(index)}>
+              <li key={employee.id} className="flex animate-rise items-center justify-between rounded-2xl border border-border bg-muted p-3" style={{ animationDelay: `${Math.min(index, 8) * 60 + 400}ms` }}>
                 <span>{employee.name}</span>
                 <Link href={`/balances/${employee.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                   Відкрити
@@ -65,6 +66,7 @@ export default async function BalancesPage() {
             ))}
           </ul>
         </section>
+        </Tile>
       ) : null}
     </main>
   );

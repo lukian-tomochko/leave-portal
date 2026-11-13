@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { PageHeader } from "@/components/bento/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BalanceDeniedError, balancesOn } from "@/lib/leave/balance";
 import { NOT_ALLOWED, isRecordId } from "@/lib/leave/decision";
@@ -33,11 +34,11 @@ export default async function EmployeeBalancePage({ params }: PageProps<"/balanc
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-10">
-      <Link href="/balances" className="text-sm text-muted-foreground underline">
+    <main className="flex w-full max-w-3xl flex-1 flex-col gap-4 py-2">
+      <Link href="/balances" className="w-fit px-1 text-sm text-muted-foreground underline">
         ← Баланс
       </Link>
-      <h1 className="text-2xl font-semibold">Баланс працівника</h1>
+      <PageHeader title="Баланс працівника" />
       {balances ? (
         <BalanceView balances={balances} />
       ) : (

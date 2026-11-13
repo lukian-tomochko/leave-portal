@@ -1,25 +1,17 @@
 import Link from "next/link";
 import { ViewTransition } from "react";
-import { Badge } from "@/components/ui/badge";
+import { Tile } from "@/components/bento/tile";
+import { StatusBadge } from "@/components/status-badge";
 import { buttonVariants } from "@/components/ui/button";
+import { RiseRow } from "@/components/bento/rise-row";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { DecisionRecord } from "@/lib/leave/decision";
-import { LEAVE_TYPE_LABELS, STATUS_LABELS } from "@/lib/leave/messages";
-import type { RecordStatus } from "@/lib/leave/types";
-import { APPEAR, stagger } from "@/lib/utils";
-
-// Колір статусу лише додається до тексту (DESIGN.md): сам статус завжди написано словами.
-const STATUS_VARIANTS = {
-  awaiting_decision: "awaiting",
-  approved: "approved",
-  rejected: "rejected",
-  returned_for_revision: "returned",
-  cancelled: "cancelled",
-} as const satisfies Record<RecordStatus, "awaiting" | "approved" | "rejected" | "returned" | "cancelled">;
+import { LEAVE_TYPE_LABELS } from "@/lib/leave/messages";
 
 // Таблиця записів для менеджера: «Awaiting decision» і «History».
 export function RecordsTable({ records, testId }: { records: DecisionRecord[]; testId: string }) {
   return (
+    <Tile index={1} className="p-2">
     <Table data-testid={testId}>
       <TableHeader>
         <TableRow>
@@ -36,7 +28,7 @@ export function RecordsTable({ records, testId }: { records: DecisionRecord[]; t
       </TableHeader>
       <TableBody>
         {records.map((record, index) => (
-          <TableRow key={record.id} className={APPEAR} style={stagger(index)}>
+          <RiseRow key={record.id} index={index}>
             <TableCell>{record.employeeName}</TableCell>
             <TableCell>{record.positionLabel}</TableCell>
             <TableCell className="tabular-nums">{record.date}</TableCell>
@@ -46,7 +38,7 @@ export function RecordsTable({ records, testId }: { records: DecisionRecord[]; t
             <TableCell>{LEAVE_TYPE_LABELS[record.leaveType]}</TableCell>
             <TableCell>
               <ViewTransition name={`status-${record.id}`} share="status-morph" default="none">
-                <Badge variant={STATUS_VARIANTS[record.status]}>{STATUS_LABELS[record.status]}</Badge>
+                <StatusBadge status={record.status} />
               </ViewTransition>
             </TableCell>
             <TableCell>
@@ -54,9 +46,10 @@ export function RecordsTable({ records, testId }: { records: DecisionRecord[]; t
                 Відкрити
               </Link>
             </TableCell>
-          </TableRow>
+          </RiseRow>
         ))}
       </TableBody>
     </Table>
+    </Tile>
   );
 }
