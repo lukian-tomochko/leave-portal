@@ -12,7 +12,7 @@ import { TypeCards } from "./type-cards";
 import { type LeaveTypeOption, type PositionOption, useLeaveForm } from "./use-leave-form";
 
 // Форма подання заявки (bento): ліворуч кроки (тип, дати в календарі, посади, час, коментар), праворуч жива чернетка, а після
-// «Показати підсумок» — підсумок із сервера й підтвердження. Два кроки й тексти PM незмінні (AC-LEAVE-05, 11, 16…).
+// «Show summary» — підсумок із сервера й підтвердження. Два кроки й тексти PM незмінні (AC-LEAVE-05, 11, 16…).
 export function NewLeaveForm({
   positions,
   leaveTypes,
@@ -29,7 +29,7 @@ export function NewLeaveForm({
   const form = useLeaveForm({ positions, leaveTypes, closures });
 
   if (positions.length === 0) {
-    return <p role="status" className="text-muted-foreground">У вас немає посад, тож подати заявку не можна. Зверніться до адміністратора.</p>;
+    return <p role="status" className="text-muted-foreground">You have no positions, so you can&apos;t submit a request. Contact an administrator.</p>;
   }
 
   const errorMessage = form.localError ?? (form.preview.status === "error" ? form.preview.message : null);
@@ -60,7 +60,7 @@ export function NewLeaveForm({
           ) : null}
           <Button type="submit" form="leave-form" disabled={form.pending} aria-busy={form.pending} className="self-start">
             {form.pending ? <Spinner /> : null}
-            Показати підсумок
+            Show summary
           </Button>
         </Tile>
       </div>

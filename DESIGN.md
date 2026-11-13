@@ -87,7 +87,7 @@
 
 ## 3. Типографіка
 
-Текст — Geist (`next/font`, `--font-geist-sans`, клас `font-sans`), заголовки й великі числа — Onest (`--font-onest`, клас `font-display`). Обидва шрифти підключені з підмножиною `cyrillic`, бо інтерфейс українською. Тексти повідомлень із вимог PM лишаються дослівно такими, як у AC (англійською). Дати, години й числа — `tabular-nums`.
+Текст — Geist (`next/font`, `--font-geist-sans`, клас `font-sans`), заголовки й великі числа — Onest (`--font-onest`, клас `font-display`). Інтерфейс повністю англійською ([ADR 0009](docs/decisions/0009-english-ui.md)); тексти повідомлень із вимог PM лишаються дослівно такими, як у AC. Обидва шрифти підключені з підмножиною `cyrillic`, бо імена й коментарі в даних можуть бути кирилицею. Дати, години й числа — `tabular-nums`.
 
 | Роль | Клас | Де |
 |---|---|---|
@@ -131,13 +131,13 @@
 
 | Стан | Як виглядає | Приклад тексту |
 |---|---|---|
-| Порожній список | `text-muted-foreground`, без таблиці | «Заявок ще немає.»; у менеджера «No records awaiting decision» (AC-DECIDE-14) |
+| Порожній список | `text-muted-foreground`, без таблиці | «No requests yet.»; у менеджера «No records awaiting decision» (AC-DECIDE-14) |
 | Помилка дії («не збережено») | `Alert variant="destructive"` над кнопкою; введене лишається у формі | «The comment can be at most 500 characters» (AC-LEAVE-18) |
 | Попередження («збережено, але...») | `Alert variant="warning"`, не червоний | «Your Personal leave balance is 0.50 day. Another 0.50 day will be counted as Unpaid leave» (AC-BALANCE-08) |
 | Дату не прийнято | `Alert variant="warning"` у підсумку (запис для інших дат створено) | «You have no working hours on this day» (AC-LEAVE-21) |
 | Помилка поля | `text-sm text-destructive` під полем, поле `aria-invalid` | «You have no working hours on this day» (AC-LEAVE-06) |
 | Відмова в доступі | сторінка з поясненням, без даних | текст з AC конкретної вимоги |
-| Завантаження | сторінка — `loading.tsx` зі скелетоном (`PageSkeleton`: розміри справжньої сторінки, без заголовків і текстів, `aria-busy` на `main`); дія — кнопка `disabled` із `Spinner` перед підписом, текст кнопки лишається | «Показати підсумок» |
+| Завантаження | сторінка — `loading.tsx` зі скелетоном (`PageSkeleton`: розміри справжньої сторінки, без заголовків і текстів, `aria-busy` на `main`); дія — кнопка `disabled` із `Spinner` перед підписом, текст кнопки лишається | «Show summary» |
 | Успіх | оновлений список або підсумок; окремого зеленого банера не додаємо | — |
 | Вимкнена дія | `disabled` + пояснення поруч | — |
 

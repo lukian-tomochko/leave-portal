@@ -16,12 +16,12 @@ import { cn } from "@/lib/utils";
 
 // «Рішення» бачать лише менеджер і адміністратор: це UX, права перевіряють сторінки, дії й база.
 const LINKS: { href: string; label: string; icon: LucideIcon; exact: boolean; deciders: boolean }[] = [
-  { href: "/", label: "Головна", icon: LayoutDashboardIcon, exact: true, deciders: false },
-  { href: "/leave", label: "Мої заявки", icon: ListChecksIcon, exact: false, deciders: false },
-  { href: "/leave/new", label: "Нова заявка", icon: CalendarPlusIcon, exact: true, deciders: false },
-  { href: "/balances", label: "Баланс", icon: ScaleIcon, exact: false, deciders: false },
-  { href: "/calendar", label: "Календар", icon: CalendarDaysIcon, exact: false, deciders: false },
-  { href: "/decisions", label: "Рішення", icon: InboxIcon, exact: false, deciders: true },
+  { href: "/", label: "Home", icon: LayoutDashboardIcon, exact: true, deciders: false },
+  { href: "/leave", label: "My requests", icon: ListChecksIcon, exact: false, deciders: false },
+  { href: "/leave/new", label: "New request", icon: CalendarPlusIcon, exact: true, deciders: false },
+  { href: "/balances", label: "Balances", icon: ScaleIcon, exact: false, deciders: false },
+  { href: "/calendar", label: "Calendar", icon: CalendarDaysIcon, exact: false, deciders: false },
+  { href: "/decisions", label: "Decisions", icon: InboxIcon, exact: false, deciders: true },
 ];
 
 // Підпис пункту: поки клацнутий маршрут вантажиться, текст м'яко пульсує (useLinkStatus читає стан найближчого Link).
@@ -38,7 +38,7 @@ export function NavLinks({ role, awaitingCount = 0 }: { role?: string | null; aw
 
   return (
     <MotionConfig reducedMotion="user">
-      <nav aria-label="Головна навігація" className="flex flex-col gap-0.5">
+      <nav aria-label="Main navigation" className="flex flex-col gap-0.5">
         {LINKS.filter((link) => !link.deciders || canDecide).map((link) => {
           const active = link.exact ? pathname === link.href : pathname === link.href || pathname.startsWith(`${link.href}/`);
           // «My requests» не активний на /leave/new: у нього свій пункт.
@@ -69,7 +69,7 @@ export function NavLinks({ role, awaitingCount = 0 }: { role?: string | null; aw
               {link.href === "/decisions" && awaitingCount > 0 ? (
                 <span className="relative ml-auto animate-beat rounded-full bg-primary px-2 text-xs font-bold text-primary-foreground tabular-nums">
                   {awaitingCount > 99 ? "99+" : awaitingCount}
-                  <span className="sr-only"> очікують рішення</span>
+                  <span className="sr-only"> awaiting a decision</span>
                 </span>
               ) : null}
             </Link>

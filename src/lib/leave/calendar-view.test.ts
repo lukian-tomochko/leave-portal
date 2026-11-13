@@ -17,7 +17,7 @@ describe("місяць у адресі календаря", () => {
   });
 
   it("підписує місяць українською й визначає навчальний рік", () => {
-    expect(monthLabel("2026-11")).toBe("Листопад 2026");
+    expect(monthLabel("2026-11")).toBe("November 2026");
     expect(schoolYearOfMonth("2026-08")).toBe(2025);
     expect(schoolYearOfMonth("2026-09")).toBe(2026);
     expect(schoolYearOfMonth("2027-01")).toBe(2026);
@@ -75,7 +75,7 @@ describe("дані днів", () => {
         { employeeId: "c", name: "B", date: "2026-11-18", status: "approved" },
       ],
     });
-    expect(map["2026-11-20"]?.closure).toEqual({ name: "Early", early: true, text: "2026-11-20 з 12:00" });
+    expect(map["2026-11-20"]?.closure).toEqual({ name: "Early", early: true, text: "2026-11-20 from 12:00" });
     expect(map["2026-11-18"]?.mine).toEqual([{ leaveType: "personal", status: "awaiting_decision" }]);
     expect(map["2026-11-18"]?.away?.map((entry) => entry.name)).toEqual(["A", "B", "B"]);
     expect(map["2026-12-01"]).toBeUndefined();

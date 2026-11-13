@@ -85,7 +85,7 @@ export async function loadTeam(supabase: SupabaseClient<Database>, actor: Actor,
 
   const team: TeamMember[] = (profiles.data ?? [])
     .map((row) => ({ id: row.id, name: row.full_name ?? row.email ?? "—" }))
-    .sort((a, b) => a.name.localeCompare(b.name, "uk"));
+    .sort((a, b) => a.name.localeCompare(b.name, "en"));
 
   return {
     team,

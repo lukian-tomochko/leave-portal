@@ -57,7 +57,7 @@ function previewProblem(
     return noPositions;
   }
   if (accepted.length === 0) {
-    return dates.map(dateError).find((message) => message !== null) ?? "Оберіть хоча б одну дату.";
+    return dates.map(dateError).find((message) => message !== null) ?? "Choose at least one date.";
   }
   return hours.mode === "hours" ? hoursStepError(hours.startsAt, hours.endsAt) : null;
 }

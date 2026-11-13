@@ -22,12 +22,12 @@ export function ClosureForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4" data-testid="closure-form">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="closure-name">Назва</Label>
+        <Label htmlFor="closure-name">Name</Label>
         <Input id="closure-name" name="name" required maxLength={100} defaultValue={values?.name} />
       </div>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-medium">Тип закриття</legend>
+        <legend className="text-sm font-medium">Closure type</legend>
         <label className="flex items-center gap-2 text-sm">
           <input
             type="radio"
@@ -37,7 +37,7 @@ export function ClosureForm() {
             onChange={() => setKind("whole")}
             className="size-4 accent-primary"
           />
-          Цілі дні
+          Whole days
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input
@@ -48,29 +48,29 @@ export function ClosureForm() {
             onChange={() => setKind("early")}
             className="size-4 accent-primary"
           />
-          Скорочений день
+          Early dismissal
         </label>
       </fieldset>
 
       {kind === "whole" ? (
         <div className="grid animate-rise gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="closure-starts-on">Початкова дата</Label>
+            <Label htmlFor="closure-starts-on">Start date</Label>
             <Input id="closure-starts-on" name="startsOn" type="date" required defaultValue={values?.startsOn} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="closure-ends-on">Кінцева дата</Label>
+            <Label htmlFor="closure-ends-on">End date</Label>
             <Input id="closure-ends-on" name="endsOn" type="date" required defaultValue={values?.endsOn} />
           </div>
         </div>
       ) : (
         <div className="grid animate-rise gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="closure-date">Дата</Label>
+            <Label htmlFor="closure-date">Date</Label>
             <Input id="closure-date" name="date" type="date" required defaultValue={values?.date} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="closure-time">Школа закрита від</Label>
+            <Label htmlFor="closure-time">School closed from</Label>
             <Input id="closure-time" name="time" type="time" step={300} required defaultValue={values?.time} />
           </div>
         </div>
@@ -84,7 +84,7 @@ export function ClosureForm() {
       <div>
         <Button type="submit" disabled={pending} aria-busy={pending}>
           {pending ? <Spinner /> : null}
-          Додати закриття
+          Add closure
         </Button>
       </div>
     </form>

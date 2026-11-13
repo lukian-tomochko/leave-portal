@@ -55,15 +55,15 @@ export function alreadyClosed(overlaps: { date: string; name: string }[]): strin
   const [first] = overlaps;
   return `${first.date} is already closed: ${first.name}`;
 }
-// PM тексту для цих відмов не дав (питання #24): нейтральні українські фрази.
-export const CLOSURE_NAME_REQUIRED = "Вкажіть назву закриття";
-export const CLOSURE_NAME_TOO_LONG = "Назва закриття має бути не довшою за 100 символів";
-export const CLOSURE_DATE_INVALID = "Вкажіть коректну дату";
+// PM тексту для цих відмов не дав (питання #24): neutral English phrases.
+export const CLOSURE_NAME_REQUIRED = "Enter a closure name";
+export const CLOSURE_NAME_TOO_LONG = "The closure name can be at most 100 characters";
+export const CLOSURE_DATE_INVALID = "Enter a valid date";
 // Години відпустки лише з точністю до 5 хвилин (припущення PM у вимозі 01); PM тексту для цього не дав, тож це нейтральна підказка форми.
-export const HOURS_STEP_INVALID = "Вкажіть час із точністю до 5 хвилин, наприклад 09:05";
-export const CLOSURE_TIME_INVALID = "Вкажіть час закриття після 00:00 з кроком 5 хвилин, наприклад 12:00";
-export const CLOSURE_TECHNICAL_ERROR = "Не вдалося зберегти зміну календаря. Спробуйте ще раз.";
-export const CLOSURE_ALREADY_REMOVED = "Закриття вже видалено. Оновіть сторінку.";
+export const HOURS_STEP_INVALID = "Minutes must be a multiple of 5 (00, 05, 10…), for example 09:05 or 12:30";
+export const CLOSURE_TIME_INVALID = "Enter the closing time after 00:00 in 5-minute steps, for example 12:00";
+export const CLOSURE_TECHNICAL_ERROR = "Couldn't save the calendar change. Please try again.";
+export const CLOSURE_ALREADY_REMOVED = "The closure was already removed. Refresh the page.";
 
 // ── Вимога 02: рішення менеджера (requirements/02-leave-decision.md) ───────────
 // AC-DECIDE-04

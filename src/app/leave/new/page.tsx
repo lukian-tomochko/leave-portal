@@ -35,9 +35,9 @@ export default async function NewLeavePage() {
   return (
     <main className="flex w-full flex-1 flex-col gap-4 py-2">
       <Link href="/leave" className="w-fit px-1 text-sm text-muted-foreground underline">
-        ← Мої заявки
+        ← My requests
       </Link>
-      <PageHeader title="Нова заявка на відпустку" description="Оберіть тип і дні в календарі. Підсумок оновлюється праворуч." />
+      <PageHeader title="New leave request" description="Choose a type and days in the calendar. The summary updates on the right." />
       <NewLeaveForm
         positions={positions.map((position) => ({
           id: position.id,

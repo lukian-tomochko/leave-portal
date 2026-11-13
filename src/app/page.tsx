@@ -28,7 +28,7 @@ export default async function Home() {
   // Закриття не залежать від ролі: запит стартує одразу й іде паралельно з профілем і «хто діє» (вони з кешу сесії, спільні з сайдбаром).
   const closuresPromise = loadClosures(supabase, year);
   const [profile, actor] = await Promise.all([getProfile(claims.sub), getActor(claims.sub)]);
-  const name = profile?.full_name?.split(" ")[0] ?? "колего";
+  const name = profile?.full_name?.split(" ")[0] ?? "there";
 
   if (actor && isDecider(actor.role)) {
     const [closures, { team, records }, awaitingTotal, queuePage] = await Promise.all([
@@ -41,7 +41,7 @@ export default async function Home() {
     const oldest = queuePage.records[0];
     return (
       <main className="flex flex-1 flex-col gap-4 py-2">
-        <PageHeader title={`Привіт, ${name}`} description="Команда на найближчі тижні й заявки, що чекають на рішення." />
+        <PageHeader title={`Hi, ${name}`} description="The team over the coming weeks and requests awaiting a decision." />
         <ManagerDashboard
           today={today}
           role={actor.role === "admin" ? "admin" : "manager"}
@@ -61,7 +61,7 @@ export default async function Home() {
   ]);
   return (
     <main className="flex flex-1 flex-col gap-4 py-2">
-      <PageHeader title="Головна" description={`Доброго дня, ${name}. Ось ваш навчальний рік.`} />
+      <PageHeader title="Home" description={`Good afternoon, ${name}. Here is your school year at a glance.`} />
       <EmployeeDashboard today={today} records={records} balances={balancesOn(balanceInputs, today)} closures={closures} />
     </main>
   );

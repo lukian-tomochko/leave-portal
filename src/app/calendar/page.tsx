@@ -62,12 +62,12 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   return (
     <main className="flex flex-1 flex-col gap-4 py-2">
       <PageHeader
-        title="Шкільний календар"
-        description="Закриття школи, ваші відпустки й команда на одній поверхні."
+        title="School calendar"
+        description="School closures, your leave and the team in one place."
         actions={
           actor?.role === "admin" ? (
             <Link href="/calendar/manage" className={buttonVariants({ size: "sm" })}>
-              Керувати календарем
+              Manage calendar
             </Link>
           ) : null
         }

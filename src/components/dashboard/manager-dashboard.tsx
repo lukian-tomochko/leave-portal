@@ -28,9 +28,9 @@ const HERO_OUTLINE = buttonVariants({
 
 function waitText(awaitingTotal: number, oldestWaitDays: number | null): string {
   if (awaitingTotal === 0) {
-    return "Черга порожня. Усе вирішено.";
+    return "The queue is empty. Everything is decided.";
   }
-  return oldestWaitDays ? `Найближча відпустка в черзі починається через ${oldestWaitDays} дн.` : "Є заявки на найближчі дні.";
+  return oldestWaitDays ? `The earliest leave in the queue starts in ${oldestWaitDays} ${oldestWaitDays === 1 ? "day" : "days"}.` : "There are requests for the coming days.";
 }
 
 function QueueHero({ awaitingTotal, oldestWaitDays, admin }: { awaitingTotal: number; oldestWaitDays: number | null; admin: boolean }) {
@@ -43,7 +43,7 @@ function QueueHero({ awaitingTotal, oldestWaitDays, admin }: { awaitingTotal: nu
         style={{ animationDuration: "9s", animationDelay: "-3s" }}
       />
       <div className="relative">
-        <p className="text-xs text-background/70">Чекають на ваше рішення</p>
+        <p className="text-xs text-background/70">Waiting for your decision</p>
         <p className="mt-2 font-display text-7xl leading-none font-bold tracking-tight">
           <CountUp value={awaitingTotal} />
         </p>
@@ -51,11 +51,11 @@ function QueueHero({ awaitingTotal, oldestWaitDays, admin }: { awaitingTotal: nu
       </div>
       <div className="relative flex flex-wrap gap-3">
         <Link href="/decisions" className={buttonVariants({ size: "lg" })}>
-          Рішення
+          Decisions
         </Link>
         {admin ? (
           <Link href="/calendar/manage" className={HERO_OUTLINE}>
-            Керувати закриттями
+            Manage closures
           </Link>
         ) : null}
       </div>
@@ -67,7 +67,7 @@ function OutTodayTile({ overview }: { overview: TeamOverview }) {
   const out = overview.outToday;
   return (
     <Tile index={1} className="col-span-3">
-      <TileHeader title="Відсутні сьогодні" aside={`із ${overview.size}`} />
+      <TileHeader title="Out today" aside={`of ${overview.size}`} />
       <p className="font-display text-6xl leading-none font-bold tracking-tight">
         <CountUp value={out.length} />
       </p>
@@ -77,8 +77,8 @@ function OutTodayTile({ overview }: { overview: TeamOverview }) {
             {member.name}
           </li>
         ))}
-        {out.length > 4 ? <li className="text-muted-foreground">і ще {out.length - 4}</li> : null}
-        {out.length === 0 ? <li className="text-muted-foreground">Усі на місці.</li> : null}
+        {out.length > 4 ? <li className="text-muted-foreground">and {out.length - 4} more</li> : null}
+        {out.length === 0 ? <li className="text-muted-foreground">Everyone is in.</li> : null}
       </ul>
     </Tile>
   );
@@ -88,13 +88,13 @@ function CoverageTile({ overview }: { overview: TeamOverview }) {
   const risk = overview.riskDay;
   return (
     <Tile index={2} className="col-span-4">
-      <TileHeader title="Покриття сьогодні" />
-      <Gauge percent={overview.coveragePercent} label={`Покриття сьогодні: ${overview.coveragePercent}%`} className="stroke-leave-family" />
+      <TileHeader title="Coverage today" />
+      <Gauge percent={overview.coveragePercent} label={`Coverage today: ${overview.coveragePercent}%`} className="stroke-leave-family" />
       <p className="-mt-9 text-center font-display text-3xl font-bold tracking-tight">
         <CountUp value={overview.coveragePercent} suffix="%" />
       </p>
       <p className="mt-5 text-center text-xs text-muted-foreground">
-        {risk ? `Найнижче в найближчі три тижні: ${risk.percent}%, ${dayLabel(risk.date)} (з урахуванням заявок, що чекають)` : "Найближчі три тижні без пропусків."}
+        {risk ? `Lowest in the next three weeks: ${risk.percent}% on ${dayLabel(risk.date)} (including requests awaiting a decision)` : "No gaps in the next three weeks."}
       </p>
     </Tile>
   );
@@ -114,7 +114,7 @@ function QueueRow({ record }: { record: DecisionRecord }) {
       </div>
       <StatusBadge status={record.status} />
       <Link href={`/records/${record.id}`} className={buttonVariants({ size: "sm" })}>
-        Розглянути
+        Review
       </Link>
     </li>
   );
@@ -124,10 +124,10 @@ function QueueTile({ queue }: { queue: DecisionRecord[] }) {
   return (
     <Tile index={5} className="col-span-7">
       <TileHeader
-        title="На розгляд"
+        title="To decide"
         aside={
           <Link href="/decisions" className="text-link underline-offset-4 hover:underline">
-            Уся черга
+            Whole queue
           </Link>
         }
       />
@@ -148,11 +148,11 @@ function MixTile({ overview }: { overview: TeamOverview }) {
   const total = LEAVE_TYPES.reduce((sum, type) => sum + overview.mix[type], 0);
   return (
     <Tile index={6} className="col-span-5">
-      <TileHeader title="Розподіл за типами" aside={`${total} днів`} />
+      <TileHeader title="Mix by type" aside={`${total} ${total === 1 ? "day" : "days"}`} />
       {total > 0 ? (
-        <SplitBar label="Розподіл днів за типами відпусток" parts={LEAVE_TYPES.map((type) => ({ key: type, value: overview.mix[type], className: MIX_FILL[type] }))} />
+        <SplitBar label="Share of days by leave type" parts={LEAVE_TYPES.map((type) => ({ key: type, value: overview.mix[type], className: MIX_FILL[type] }))} />
       ) : (
-        <p className="my-3 text-sm text-muted-foreground">Записів ще немає.</p>
+        <p className="my-3 text-sm text-muted-foreground">No records yet.</p>
       )}
       <ul className="flex flex-col gap-1.5 text-sm">
         {LEAVE_TYPES.map((type) => (
@@ -187,13 +187,13 @@ export function ManagerDashboard({
       <CoverageTile overview={overview} />
 
       <Tile index={3} className="col-span-8">
-        <TileHeader title="Хто відсутній · найближчі три тижні" aside={`працівників: ${overview.size}`} />
-        {overview.size === 0 ? <p className="text-sm text-muted-foreground">Під вашим керуванням поки немає працівників.</p> : <TeamHeatmap overview={overview} today={today} />}
+        <TileHeader title="Who is away · next 3 weeks" aside={`employees: ${overview.size}`} />
+        {overview.size === 0 ? <p className="text-sm text-muted-foreground">You have no employees to manage yet.</p> : <TeamHeatmap overview={overview} today={today} />}
       </Tile>
 
       <Tile index={4} className="col-span-4">
-        <TileHeader title="Дні відсутності за місяцями" aside="Approved і Awaiting" />
-        <MonthlyChart labels={SCHOOL_MONTHS.slice(0, 6)} values={overview.monthly.slice(0, 6)} highlight={schoolMonthIndex(today)} unit="дн." />
+        <TileHeader title="Days away per month" aside="Approved and Awaiting" />
+        <MonthlyChart labels={SCHOOL_MONTHS.slice(0, 6)} values={overview.monthly.slice(0, 6)} highlight={schoolMonthIndex(today)} unit="days" />
       </Tile>
 
       <QueueTile queue={queue} />

@@ -43,7 +43,7 @@ export function RecordsTable({ records, testId }: { records: DecisionRecord[]; t
             </TableCell>
             <TableCell>
               <Link href={`/records/${record.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-                Відкрити
+                Open
               </Link>
             </TableCell>
           </RiseRow>

@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { DecisionFormState } from "./state";
 
 // Нейтральна фраза для технічних помилок: PM тексту для них не давав.
-const TECHNICAL_ERROR = "Не вдалося зберегти рішення. Спробуйте ще раз.";
+const TECHNICAL_ERROR = "Couldn't save the decision. Please try again.";
 
 // Рішення менеджера чи адміністратора. Автентифікація й авторизація — всередині дії: Server Action — публічний
 // POST-ендпойнт, тож перевірка в proxy чи схована кнопка не захищають. Права остаточно перевіряє функція бази

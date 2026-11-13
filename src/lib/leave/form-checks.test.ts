@@ -62,7 +62,7 @@ describe("перевірки форми «Нова заявка»", () => {
 describe("години з кроком 5 хвилин", () => {
   it("кратні п'яти хвилини приймаємо, інші дають підказку замість технічної помилки сервера", () => {
     expect(hoursStepError("09:00", "12:35")).toBeNull();
-    expect(hoursStepError("17:17", "18:18")).toBe("Вкажіть час із точністю до 5 хвилин, наприклад 09:05");
+    expect(hoursStepError("17:17", "18:18")).toBe("Minutes must be a multiple of 5 (00, 05, 10…), for example 09:05 or 12:30");
     expect(hoursStepError("09:00", "10:03")).not.toBeNull();
   });
 

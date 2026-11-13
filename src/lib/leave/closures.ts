@@ -38,10 +38,10 @@ export function closuresInSchoolYear(closures: Closure[], year: number): Closure
   return closures.filter((closure) => closure.startsOn <= to && closure.endsOn >= from).sort((a, b) => a.startsOn.localeCompare(b.startsOn));
 }
 
-// Дати закриття для списку: цілі дні — «2026-12-28 – 2027-01-08» (один день — «2026-11-20»), скорочений день — «2026-11-20 з 12:00».
+// Дати закриття для списку: цілі дні — «2026-12-28 – 2027-01-08» (один день — «2026-11-20»), скорочений день — «2026-11-20 from 12:00».
 export function describeClosure(closure: Closure): string {
   if (closure.closedFrom !== null) {
-    return `${closure.startsOn} з ${closure.closedFrom}`;
+    return `${closure.startsOn} from ${closure.closedFrom}`;
   }
   return closure.startsOn === closure.endsOn ? closure.startsOn : `${closure.startsOn} – ${closure.endsOn}`;
 }

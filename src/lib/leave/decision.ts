@@ -93,8 +93,8 @@ export type DecideOutcome =
     };
 
 // Нейтральна фраза для випадків, де PM тексту не дав (скасований запис, відмова за правами): нових правил не вигадуємо.
-export const NOT_ALLOWED = "Недостатньо прав або запис змінився. Оновіть сторінку.";
-export const RECORD_CANCELLED = "Запис скасовано працівником.";
+export const NOT_ALLOWED = "You don't have permission, or the record has changed. Refresh the page.";
+export const RECORD_CANCELLED = "The record was cancelled by the employee.";
 
 export function isDecision(value: unknown): value is Decision {
   return typeof value === "string" && (DECISIONS as readonly string[]).includes(value);

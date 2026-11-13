@@ -34,8 +34,8 @@ export function ThemeToggle() {
     >
       <MoonIcon aria-hidden="true" className="size-4 dark:hidden" />
       <SunIcon aria-hidden="true" className="hidden size-4 dark:block" />
-      <span className="dark:hidden">Темна тема</span>
-      <span className="hidden dark:inline">Світла тема</span>
+      <span className="dark:hidden">Dark theme</span>
+      <span className="hidden dark:inline">Light theme</span>
     </button>
   );
 }
@@ -58,8 +58,8 @@ export function MotionToggle() {
     >
       <WavesIcon aria-hidden="true" className="size-4 in-data-[motion=calm]:hidden" />
       <SparklesIcon aria-hidden="true" className="hidden size-4 in-data-[motion=calm]:block" />
-      <span className="in-data-[motion=calm]:hidden">Рух: повний</span>
-      <span className="hidden in-data-[motion=calm]:inline">Рух: спокійний</span>
+      <span className="in-data-[motion=calm]:hidden">Motion: full</span>
+      <span className="hidden in-data-[motion=calm]:inline">Motion: calm</span>
     </button>
   );
 }

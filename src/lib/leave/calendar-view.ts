@@ -5,40 +5,12 @@ import type { LeaveType, RecordStatus } from "./types";
 // Допоміжні функції календаря (місячна сітка й річна стрічка): чисті, без бази й Next.js, тестуються без мережі.
 // Місяць у адресі — "YYYY-MM" (?month=2026-11), навчальний рік — число початку (?year=2026).
 
-export const MONTHS_UK = [
-  "Січень",
-  "Лютий",
-  "Березень",
-  "Квітень",
-  "Травень",
-  "Червень",
-  "Липень",
-  "Серпень",
-  "Вересень",
-  "Жовтень",
-  "Листопад",
-  "Грудень",
-] as const;
+export const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] as const;
 
-export const WEEKDAYS_UK = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"] as const;
+export const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
-const MONTHS_GENITIVE = [
-  "січня",
-  "лютого",
-  "березня",
-  "квітня",
-  "травня",
-  "червня",
-  "липня",
-  "серпня",
-  "вересня",
-  "жовтня",
-  "листопада",
-  "грудня",
-] as const;
-
-// «13 листопада» для підписів дня (без Intl: однаково на сервері й у браузері).
-export const dayLabel = (date: string): string => `${Number(date.slice(8, 10))} ${MONTHS_GENITIVE[Number(date.slice(5, 7)) - 1]}`;
+// «13 Nov» для підписів дня (без Intl: однаково на сервері й у браузері).
+export const dayLabel = (date: string): string => `${Number(date.slice(8, 10))} ${MONTHS[Number(date.slice(5, 7)) - 1].slice(0, 3)}`;
 
 const MONTH_RE = /^(\d{4})-(0[1-9]|1[0-2])$/;
 
@@ -60,7 +32,7 @@ export function shiftMonth(month: string, delta: number): string {
   return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, "0")}`;
 }
 
-export const monthLabel = (month: string): string => `${MONTHS_UK[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;
+export const monthLabel = (month: string): string => `${MONTHS[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;
 
 export type CalendarView = "month" | "year";
 

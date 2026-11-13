@@ -28,7 +28,7 @@ export default async function ManageCalendarPage() {
   if (profile?.role !== "admin") {
     return (
       <main className="flex w-full max-w-3xl flex-1 flex-col gap-4 py-2">
-        <PageHeader title="Керування календарем" />
+        <PageHeader title="Manage calendar" />
         <Alert variant="destructive">
           <AlertDescription>{ONLY_ADMIN_CALENDAR}</AlertDescription>
         </Alert>
@@ -57,10 +57,10 @@ export default async function ManageCalendarPage() {
   return (
     <main className="flex w-full max-w-3xl flex-1 flex-col gap-4 py-2">
       <PageHeader
-        title="Керування календарем"
+        title="Manage calendar"
         actions={
           <Link href="/calendar" className={buttonVariants({ variant: "outline", size: "sm" })}>
-            Шкільний календар
+            School calendar
           </Link>
         }
       />
@@ -70,10 +70,10 @@ export default async function ManageCalendarPage() {
       <Tile index={1}>
       <section aria-labelledby="closures-title" className="flex flex-col gap-3">
         <h2 id="closures-title" className="text-sm font-semibold">
-          Усі закриття
+          All closures
         </h2>
         {closures.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Закриттів ще немає.</p>
+          <p className="text-sm text-muted-foreground">No closures yet.</p>
         ) : (
           <ClosureList rows={closures} />
         )}

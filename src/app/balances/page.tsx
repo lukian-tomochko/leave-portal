@@ -46,21 +46,21 @@ export default async function BalancesPage() {
 
   return (
     <main className="flex w-full max-w-3xl flex-1 flex-col gap-4 py-2">
-      <PageHeader title="Баланс відпусток" />
+      <PageHeader title="Balances" />
       <BalanceView balances={balances} />
 
       {employees.length > 0 ? (
         <Tile index={3}>
         <section aria-labelledby="employees-title" className="flex flex-col gap-3">
           <h2 id="employees-title" className="text-sm font-semibold">
-            Баланси працівників
+            Employee balances
           </h2>
           <ul className="flex flex-col gap-2 text-sm" data-testid="balance-employees">
             {employees.map((employee, index) => (
               <li key={employee.id} className="flex animate-rise items-center justify-between rounded-2xl border border-border bg-muted p-3" style={{ animationDelay: `${Math.min(index, 8) * 60 + 400}ms` }}>
                 <span>{employee.name}</span>
                 <Link href={`/balances/${employee.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-                  Відкрити
+                  Open
                 </Link>
               </li>
             ))}

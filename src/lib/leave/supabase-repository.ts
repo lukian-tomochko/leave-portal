@@ -6,6 +6,35 @@ import { positionLabel } from "./schedule";
 import { isValidDate, trimSeconds } from "./time";
 import type { LeaveType, Position, PositionKind, RecordStatus, ScheduleBlock } from "./types";
 
+// Коментар менеджера: останнє рішення запису з коментарем (працівник бачить рішення своїх записів під RLS).
+// Рішення завантажуємо сторінками: відповідь Supabase обмежена (max_rows), а потрібне саме найновіше рішення.
+async function loadManagerComments(supabase: SupabaseClient<Database>, recordIds: string[]): Promise<Map<string, string>> {
+  const commentByRecord = new Map<string, string>();
+  const pageSize = 500;
+  for (let from = 0; ; from += pageSize) {
+    const { data: decisions, error } = await supabase
+      .from("leave_decisions")
+      .select("record_id, comment, decided_at")
+      .in("record_id", recordIds)
+      .not("comment", "is", null)
+      // decided_at з точністю до хвилини, тож id робить порядок стабільним між сторінками.
+      .order("decided_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, from + pageSize - 1);
+    if (error) {
+      throw new Error(`listRecords(decisions) failed: ${error.code ?? "unknown"}`);
+    }
+    for (const decision of decisions) {
+      if (decision.comment) {
+        commentByRecord.set(decision.record_id, decision.comment);
+      }
+    }
+    if (decisions.length < pageSize) {
+      return commentByRecord;
+    }
+  }
+}
+
 // Адаптер порту LeaveRepository для Supabase. Читання йде під RLS користувача, запис — однією функцією Postgres
 // (rpc create_leave_request), тож заявка й усі записи створюються в одній транзакції.
 export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>): LeaveRepository {
@@ -132,47 +161,17 @@ export function createSupabaseLeaveRepository(supabase: SupabaseClient<Database>
       const requestIds = [...new Set(records.map((record) => record.request_id))];
       const positionIds = [...new Set(records.map((record) => record.position_id))];
 
-      const { data: requests, error: requestsError } = await supabase
-        .from("leave_requests")
-        .select("id, leave_type, comment")
-        .in("id", requestIds);
+      // Три незалежні запити йдуть паралельно: на сторінку виходить 2 поїздки до бази замість 4.
+      const [{ data: requests, error: requestsError }, { data: positions, error: positionsError }, managerCommentByRecord] = await Promise.all([
+        supabase.from("leave_requests").select("id, leave_type, comment").in("id", requestIds),
+        supabase.from("positions").select("id, division, job_title").in("id", positionIds),
+        loadManagerComments(supabase, records.map((record) => record.id)),
+      ]);
       if (requestsError) {
         throw new Error(`listRecords(requests) failed: ${requestsError.code ?? "unknown"}`);
       }
-      const { data: positions, error: positionsError } = await supabase
-        .from("positions")
-        .select("id, division, job_title")
-        .in("id", positionIds);
       if (positionsError) {
         throw new Error(`listRecords(positions) failed: ${positionsError.code ?? "unknown"}`);
-      }
-
-      // Коментар менеджера: останнє рішення запису з коментарем (працівник бачить рішення своїх записів під RLS).
-      // Рішення завантажуємо сторінками: відповідь Supabase обмежена (max_rows), а потрібне саме найновіше рішення.
-      const managerCommentByRecord = new Map<string, string>();
-      const decisionPage = 500;
-      const recordIds = records.map((record) => record.id);
-      for (let from = 0; ; from += decisionPage) {
-        const { data: decisions, error: decisionsError } = await supabase
-          .from("leave_decisions")
-          .select("record_id, comment, decided_at")
-          .in("record_id", recordIds)
-          .not("comment", "is", null)
-          // decided_at з точністю до хвилини, тож id робить порядок стабільним між сторінками.
-          .order("decided_at", { ascending: true })
-          .order("id", { ascending: true })
-          .range(from, from + decisionPage - 1);
-        if (decisionsError) {
-          throw new Error(`listRecords(decisions) failed: ${decisionsError.code ?? "unknown"}`);
-        }
-        for (const decision of decisions) {
-          if (decision.comment) {
-            managerCommentByRecord.set(decision.record_id, decision.comment);
-          }
-        }
-        if (decisions.length < decisionPage) {
-          break;
-        }
       }
 
       const requestById = new Map(requests.map((request) => [request.id, request]));

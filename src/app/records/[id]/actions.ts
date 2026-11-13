@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { RecordActionState } from "./state";
 
 // Нейтральна фраза для технічних помилок: PM тексту для них не давав.
-const TECHNICAL_ERROR = "Не вдалося зберегти зміну. Спробуйте ще раз.";
+const TECHNICAL_ERROR = "Couldn't save the change. Please try again.";
 const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 // Автентифікація — всередині кожної дії: Server Action — публічний POST-ендпойнт, тож перевірка в proxy чи схована

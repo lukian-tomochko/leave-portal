@@ -12,7 +12,7 @@ export const UAT_CLOSURE_NAMES = ["Winter break", "Staff day", "Teachers' meetin
 export type ClosureInput = { name: string; startsOn: string; endsOn: string } | { name: string; date: string; time: string };
 
 async function newContext(browser: Browser, storageState?: string): Promise<BrowserContext> {
-  return browser.newContext({ baseURL: BASE_URL, locale: "uk-UA", timezoneId: "Europe/Kyiv", storageState });
+  return browser.newContext({ baseURL: BASE_URL, locale: "en-US", timezoneId: "Europe/Kyiv", storageState });
 }
 
 /** Cookie сесії користувача: вхід в окремому контексті без запису, далі їх підставляють у записану сторінку. */
@@ -35,20 +35,20 @@ export async function actAs(page: Page, cookies: Cookie[]) {
 
 export async function fillClosureForm(page: Page, input: ClosureInput) {
   await page.goto("/calendar/manage");
-  await page.getByLabel("Назва").fill(input.name);
+  await page.getByLabel("Name").fill(input.name);
   if ("date" in input) {
-    await page.getByLabel("Скорочений день").check();
-    await page.getByLabel("Дата", { exact: true }).fill(input.date);
-    await page.getByLabel("Школа закрита від").fill(input.time);
+    await page.getByLabel("Early dismissal").check();
+    await page.getByLabel("Date", { exact: true }).fill(input.date);
+    await page.getByLabel("School closed from").fill(input.time);
   } else {
-    await page.getByLabel("Цілі дні").check();
-    await page.getByLabel("Початкова дата").fill(input.startsOn);
-    await page.getByLabel("Кінцева дата").fill(input.endsOn);
+    await page.getByLabel("Whole days").check();
+    await page.getByLabel("Start date").fill(input.startsOn);
+    await page.getByLabel("End date").fill(input.endsOn);
   }
 }
 
 export async function submitClosureForm(page: Page) {
-  await page.getByRole("button", { name: "Додати закриття" }).click();
+  await page.getByRole("button", { name: "Add closure" }).click();
 }
 
 /** «Дано»: адміністратор у власній сесії додає закриття й чекає, поки воно з'явиться в списку. */
@@ -68,8 +68,8 @@ export async function adminAddsClosure(browser: Browser, input: ClosureInput) {
 export async function removeClosureByName(page: Page, name: string) {
   await page.goto("/calendar/manage");
   const row = page.getByTestId("manage-closures").getByRole("listitem").filter({ has: page.getByText(name, { exact: true }) });
-  await row.getByRole("button", { name: "Видалити" }).click();
-  await page.getByRole("dialog").getByRole("button", { name: "Видалити" }).click();
+  await row.getByRole("button", { name: "Delete" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
   await expect(page.getByTestId("manage-closures").getByText(name, { exact: true })).toHaveCount(0);
 }
 
@@ -80,16 +80,16 @@ export async function removeUatClosures(browser: Browser) {
     const page = await context.newPage();
     await page.goto("/calendar/manage");
     // loading.tsx віддає скелетон одразу, а сторінку допотоковує: count() не чекає, тож спершу чекаємо на заголовок списку.
-    await page.getByRole("heading", { name: "Усі закриття" }).waitFor();
+    await page.getByRole("heading", { name: "All closures" }).waitFor();
     for (const name of UAT_CLOSURE_NAMES) {
       // Точна назва, а не підрядок: справжнє закриття зі схожою назвою (наприклад, «Winter break 2027») не видаляємо.
       const rows = page.getByTestId("manage-closures").getByRole("listitem").filter({ has: page.getByText(name, { exact: true }) });
       while ((await rows.count()) > 0) {
-        await rows.first().getByRole("button", { name: "Видалити" }).click();
-        await page.getByRole("dialog").getByRole("button", { name: "Видалити" }).click();
+        await rows.first().getByRole("button", { name: "Delete" }).click();
+        await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
         await expect(page.getByRole("dialog")).toHaveCount(0);
         await page.goto("/calendar/manage");
-        await page.getByRole("heading", { name: "Усі закриття" }).waitFor();
+        await page.getByRole("heading", { name: "All closures" }).waitFor();
       }
     }
   } finally {
@@ -105,7 +105,7 @@ export async function fillRequest(
   await page.goto("/leave/new");
   // Форма — клієнтський компонент: значення, введене до гідратації, скидається станом React. Тому повторюємо введення
   // дати, поки вона не лишиться в полі (loading.tsx і ViewTransition трохи зсувають гідратацію).
-  const dateInput = page.getByLabel("Дата 1");
+  const dateInput = page.getByLabel("Date 1");
   await expect(async () => {
     await dateInput.fill(options.date);
     await expect(dateInput).toHaveValue(options.date, { timeout: 750 });
@@ -113,12 +113,12 @@ export async function fillRequest(
   for (const box of await page.getByRole("checkbox").all()) {
     await box.check();
   }
-  await page.getByLabel("Тип відпустки").selectOption(options.type);
+  await page.getByLabel("Leave type").selectOption(options.type);
   if (options.hours) {
-    await page.getByLabel("Години", { exact: true }).check();
-    await page.getByLabel("З", { exact: true }).fill(options.hours.from);
-    await page.getByLabel("До", { exact: true }).fill(options.hours.to);
+    await page.getByLabel("Hours", { exact: true }).check();
+    await page.getByLabel("From", { exact: true }).fill(options.hours.from);
+    await page.getByLabel("To", { exact: true }).fill(options.hours.to);
   } else {
-    await page.getByLabel("Цілий день").check();
+    await page.getByLabel("Whole day").check();
   }
 }

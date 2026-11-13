@@ -27,14 +27,14 @@ export function BalanceView({ balances }: { balances: YearBalances }) {
   return (
     <section aria-labelledby="balance-title" className="flex flex-col gap-4">
       <h2 id="balance-title" className="px-1 font-display text-xl font-bold tracking-tight">
-        Навчальний рік {balances.label}
+        School year {balances.label}
       </h2>
       <div className="grid gap-4 sm:grid-cols-2">
         {limited.map(({ label, balance, ring }, index) => {
           const percent = percentLeft(balance);
           return (
             <Tile key={label} index={index} className="flex items-center gap-4">
-              <Ring percent={percent} label={`${label}: залишок ${percent}%`} className={ring} />
+              <Ring percent={percent} label={`${label}: ${percent}% left`} className={ring} />
               <div>
 <p className="text-sm text-muted-foreground">{label}</p>
 <p className="font-display text-3xl font-bold tabular-nums" aria-hidden="true">{percent}%</p>

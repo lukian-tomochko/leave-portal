@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { StatusBadge } from "@/components/status-badge";
-import { type DayCell, type DayInfo, WEEKDAYS_UK, dayLabel, monthCells } from "@/lib/leave/calendar-view";
+import { type DayCell, type DayInfo, WEEKDAYS, dayLabel, monthCells } from "@/lib/leave/calendar-view";
 import { LEAVE_TYPE_LABELS, STATUS_LABELS } from "@/lib/leave/messages";
 import type { RecordStatus } from "@/lib/leave/types";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,7 @@ const STATUS_CELL: Record<RecordStatus, string> = {
 };
 
 function closureText(closure: NonNullable<DayInfo["closure"]>): string {
-  return closure.early ? `скорочений день: ${closure.name}` : `школа закрита: ${closure.name}`;
+  return closure.early ? `Early dismissal: ${closure.name}` : `School closed: ${closure.name}`;
 }
 
 // Підпис клітинки для читачів з екрана й title: дата, закриття, записи, кількість відсутніх.
@@ -29,7 +29,7 @@ function describe(date: string, info: DayInfo | undefined): string {
   }
   parts.push(...(info?.mine ?? []).map((record) => `${LEAVE_TYPE_LABELS[record.leaveType]}, ${STATUS_LABELS[record.status]}`));
   if (info?.away?.length) {
-    parts.push(`відсутні: ${info.away.length}`);
+    parts.push(`Away: ${info.away.length}`);
   }
   return parts.join(". ");
 }
@@ -70,7 +70,7 @@ function DayDetails({ date, info }: { date: string; info: DayInfo | undefined })
       <p className="font-semibold">{dayLabel(date)}</p>
       {info?.closure ? (
         <p className="text-muted-foreground">
-          {info.closure.early ? "Скорочений день" : "Школа закрита"}: {info.closure.name} ({info.closure.text})
+          {info.closure.early ? "Early dismissal" : "School closed"}: {info.closure.name} ({info.closure.text})
         </p>
       ) : null}
       {info?.mine?.map((record, index) => (
@@ -80,9 +80,9 @@ function DayDetails({ date, info }: { date: string; info: DayInfo | undefined })
         </p>
       ))}
       {info?.away?.length ? (
-        <p className="text-muted-foreground">Відсутні: {info.away.map((entry) => `${entry.name} (${STATUS_LABELS[entry.status]})`).join(", ")}</p>
+        <p className="text-muted-foreground">Away: {info.away.map((entry) => `${entry.name} (${STATUS_LABELS[entry.status]})`).join(", ")}</p>
       ) : null}
-      {info ? null : <p className="text-muted-foreground">Звичайний навчальний день, записів немає.</p>}
+      {info ? null : <p className="text-muted-foreground">Regular school day, nothing booked.</p>}
     </div>
   );
 }
@@ -115,7 +115,7 @@ export function MonthGrid({
   return (
     <div className="flex flex-col gap-3">
       <div key={month} className="grid animate-soft-in grid-cols-7 gap-1.5" style={{ "--d": dir } as React.CSSProperties}>
-        {WEEKDAYS_UK.map((weekday) => (
+        {WEEKDAYS.map((weekday) => (
           <div key={weekday} className="py-1 text-center text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
             {weekday}
           </div>
@@ -149,7 +149,7 @@ export function MonthGrid({
 
       {interactive ? (
         <div key={selected ?? "none"} aria-live="polite" className="animate-rise rounded-2xl bg-muted p-4 text-sm" data-testid="day-details">
-          {selected ? <DayDetails date={selected} info={days[selected]} /> : <p className="text-muted-foreground">Оберіть день, щоб побачити деталі.</p>}
+          {selected ? <DayDetails date={selected} info={days[selected]} /> : <p className="text-muted-foreground">Pick a day to see details.</p>}
         </div>
       ) : null}
     </div>
@@ -164,17 +164,17 @@ export function CalendarLegend({ team = false }: { team?: boolean }) {
     { label: "Rejected", className: "bg-fill-rejected" },
     { label: "Returned for revision", className: "bg-fill-returned" },
     { label: "Cancelled", className: "bg-fill-cancelled" },
-    { label: "Школа закрита", className: "hatch border border-border" },
+    { label: "School closed", className: "hatch border border-border" },
   ];
   return (
-    <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground" aria-label="Легенда">
+    <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground" aria-label="Legend">
       {items.map((item) => (
         <li key={item.label} className="flex items-center gap-1.5">
           <span aria-hidden="true" className={cn("size-2.5 rounded-sm", item.className)} />
           {item.label}
         </li>
       ))}
-      {team ? <li>Число в куті дня — скільки працівників відсутні</li> : null}
+      {team ? <li>The number in a day corner shows how many employees are away</li> : null}
     </ul>
   );
 }
