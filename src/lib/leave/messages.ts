@@ -59,6 +59,8 @@ export function alreadyClosed(overlaps: { date: string; name: string }[]): strin
 export const CLOSURE_NAME_REQUIRED = "Вкажіть назву закриття";
 export const CLOSURE_NAME_TOO_LONG = "Назва закриття має бути не довшою за 100 символів";
 export const CLOSURE_DATE_INVALID = "Вкажіть коректну дату";
+// Години відпустки лише з точністю до 5 хвилин (припущення PM у вимозі 01); PM тексту для цього не дав, тож це нейтральна підказка форми.
+export const HOURS_STEP_INVALID = "Вкажіть час із точністю до 5 хвилин, наприклад 09:05";
 export const CLOSURE_TIME_INVALID = "Вкажіть час закриття після 00:00 з кроком 5 хвилин, наприклад 12:00";
 export const CLOSURE_TECHNICAL_ERROR = "Не вдалося зберегти зміну календаря. Спробуйте ще раз.";
 export const CLOSURE_ALREADY_REMOVED = "Закриття вже видалено. Оновіть сторінку.";

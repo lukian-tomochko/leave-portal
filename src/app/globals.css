@@ -76,6 +76,7 @@
   --animate-beat: beat 2.2s ease-in-out infinite;
   --animate-wobble: wobble 6s ease-in-out infinite;
   --animate-grow-x: grow-x 1.4s var(--motion-ease) both;
+  --animate-soft-in: soft-in 0.6s var(--motion-ease) both;
   --animate-pop: pop 0.6s var(--motion-ease) both;
   --animate-ring-fill: ring-fill var(--motion-chart) var(--motion-ease) 0.25s both;
   --animate-stack-grow: grow-x var(--motion-chart) var(--motion-ease) 0.25s both;
@@ -251,6 +252,13 @@
   from {
     opacity: 0;
     transform: scale(0.4);
+  }
+}
+/* Зсув блоку при зміні місяця: --d = +1 вперед, -1 назад, 0 без напрямку (лише підйом). */
+@keyframes soft-in {
+  from {
+    opacity: 0;
+    transform: translate3d(calc(var(--d, 0) * 28px), calc((1 - var(--d, 0) * var(--d, 0)) * 10px), 0);
   }
 }
 @keyframes ring-fill {

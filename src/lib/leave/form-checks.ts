@@ -1,5 +1,5 @@
 import { closureOn, type Closure } from "./closures";
-import { CHOOSE_AT_LEAST_ONE_POSITION, NO_WORKING_HOURS, schoolClosedOn } from "./messages";
+import { CHOOSE_AT_LEAST_ONE_POSITION, HOURS_STEP_INVALID, NO_WORKING_HOURS, schoolClosedOn } from "./messages";
 import { isValidDate, weekdayOf } from "./time";
 
 // Перевірки форми «Нова заявка» до запиту на сервер. Окремі чисті функції з тестами: форма й planRequest дають
@@ -33,4 +33,11 @@ export function dateError(
   // чи лишились відкриті блоки, знає сервер (planRequest), він і покаже повідомлення в підсумку.
   const closure = closureOn(closures, date);
   return closure && closure.closedFrom === null ? schoolClosedOn(closure.name) : null;
+}
+
+// Години з кроком 5 хвилин: сервер інакше відповів би загальною технічною помилкою. Порожній час чи не-«HH:MM» не оцінюємо
+// (поле саме вимагає значення); повертає підказку, якщо хвилини початку чи кінця не кратні 5.
+export function hoursStepError(startsAt: string, endsAt: string): string | null {
+  const minutes = [startsAt, endsAt].map((value) => /^\d{2}:(\d{2})$/.exec(value)?.[1]).filter((value) => value !== undefined);
+  return minutes.some((value) => Number(value) % 5 !== 0) ? HOURS_STEP_INVALID : null;
 }

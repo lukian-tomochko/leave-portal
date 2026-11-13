@@ -80,7 +80,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
           <CalendarNav view={view} month={month} year={year} />
           <div className="flex flex-col gap-4">
             {view === "month" ? (
-              <MonthGrid key={month} month={month} today={today} days={dayMap} />
+              <MonthGrid month={month} today={today} days={dayMap} />
             ) : (
               <YearTimeline
                 year={year}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Closure } from "./closures";
-import { dateError, positionsError, type FormPosition } from "./form-checks";
+import { dateError, hoursStepError, positionsError, type FormPosition } from "./form-checks";
 
 // Дані з прикладів PM (requirements/01-leave-request.md): основна посада пн–пт, додаткова лише в понеділок.
 // 2026-11-02 — понеділок, 2026-11-07 — субота.
@@ -56,5 +56,17 @@ describe("перевірки форми «Нова заявка»", () => {
 
   it("AC-CAL-04: скорочений день форма не відхиляє: відкриті блоки до 12:00 лишаються", () => {
     expect(dateError("2026-11-20", POSITIONS, ["main"], [EARLY_DISMISSAL])).toBeNull();
+  });
+});
+
+describe("години з кроком 5 хвилин", () => {
+  it("кратні п'яти хвилини приймаємо, інші дають підказку замість технічної помилки сервера", () => {
+    expect(hoursStepError("09:00", "12:35")).toBeNull();
+    expect(hoursStepError("17:17", "18:18")).toBe("Вкажіть час із точністю до 5 хвилин, наприклад 09:05");
+    expect(hoursStepError("09:00", "10:03")).not.toBeNull();
+  });
+
+  it("порожній час поки не оцінюємо: поле саме вимагає значення", () => {
+    expect(hoursStepError("", "")).toBeNull();
   });
 });

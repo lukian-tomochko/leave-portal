@@ -61,8 +61,8 @@ export default async function Home() {
   ]);
   return (
     <main className="flex flex-1 flex-col gap-4 py-2">
-      <PageHeader title="Головна" description="Ваші баланси, заявки й найближчі дати навчального року." />
-      <EmployeeDashboard name={name} today={today} records={records} balances={balancesOn(balanceInputs, today)} closures={closures} />
+      <PageHeader title="Головна" description={`Доброго дня, ${name}. Ось ваш навчальний рік.`} />
+      <EmployeeDashboard today={today} records={records} balances={balancesOn(balanceInputs, today)} closures={closures} />
     </main>
   );
 }

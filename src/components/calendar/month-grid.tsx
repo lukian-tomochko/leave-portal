@@ -38,7 +38,7 @@ function cellClass(cell: DayCell, info: DayInfo | undefined, flags: { today: boo
   const first = info?.mine?.[0];
   const closedAllDay = info?.closure && !info.closure.early;
   return cn(
-    "relative grid place-items-center rounded-xl text-sm font-medium transition-[transform,background-color,box-shadow] duration-(--motion-fast) ease-soft outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+    "relative grid animate-pop place-items-center rounded-xl text-sm font-medium transition-[transform,background-color,box-shadow] duration-(--motion-fast) ease-soft outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
     flags.compact ? "h-8" : "h-12",
     cell.weekend ? "text-muted-foreground" : "bg-muted text-foreground",
     closedAllDay && "hatch text-muted-foreground",
@@ -103,10 +103,18 @@ export function MonthGrid({
   compact?: boolean;
 }) {
   const [selected, setSelected] = useState<string | null>(today.startsWith(month) ? today : null);
+  // Зміна місяця: сітка з'їжджає в бік стрілки (вперед — зправа, назад — зліва), вибраний день скидається.
+  const [shown, setShown] = useState(month);
+  const [dir, setDir] = useState(0);
+  if (shown !== month) {
+    setDir(month > shown ? 1 : -1);
+    setShown(month);
+    setSelected(today.startsWith(month) ? today : null);
+  }
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-7 gap-1.5">
+      <div key={month} className="grid animate-soft-in grid-cols-7 gap-1.5" style={{ "--d": dir } as React.CSSProperties}>
         {WEEKDAYS_UK.map((weekday) => (
           <div key={weekday} className="py-1 text-center text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
             {weekday}
@@ -126,12 +134,13 @@ export function MonthGrid({
               aria-label={describe(cell.date, info)}
               aria-pressed={cell.date === selected}
               className={className}
+              style={{ animationDelay: `${Math.min(index, 34) * 14}ms` }}
               onClick={() => setSelected(cell.date)}
             >
               <DayContent cell={cell} info={info} today={isToday} />
             </button>
           ) : (
-            <div key={cell.date} title={describe(cell.date, info)} className={className}>
+            <div key={cell.date} title={describe(cell.date, info)} className={className} style={{ animationDelay: `${Math.min(index, 34) * 14}ms` }}>
               <DayContent cell={cell} info={info} today={isToday} />
             </div>
           );
