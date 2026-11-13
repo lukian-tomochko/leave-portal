@@ -45,7 +45,7 @@ export function TeamHeatmap({ overview, today }: { overview: TeamOverview; today
                   key={date}
                   title={`${row.member.name}, ${dayLabel(date)}${cellText(cell)}`}
                   className={cn("h-6 animate-pop rounded-md", cellClass(cell), date === today && "outline-2 outline-primary")}
-                  style={{ animationDelay: `${700 + (rowIndex * 15 + cellIndex) * 16}ms` }}
+                  style={{ animationDelay: `${300 + (rowIndex * 15 + cellIndex) * 8}ms` }}
                 />
               );
             })}

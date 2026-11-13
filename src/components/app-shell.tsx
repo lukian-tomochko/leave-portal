@@ -1,40 +1,35 @@
 import { CalendarDaysIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
-import { ViewTransition } from "react";
+import { Suspense, ViewTransition } from "react";
 import { signOut } from "@/app/login/actions";
-import { isDecider } from "@/lib/leave/decision";
-import { countAwaiting, loadActor } from "@/lib/leave/supabase-decision-repository";
-import { createClient } from "@/lib/supabase/server";
+import { getAwaitingCount, getClaims, getProfile } from "@/lib/supabase/session";
 import { MotionToggle, ThemeToggle } from "./appearance-controls";
 import { NavLinks } from "./nav-links";
 import { SubmitButton } from "./submit-button";
 
+// Навігація з бейджем черги: лічильник — допоміжний, тому його збій не ховає навігацію, а сам лічильник вантажиться потоком
+// (Suspense), не блокуючи ні сайдбар, ні сторінку.
+async function NavWithQueue({ userId, role }: { userId: string; role: string }) {
+  let awaiting = 0;
+  try {
+    awaiting = await getAwaitingCount(userId);
+  } catch {
+    awaiting = 0;
+  }
+  return <NavLinks role={role} awaitingCount={awaiting} />;
+}
+
 // Каркас застосунку: лівий сайдбар (назва, навігація, вигляд, хто увійшов, вихід) і контент поруч.
 // Без сесії (сторінка входу) сайдбара немає. Це UX, а не захист: права перевіряють сторінки й база.
 export async function AppShell({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const claims = data?.claims;
+  const claims = await getClaims();
 
   if (!claims) {
     return <div className="relative z-10 flex min-h-screen flex-col">{children}</div>;
   }
 
-  const { data: profile } = await supabase.from("profiles").select("email, full_name, role").eq("id", claims.sub).maybeSingle();
+  const profile = await getProfile(claims.sub);
   const role = profile?.role;
-  let awaiting = 0;
-  if (role === "manager" || role === "admin") {
-    // Лічильник — допоміжний бейдж: його збій не має ховати навігацію й сторінку, тож помилку гасимо тут.
-    try {
-      const actor = await loadActor(supabase, claims.sub);
-      if (actor && isDecider(actor.role)) {
-        awaiting = await countAwaiting(supabase, actor);
-      }
-    } catch {
-      awaiting = 0;
-    }
-  }
-
   const email = profile?.email ?? claims.email ?? "";
   const name = profile?.full_name ?? email;
   const initials =
@@ -57,7 +52,13 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           </span>
           Портал відпусток
         </Link>
-        <NavLinks role={role} awaitingCount={awaiting} />
+        {role === "manager" || role === "admin" ? (
+          <Suspense fallback={<NavLinks role={role} />}>
+            <NavWithQueue userId={claims.sub} role={role} />
+          </Suspense>
+        ) : (
+          <NavLinks role={role} />
+        )}
         <div className="mt-auto flex flex-col gap-1">
           <ThemeToggle />
           <MotionToggle />

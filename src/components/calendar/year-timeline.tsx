@@ -116,7 +116,7 @@ function Bar({
     <div
       title={title}
       className={cn("absolute top-2 h-6 origin-left animate-grow-x overflow-hidden rounded-full px-2 text-[11px] leading-6 whitespace-nowrap", className)}
-      style={{ ...style, animationDelay: `${700 + Math.min(index, 12) * 90}ms` }}
+      style={{ ...style, animationDelay: `${300 + Math.min(index, 12) * 60}ms` }}
     >
       {children}
     </div>

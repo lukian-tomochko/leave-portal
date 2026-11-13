@@ -46,8 +46,8 @@ export function MonthlyChart({
             radius={[8, 8, 3, 3]}
             maxBarSize={30}
             isAnimationActive={animate}
-            animationDuration={1500}
-            animationBegin={500}
+            animationDuration={1000}
+            animationBegin={200}
             label={{ position: "top", fontSize: 11, fill: "var(--foreground)" }}
           >
             {data.map((item, index) => (

@@ -19,8 +19,8 @@ export function CountUp({ value, decimals = 0, suffix = "" }: { value: number; d
     }
     el.textContent = `${(0).toFixed(decimals)}${suffix}`;
     const controls = animate(0, value, {
-      duration: 1.8,
-      delay: 0.5,
+      duration: 1.2,
+      delay: 0.2,
       ease: [0.22, 1, 0.36, 1],
       onUpdate: (latest) => {
         el.textContent = `${latest.toFixed(decimals)}${suffix}`;
