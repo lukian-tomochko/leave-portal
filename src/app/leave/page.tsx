@@ -1,24 +1,16 @@
 import Link from "next/link";
 import { ViewTransition } from "react";
 import { redirect } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/bento/page-header";
+import { Tile } from "@/components/bento/tile";
+import { StatusBadge } from "@/components/status-badge";
 import { buttonVariants } from "@/components/ui/button";
+import { RiseRow } from "@/components/bento/rise-row";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { LEAVE_TYPE_LABELS, STATUS_LABELS } from "@/lib/leave/messages";
-import type { RecordStatus } from "@/lib/leave/types";
+import { LEAVE_TYPE_LABELS } from "@/lib/leave/messages";
 import { createSupabaseLeaveRepository } from "@/lib/leave/supabase-repository";
 import { listMyRecords } from "@/lib/leave/use-cases";
 import { createClient } from "@/lib/supabase/server";
-import { APPEAR, FADE_IN, stagger } from "@/lib/utils";
-
-// Колір статусу лише додається до тексту (DESIGN.md): сам статус завжди написано словами.
-const STATUS_VARIANTS = {
-  awaiting_decision: "awaiting",
-  approved: "approved",
-  rejected: "rejected",
-  returned_for_revision: "returned",
-  cancelled: "cancelled",
-} as const satisfies Record<RecordStatus, "awaiting" | "approved" | "rejected" | "returned" | "cancelled">;
 
 // «My requests»: записи відпустки поточного працівника. Сторінка читає cookies, тож рендериться динамічно.
 export default async function MyRequestsPage() {
@@ -33,18 +25,25 @@ export default async function MyRequestsPage() {
   const records = await listMyRecords(createSupabaseLeaveRepository(supabase), employeeId);
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-10">
-      <Link href="/" className="text-sm text-muted-foreground underline">
+    <main className="flex flex-1 flex-col gap-4 py-2">
+      <Link href="/" className="w-fit px-1 text-sm text-muted-foreground underline">
         ← Головна
       </Link>
-      <h1 className="text-2xl font-semibold">My requests</h1>
-      <Link href="/leave/new" className={buttonVariants({ className: "self-start" })}>
-        Нова заявка
-      </Link>
+      <PageHeader
+        title="My requests"
+        actions={
+          <Link href="/leave/new" className={buttonVariants()}>
+            Нова заявка
+          </Link>
+        }
+      />
 
       {records.length === 0 ? (
-        <p className={`text-sm text-muted-foreground ${FADE_IN}`}>Заявок ще немає.</p>
+        <Tile index={0}>
+          <p className="py-6 text-center text-sm text-muted-foreground">Заявок ще немає.</p>
+        </Tile>
       ) : (
+        <Tile index={0} className="p-2">
         <Table data-testid="my-requests">
           <TableHeader>
             <TableRow>
@@ -62,7 +61,7 @@ export default async function MyRequestsPage() {
           </TableHeader>
           <TableBody>
             {records.map((record, index) => (
-              <TableRow key={record.id} className={APPEAR} style={stagger(index)}>
+              <RiseRow key={record.id} index={index}>
                 <TableCell className="tabular-nums">{record.date}</TableCell>
                 <TableCell className="tabular-nums">
                   {record.startsAt}–{record.endsAt}
@@ -71,7 +70,7 @@ export default async function MyRequestsPage() {
                 <TableCell>{LEAVE_TYPE_LABELS[record.leaveType]}</TableCell>
                 <TableCell>
                   <ViewTransition name={`status-${record.id}`} share="status-morph" default="none">
-                    <Badge variant={STATUS_VARIANTS[record.status]}>{STATUS_LABELS[record.status]}</Badge>
+                    <StatusBadge status={record.status} />
                   </ViewTransition>
                   {record.split ? (
                     <p className="mt-1 text-xs text-muted-foreground" data-testid="record-split">
@@ -88,10 +87,11 @@ export default async function MyRequestsPage() {
                     Відкрити
                   </Link>
                 </TableCell>
-              </TableRow>
+              </RiseRow>
             ))}
           </TableBody>
         </Table>
+        </Tile>
       )}
     </main>
   );

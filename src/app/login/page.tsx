@@ -1,3 +1,4 @@
+import { CalendarDaysIcon } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,10 +16,16 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const message = typeof error === "string" ? ERRORS[error] : undefined;
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-16">
-      <Card>
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 px-6 py-16">
+      <div className="flex animate-bloom flex-col items-center gap-3 text-center">
+        <span className="grid size-16 animate-wobble place-items-center rounded-3xl bg-primary text-primary-foreground shadow-tile">
+          <CalendarDaysIcon aria-hidden="true" className="size-8" />
+        </span>
+        <p className="font-display text-3xl font-bold tracking-tight">Портал відпусток</p>
+      </div>
+      <Card className="w-full animate-bloom shadow-tile" style={{ animationDelay: "120ms" }}>
         <CardHeader>
-          <CardTitle className="text-2xl font-semibold">Вхід</CardTitle>
+          <CardTitle className="font-display text-xl font-bold">Вхід</CardTitle>
           <CardDescription>Увійдіть, щоб подати заявку на відпустку або ухвалити рішення.</CardDescription>
         </CardHeader>
         <CardContent>

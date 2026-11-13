@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PageHeader } from "@/components/bento/page-header";
+import { Tile } from "@/components/bento/tile";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { buttonVariants } from "@/components/ui/button";
 import { describeClosure } from "@/lib/leave/closures";
@@ -25,8 +27,8 @@ export default async function ManageCalendarPage() {
 
   if (profile?.role !== "admin") {
     return (
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-10">
-        <h1 className="text-2xl font-semibold">Керування календарем</h1>
+      <main className="flex w-full max-w-3xl flex-1 flex-col gap-4 py-2">
+        <PageHeader title="Керування календарем" />
         <Alert variant="destructive">
           <AlertDescription>{ONLY_ADMIN_CALENDAR}</AlertDescription>
         </Alert>
@@ -53,16 +55,21 @@ export default async function ManageCalendarPage() {
   }));
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Керування календарем</h1>
-        <Link href="/calendar" className={buttonVariants({ variant: "outline", size: "sm" })}>
-          Шкільний календар
-        </Link>
-      </div>
-      <ClosureForm />
+    <main className="flex w-full max-w-3xl flex-1 flex-col gap-4 py-2">
+      <PageHeader
+        title="Керування календарем"
+        actions={
+          <Link href="/calendar" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Шкільний календар
+          </Link>
+        }
+      />
+      <Tile index={0}>
+        <ClosureForm />
+      </Tile>
+      <Tile index={1}>
       <section aria-labelledby="closures-title" className="flex flex-col gap-3">
-        <h2 id="closures-title" className="text-lg font-semibold">
+        <h2 id="closures-title" className="text-sm font-semibold">
           Усі закриття
         </h2>
         {closures.length === 0 ? (
@@ -71,6 +78,7 @@ export default async function ManageCalendarPage() {
           <ClosureList rows={closures} />
         )}
       </section>
+      </Tile>
     </main>
   );
 }

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PageHeader } from "@/components/bento/page-header";
+import { Tile } from "@/components/bento/tile";
 import { LEAVE_TYPE_LABELS } from "@/lib/leave/messages";
 import { positionLabel } from "@/lib/leave/schedule";
 import { createSupabaseLeaveRepository } from "@/lib/leave/supabase-repository";
@@ -25,11 +27,12 @@ export default async function NewLeavePage() {
   const closures = await repository.loadClosures([today, `${Number(today.slice(0, 4)) + 2}-12-31`]);
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-10">
-      <Link href="/leave" className="text-sm text-muted-foreground underline">
+    <main className="flex w-full max-w-3xl flex-1 flex-col gap-4 py-2">
+      <Link href="/leave" className="w-fit px-1 text-sm text-muted-foreground underline">
         ← Мої заявки
       </Link>
-      <h1 className="text-2xl font-semibold">Нова заявка на відпустку</h1>
+      <PageHeader title="Нова заявка на відпустку" />
+      <Tile index={0}>
       <NewLeaveForm
         positions={positions.map((position) => ({
           id: position.id,
@@ -39,6 +42,7 @@ export default async function NewLeavePage() {
         leaveTypes={LEAVE_TYPES.map((type) => ({ value: type, label: LEAVE_TYPE_LABELS[type] }))}
         closures={closures}
       />
+      </Tile>
     </main>
   );
 }
