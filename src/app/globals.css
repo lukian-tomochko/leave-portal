@@ -288,7 +288,9 @@
 .tile-spot:hover::before {
   opacity: 0.9;
 }
-.tile-spot > * {
+/* Вміст плитки лежить над підсвічуванням (::before). Дітей, що вже мають absolute (орби hero, декор), не чіпаємо: правило поза
+   шарами Tailwind перебиває клас absolute, і кулі випадали з потоку та розтягували плитку. */
+.tile-spot > *:not(.absolute, .fixed, .sticky) {
   position: relative;
 }
 .tile-spot[data-hero="true"]::before {
