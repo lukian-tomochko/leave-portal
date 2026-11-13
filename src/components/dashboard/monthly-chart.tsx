@@ -1,23 +1,11 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useMotionAllowed } from "@/lib/use-motion-allowed";
 import { ChartTooltip } from "./chart-tooltip";
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 // Стовпчики за місяцями навчального року (recharts). Підсвічено поточний місяць; підказка показує число. Колір береться з
 // токенів через var(--…), текст осей — muted-foreground. Анімація вимикається при reduced-motion і в режимі «спокійний».
-const subscribe = (notify: () => void) => {
-  const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-  query.addEventListener("change", notify);
-  const observer = new MutationObserver(notify);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-motion"] });
-  return () => {
-    query.removeEventListener("change", notify);
-    observer.disconnect();
-  };
-};
-const animated = () => document.documentElement.dataset.motion !== "calm" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
 export function MonthlyChart({
   labels,
   values,
@@ -31,7 +19,7 @@ export function MonthlyChart({
   unit: string;
   height?: number;
 }) {
-  const animate = useSyncExternalStore(subscribe, animated, () => false);
+  const animate = useMotionAllowed();
   const data = labels.map((label, index) => ({ label, value: values[index] ?? 0 }));
   const summary = data.map((item) => `${item.label}: ${item.value}`).join(", ");
 
