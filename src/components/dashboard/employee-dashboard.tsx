@@ -20,13 +20,11 @@ const range = (from: string, to: string) => (from === to ? dayLabel(from) : `${d
 // Головна працівника (bento): наступна відсутність, баланси кільцями, статуси заявок, місяць, використані дні й найближче
 // закриття школи. Усе з даних, які працівник і так бачить на «Мої заявки», «Баланс» і «Календар».
 export function EmployeeDashboard({
-  name,
   today,
   records,
   balances,
   closures,
 }: {
-  name: string;
   today: string;
   records: LeaveRecordView[];
   balances: YearBalances;
@@ -54,8 +52,9 @@ export function EmployeeDashboard({
       <Tile hero index={0} className="col-span-8 flex min-h-52 flex-col justify-between">
         <span aria-hidden="true" className="pointer-events-none absolute -top-8 -right-8 size-48 animate-float rounded-full bg-primary opacity-90" />
         <span aria-hidden="true" className="pointer-events-none absolute top-28 right-36 size-20 animate-float rounded-full bg-leave-personal opacity-90" style={{ animationDuration: "9s", animationDelay: "-3s" }} />
+        <span aria-hidden="true" className="pointer-events-none absolute top-44 right-16 size-8 animate-float rounded-full bg-leave-family opacity-90" style={{ animationDuration: "5s" }} />
         <div className="relative max-w-[70%]">
-          <p className="text-xs text-background/70">Привіт, {name}. Найближча відсутність</p>
+          <p className="text-xs text-background/70">Найближча відпустка</p>
           {next ? (
             <>
               <p className="mt-2 font-display text-3xl leading-tight font-bold tracking-tight">

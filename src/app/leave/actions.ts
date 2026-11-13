@@ -16,6 +16,11 @@ import type { LeaveFormState } from "./state";
 // Нейтральна фраза для технічних помилок: PM тексту для них не давав, а деталей користувачу не показуємо.
 const TECHNICAL_ERROR = "Не вдалося обробити заявку. Спробуйте ще раз.";
 
+// Технічні відмови не мають тексту PM, тож у лог (без особистих даних) пишемо, де саме вони сталися: інакше причину не знайти.
+function logFailure(action: string, detail: unknown) {
+  console.error(action, detail instanceof Error ? `${detail.name}: ${detail.message}` : detail);
+}
+
 const errorState = (code: string, message: string): LeaveFormState => ({
   status: "error",
   message: code === "INVALID_INPUT" ? TECHNICAL_ERROR : message,
@@ -39,16 +44,21 @@ export async function previewLeaveRequest(_previous: LeaveFormState, formData: F
 
   const parsed = parseRequestForm(formData);
   if (!parsed.ok) {
+    logFailure("previewLeaveRequest: form not parsed", { mode: formData.get("mode"), type: formData.get("leaveType"), dates: formData.getAll("date").length, hasStart: Boolean(formData.get("startsAt")), hasEnd: Boolean(formData.get("endsAt")) });
     return { status: "error", message: TECHNICAL_ERROR };
   }
 
   let outcome;
   try {
     outcome = await previewRequest(repository, employeeId, parsed.input);
-  } catch {
+  } catch (error) {
+    logFailure("previewLeaveRequest: preview threw", error);
     return { status: "error", message: TECHNICAL_ERROR };
   }
   if (!outcome.ok) {
+    if (outcome.code === "INVALID_INPUT") {
+      logFailure("previewLeaveRequest: invalid input", { hours: parsed.input.hours, dates: parsed.input.dates.length, positions: parsed.input.positionIds.length });
+    }
     return errorState(outcome.code, outcome.message);
   }
 
@@ -104,7 +114,8 @@ export async function submitLeaveRequest(_previous: LeaveFormState, formData: Fo
   let outcome;
   try {
     outcome = await submitRequest(repository, employeeId, parsed.input);
-  } catch {
+  } catch (error) {
+    logFailure("submitLeaveRequest: submit threw", error);
     return { status: "error", message: TECHNICAL_ERROR };
   }
   if (!outcome.ok) {
