@@ -3,6 +3,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoginBackdrop } from "@/components/login-backdrop";
 import { SubmitButton } from "@/components/submit-button";
 import { login } from "./actions";
 
@@ -16,7 +17,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const message = typeof error === "string" ? ERRORS[error] : undefined;
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 px-6 py-16">
+    <>
+      <LoginBackdrop />
+    <main className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 px-6 py-16">
       <div className="flex animate-bloom flex-col items-center gap-3 text-center">
         <span className="grid size-16 animate-wobble place-items-center rounded-3xl bg-primary text-primary-foreground shadow-tile">
           <CalendarDaysIcon aria-hidden="true" className="size-8" />
@@ -54,5 +57,6 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         </CardContent>
       </Card>
     </main>
+    </>
   );
 }
