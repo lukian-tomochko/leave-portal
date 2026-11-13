@@ -38,7 +38,7 @@ async function loadTeamRecords(supabase: SupabaseClient<Database>, employeeIds: 
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await supabase
       .from("leave_records")
-      .select("id, employee_id, leave_date, status, leave_requests(leave_type)")
+      .select("id, employee_id, leave_date, status, leave_requests!leave_records_request_id_fkey(leave_type)")
       .in("employee_id", employeeIds)
       .gte("leave_date", `${year}-09-01`)
       .lte("leave_date", `${year + 1}-09-30`)
