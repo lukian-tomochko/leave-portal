@@ -3,7 +3,7 @@
 import { type FormEvent, useActionState, useState, useTransition } from "react";
 import type { Closure } from "@/lib/leave/closures";
 import { clickDay } from "@/lib/leave/date-selection";
-import { dateError as checkDate, positionsError } from "@/lib/leave/form-checks";
+import { dateError as checkDate, hoursStepError, positionsError } from "@/lib/leave/form-checks";
 import { previewLeaveRequest, submitLeaveRequest } from "../actions";
 import type { LeaveFormState } from "../state";
 
@@ -45,12 +45,21 @@ function summaryKey(preview: Extract<LeaveFormState, { status: "summary" }>) {
 }
 
 // Що не так із формою до запиту на сервер: жодної посади (AC-LEAVE-10) або жодної прийнятої дати (тоді показуємо першу помилку дати).
-function previewProblem(selected: string[], accepted: string[], dates: string[], dateError: (date: string) => string | null): string | null {
+function previewProblem(
+  selected: string[],
+  accepted: string[],
+  dates: string[],
+  dateError: (date: string) => string | null,
+  hours: { mode: Mode; startsAt: string; endsAt: string },
+): string | null {
   const noPositions = positionsError(selected);
-  if (noPositions || accepted.length > 0) {
+  if (noPositions) {
     return noPositions;
   }
-  return dates.map(dateError).find((message) => message !== null) ?? "Оберіть хоча б одну дату.";
+  if (accepted.length === 0) {
+    return dates.map(dateError).find((message) => message !== null) ?? "Оберіть хоча б одну дату.";
+  }
+  return hours.mode === "hours" ? hoursStepError(hours.startsAt, hours.endsAt) : null;
 }
 
 type PreviewValues = {
@@ -131,7 +140,7 @@ export function useLeaveForm({ positions, leaveTypes, closures }: { positions: P
 
   const onPreview = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const problem = previewProblem(selected, acceptedDates, dates, dateError);
+    const problem = previewProblem(selected, acceptedDates, dates, dateError, { mode, startsAt, endsAt });
     setLocalError(problem);
     if (problem === null) {
       const formData = toFormData({ leaveType, acceptedDates, selected, mode, startsAt, endsAt, isFamily, relationship, comment });
