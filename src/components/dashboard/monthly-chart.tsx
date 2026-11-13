@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { ChartTooltip } from "./chart-tooltip";
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 // Стовпчики за місяцями навчального року (recharts). Підсвічено поточний місяць; підказка показує число. Колір береться з
@@ -39,18 +40,7 @@ export function MonthlyChart({
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height }}>
         <BarChart data={data} margin={{ top: 18, right: 4, bottom: 0, left: 4 }}>
           <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} interval={0} />
-          <Tooltip
-            cursor={{ fill: "var(--muted)" }}
-            formatter={(value) => [`${value} ${unit}`, ""]}
-            separator=""
-            contentStyle={{
-              background: "var(--popover)",
-              border: "1px solid var(--border)",
-              borderRadius: 12,
-              color: "var(--popover-foreground)",
-              fontSize: 12,
-            }}
-          />
+          <Tooltip cursor={{ fill: "var(--muted)" }} content={<ChartTooltip unit={unit} />} />
           <Bar
             dataKey="value"
             radius={[8, 8, 3, 3]}

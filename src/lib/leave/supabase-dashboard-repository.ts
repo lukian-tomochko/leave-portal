@@ -29,6 +29,31 @@ export async function loadClosures(supabase: SupabaseClient<Database>, year: num
   }));
 }
 
+const PAGE = 1000;
+
+// Записи команди за навчальний рік і ще місяць після нього (теплова карта дивиться на три тижні вперед, тож наприкінці серпня
+// вікно заходить у вересень). Сторінками по 1000 зі стабільним сортуванням за id: PostgREST віддає не більше свого ліміту за запит.
+async function loadTeamRecords(supabase: SupabaseClient<Database>, employeeIds: string[], year: number) {
+  const rows = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from("leave_records")
+      .select("id, employee_id, leave_date, status, leave_requests(leave_type)")
+      .in("employee_id", employeeIds)
+      .gte("leave_date", `${year}-09-01`)
+      .lte("leave_date", `${year + 1}-09-30`)
+      .order("id")
+      .range(from, from + PAGE - 1);
+    if (error) {
+      throw new Error(`team(records) failed: ${error.code ?? "unknown"}`);
+    }
+    rows.push(...data);
+    if (data.length < PAGE) {
+      return rows;
+    }
+  }
+}
+
 export type TeamData = { team: TeamMember[]; records: TeamRecord[] };
 
 // Працівники, яких бачить менеджер чи адміністратор (без нього самого), і їхні записи за навчальний рік.
@@ -52,19 +77,10 @@ export async function loadTeam(supabase: SupabaseClient<Database>, actor: Actor,
 
   const [profiles, records] = await Promise.all([
     supabase.from("profiles").select("id, full_name, email").in("id", employeeIds),
-    supabase
-      .from("leave_records")
-      .select("employee_id, leave_date, status, leave_requests(leave_type)")
-      .in("employee_id", employeeIds)
-      .gte("leave_date", `${year}-09-01`)
-      .lte("leave_date", `${year + 1}-08-31`)
-      .range(0, 4999),
+    loadTeamRecords(supabase, employeeIds, year),
   ]);
   if (profiles.error) {
     throw new Error(`team(profiles) failed: ${profiles.error.code ?? "unknown"}`);
-  }
-  if (records.error) {
-    throw new Error(`team(records) failed: ${records.error.code ?? "unknown"}`);
   }
 
   const team: TeamMember[] = (profiles.data ?? [])
@@ -73,7 +89,7 @@ export async function loadTeam(supabase: SupabaseClient<Database>, actor: Actor,
 
   return {
     team,
-    records: (records.data ?? []).flatMap((row) => {
+    records: records.flatMap((row) => {
       // Запис без видимої заявки неможливий (FK + RLS); пропускаємо, а не вгадуємо тип відпустки.
       const request = Array.isArray(row.leave_requests) ? row.leave_requests[0] : row.leave_requests;
       return request

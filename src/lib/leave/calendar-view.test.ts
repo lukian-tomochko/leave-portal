@@ -69,14 +69,15 @@ describe("дані днів", () => {
         { date: "2026-12-01", leaveType: "sick", status: "approved" },
       ],
       team: [
-        { name: "A", date: "2026-11-18", status: "approved" },
-        { name: "A", date: "2026-11-18", status: "approved" },
-        { name: "B", date: "2026-11-18", status: "awaiting_decision" },
+        { employeeId: "a", name: "A", date: "2026-11-18", status: "approved" },
+        { employeeId: "a", name: "A", date: "2026-11-18", status: "approved" },
+        { employeeId: "b", name: "B", date: "2026-11-18", status: "awaiting_decision" },
+        { employeeId: "c", name: "B", date: "2026-11-18", status: "approved" },
       ],
     });
     expect(map["2026-11-20"]?.closure).toEqual({ name: "Early", early: true, text: "2026-11-20 з 12:00" });
     expect(map["2026-11-18"]?.mine).toEqual([{ leaveType: "personal", status: "awaiting_decision" }]);
-    expect(map["2026-11-18"]?.away?.map((entry) => entry.name)).toEqual(["A", "B"]);
+    expect(map["2026-11-18"]?.away?.map((entry) => entry.name)).toEqual(["A", "B", "B"]);
     expect(map["2026-12-01"]).toBeUndefined();
   });
 });

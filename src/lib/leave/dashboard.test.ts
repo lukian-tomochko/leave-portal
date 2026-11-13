@@ -45,6 +45,12 @@ describe("статуси й відсутності", () => {
     ]);
   });
 
+  it("чергування статусів між днями не розриває відсутності одного статусу", () => {
+    const groups = groupAbsences([rec("2026-11-18", "approved"), rec("2026-11-18", "awaiting_decision"), rec("2026-11-19", "approved"), rec("2026-11-19", "awaiting_decision")]);
+    expect(groups).toHaveLength(2);
+    expect(groups.map((group) => group.days)).toEqual([2, 2]);
+  });
+
   it("запис за двома посадами в той самий день рахує один раз", () => {
     expect(groupAbsences([rec("2026-11-18"), rec("2026-11-18")])).toHaveLength(1);
     expect(groupAbsences([rec("2026-11-18"), rec("2026-11-18")])[0]?.days).toBe(1);
@@ -125,6 +131,20 @@ describe("огляд команди", () => {
       today: "2026-11-13",
     });
     expect(risky.riskDay).toEqual({ date: "2026-11-18", percent: 50 });
+  });
+
+  it("працівник із двома посадами на одну дату — один день у місячній статистиці й розподілі", () => {
+    const overview = buildTeamOverview({
+      team,
+      records: [
+        { employeeId: "a", date: "2026-11-18", status: "approved", leaveType: "personal" },
+        { employeeId: "a", date: "2026-11-18", status: "approved", leaveType: "personal" },
+      ],
+      closures: [],
+      today: "2026-11-13",
+    });
+    expect(overview.monthly[2]).toBe(1);
+    expect(overview.mix.personal).toBe(1);
   });
 
   it("порожня команда не ділить на нуль", () => {

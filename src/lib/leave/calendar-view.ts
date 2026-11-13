@@ -103,7 +103,7 @@ export function monthCells(month: string): (DayCell | null)[] {
 export type DayInfo = {
   closure?: { name: string; early: boolean; text: string };
   mine?: { leaveType: LeaveType; status: RecordStatus }[];
-  away?: { name: string; status: RecordStatus }[];
+  away?: { employeeId: string; name: string; status: RecordStatus }[];
 };
 
 // Дані днів місяця для сітки: закриття, власні записи і (для менеджера) відсутні працівники.
@@ -111,7 +111,7 @@ export function buildDayMap(input: {
   month: string;
   closures: Closure[];
   mine: { date: string; leaveType: LeaveType; status: RecordStatus }[];
-  team?: { name: string; date: string; status: RecordStatus }[];
+  team?: { employeeId: string; name: string; date: string; status: RecordStatus }[];
 }): Record<string, DayInfo> {
   const map: Record<string, DayInfo> = {};
   for (const cell of monthCells(input.month)) {
@@ -132,8 +132,8 @@ export function buildDayMap(input: {
   }
   for (const record of input.team ?? []) {
     const day = at(record.date);
-    if (day && !day.away?.some((entry) => entry.name === record.name)) {
-      (day.away ??= []).push({ name: record.name, status: record.status });
+    if (day && !day.away?.some((entry) => entry.employeeId === record.employeeId)) {
+      (day.away ??= []).push({ employeeId: record.employeeId, name: record.name, status: record.status });
     }
   }
   return map;

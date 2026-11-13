@@ -340,6 +340,13 @@
   }
 }
 
+/* Режим «спокійний»: переходи між сторінками теж вимкнено (псевдоелементи View Transition не покриває універсальний селектор). */
+:root[data-motion="calm"]::view-transition-group(*),
+:root[data-motion="calm"]::view-transition-old(*),
+:root[data-motion="calm"]::view-transition-new(*) {
+  animation: none !important;
+}
+
 /* Режим «спокійний» (перемикач у сайдбарі): те саме, що reduced-motion, але за вибором користувача. */
 :root[data-motion="calm"] *,
 :root[data-motion="calm"] ::before,

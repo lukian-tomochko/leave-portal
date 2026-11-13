@@ -24,9 +24,14 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const role = profile?.role;
   let awaiting = 0;
   if (role === "manager" || role === "admin") {
-    const actor = await loadActor(supabase, claims.sub);
-    if (actor && isDecider(actor.role)) {
-      awaiting = await countAwaiting(supabase, actor);
+    // Лічильник — допоміжний бейдж: його збій не має ховати навігацію й сторінку, тож помилку гасимо тут.
+    try {
+      const actor = await loadActor(supabase, claims.sub);
+      if (actor && isDecider(actor.role)) {
+        awaiting = await countAwaiting(supabase, actor);
+      }
+    } catch {
+      awaiting = 0;
     }
   }
 

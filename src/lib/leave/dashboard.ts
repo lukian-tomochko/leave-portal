@@ -36,28 +36,35 @@ export function statusCounts(records: { status: RecordStatus }[]): Record<Record
 
 export type Absence = { leaveType: LeaveType; status: RecordStatus; from: string; to: string; days: number };
 
-// Чи є `next` продовженням відсутності `last`: наступний день або понеділок після п'ятниці, той самий тип і статус.
+// Чи є `next` продовженням відсутності `last`: наступний день або понеділок після п'ятниці.
 function continues(last: Absence, next: DatedRecord): boolean {
   const gap = daysBetween(last.to, next.date);
-  const nextWorkingDay = gap === 1 || (gap === 3 && weekdayOf(last.to) === 5);
-  return nextWorkingDay && last.leaveType === next.leaveType && last.status === next.status;
+  return gap === 1 || (gap === 3 && weekdayOf(last.to) === 5);
 }
 
 // Робочі дні одного типу й статусу, що йдуть підряд (п'ятниця й понеділок — підряд), зводимо в одну відсутність.
-// Записи за різними посадами в той самий день рахуємо один раз.
+// Кожну пару «тип + статус» групуємо окремо, щоб інші статуси між днями не розривали послідовність; записи за різними
+// посадами в той самий день рахуємо один раз. Результат упорядковано за початком.
 export function groupAbsences(records: DatedRecord[]): Absence[] {
-  const unique = new Map(records.map((record) => [`${record.date}|${record.leaveType}|${record.status}`, record]));
+  const byKind = new Map<string, Map<string, DatedRecord>>();
+  for (const record of records) {
+    const kind = `${record.leaveType}|${record.status}`;
+    byKind.set(kind, (byKind.get(kind) ?? new Map()).set(record.date, record));
+  }
   const groups: Absence[] = [];
-  for (const record of [...unique.values()].sort((a, b) => a.date.localeCompare(b.date))) {
-    const last = groups.at(-1);
-    if (last && continues(last, record)) {
-      last.to = record.date;
-      last.days += 1;
-    } else {
-      groups.push({ leaveType: record.leaveType, status: record.status, from: record.date, to: record.date, days: 1 });
+  for (const dates of byKind.values()) {
+    let last: Absence | undefined;
+    for (const record of [...dates.values()].sort((x, y) => x.date.localeCompare(y.date))) {
+      if (last && continues(last, record)) {
+        last.to = record.date;
+        last.days += 1;
+      } else {
+        last = { leaveType: record.leaveType, status: record.status, from: record.date, to: record.date, days: 1 };
+        groups.push(last);
+      }
     }
   }
-  return groups;
+  return groups.sort((x, y) => x.from.localeCompare(y.from));
 }
 
 // Найближча відсутність, що ще не закінчилась: схвалена або та, що чекає рішення.
@@ -134,9 +141,14 @@ function lowestCoverage(days: string[], closures: Closure[], percentOn: (date: s
   return worst;
 }
 
+// Перший запис для кожного ключа: працівник із двома посадами на одну дату — це один день відсутності, а не два.
+function uniqueBy(records: TeamRecord[], key: (record: TeamRecord) => string): TeamRecord[] {
+  return [...new Map(records.map((record) => [key(record), record])).values()];
+}
+
 function mixByType(records: TeamRecord[]): Record<LeaveType, number> {
   const mix = Object.fromEntries(LEAVE_TYPES.map((type) => [type, 0])) as Record<LeaveType, number>;
-  for (const record of records) {
+  for (const record of uniqueBy(records, (r) => `${r.employeeId}|${r.date}|${r.leaveType}`)) {
     mix[record.leaveType] += 1;
   }
   return mix;
@@ -173,7 +185,7 @@ export function buildTeamOverview(input: {
     })),
     riskDay: lowestCoverage(days, closures, (date) => coverageOn(date, ["approved", "awaiting"])),
     monthly: monthlyCounts(
-      counted.map((record) => record.date),
+      uniqueBy(counted, (r) => `${r.employeeId}|${r.date}`).map((record) => record.date),
       schoolYearOf(today),
     ),
     mix: mixByType(counted),

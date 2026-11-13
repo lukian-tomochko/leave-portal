@@ -35,9 +35,10 @@ export function BalanceView({ balances }: { balances: YearBalances }) {
           return (
             <Tile key={label} index={index} className="flex items-center gap-4">
               <Ring percent={percent} label={`${label}: залишок ${percent}%`} className={ring} />
-              <span className="font-display text-3xl font-bold tabular-nums" aria-hidden="true">
-                {percent}%
-              </span>
+              <div>
+<p className="text-sm text-muted-foreground">{label}</p>
+<p className="font-display text-3xl font-bold tabular-nums" aria-hidden="true">{percent}%</p>
+</div>
             </Tile>
           );
         })}

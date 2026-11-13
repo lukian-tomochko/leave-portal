@@ -26,7 +26,22 @@ export function CountUp({ value, decimals = 0, suffix = "" }: { value: number; d
         el.textContent = `${latest.toFixed(decimals)}${suffix}`;
       },
     });
-    return () => controls.stop();
+    // Якщо користувач увімкнув «спокійний» режим чи reduced-motion під час рахунку, зупиняємо його й показуємо кінцеве значення.
+    const finish = () => {
+      if (document.documentElement.dataset.motion === "calm" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        controls.stop();
+        el.textContent = `${value.toFixed(decimals)}${suffix}`;
+      }
+    };
+    const observer = new MutationObserver(finish);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-motion"] });
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    query.addEventListener("change", finish);
+    return () => {
+      controls.stop();
+      observer.disconnect();
+      query.removeEventListener("change", finish);
+    };
   }, [value, decimals, suffix]);
 
   return (

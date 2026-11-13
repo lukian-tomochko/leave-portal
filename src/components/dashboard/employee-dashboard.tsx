@@ -98,12 +98,12 @@ export function EmployeeDashboard({
             <Ring percent={(balance.remaining / Math.max(balance.granted + balance.carriedOver, 1)) * 100} label={`${title}: залишилось ${balance.remaining.toFixed(2)} дня`} className={ring} />
             <div>
               <p className="font-display text-3xl leading-none font-bold tracking-tight">
-                <CountUp value={balance.remaining} decimals={1} />
+                <CountUp value={balance.remaining} decimals={2} />
               </p>
               <p className="mt-1 text-xs text-muted-foreground">днів залишилось</p>
               <p className="text-xs text-muted-foreground">
-                використано {balance.used.toFixed(1)}
-                {balance.carriedOver > 0 ? `, перенесено ${balance.carriedOver.toFixed(1)}` : ""}
+                використано {balance.used.toFixed(2)}
+                {balance.carriedOver > 0 ? `, перенесено ${balance.carriedOver.toFixed(2)}` : ""}
               </p>
             </div>
           </div>

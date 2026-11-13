@@ -30,7 +30,7 @@ function waitText(awaitingTotal: number, oldestWaitDays: number | null): string 
   if (awaitingTotal === 0) {
     return "Черга порожня. Усе вирішено.";
   }
-  return oldestWaitDays ? `Найстаріша заявка починається через ${oldestWaitDays} дн.` : "Є заявки на найближчі дні.";
+  return oldestWaitDays ? `Найближча відпустка в черзі починається через ${oldestWaitDays} дн.` : "Є заявки на найближчі дні.";
 }
 
 function QueueHero({ awaitingTotal, oldestWaitDays, admin }: { awaitingTotal: number; oldestWaitDays: number | null; admin: boolean }) {

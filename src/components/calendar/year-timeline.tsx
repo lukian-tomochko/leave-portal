@@ -18,7 +18,7 @@ export function YearTimeline({
   today: string;
   closures: Closure[];
   mine: Absence[];
-  team?: { name: string; absences: Absence[] }[];
+  team?: { id: string; name: string; absences: Absence[] }[];
 }) {
   const start = `${year}-09-01`;
   const total = daysBetween(start, `${year + 1}-09-01`);
@@ -35,8 +35,9 @@ export function YearTimeline({
   });
   const nowPercent = today >= start && today < `${year + 1}-09-01` ? pct(today) : null;
 
-  const rows: { label: string; bars: React.ReactNode[] }[] = [
+  const rows: { id: string; label: string; bars: React.ReactNode[] }[] = [
     {
+      id: "school",
       label: "Школа",
       bars: closures.map((closure, index) => {
         const early = closure.closedFrom !== null;
@@ -53,8 +54,9 @@ export function YearTimeline({
         );
       }),
     },
-    { label: "Ви", bars: mine.map((absence, index) => absenceBar(absence, index + 2, span)) },
+    { id: "mine", label: "Ви", bars: mine.map((absence, index) => absenceBar(absence, index + 2, span)) },
     ...(team ?? []).map((member, row) => ({
+      id: `employee:${member.id}`,
       label: member.name,
       bars: member.absences.map((absence, index) => absenceBar(absence, row + index + 4, span, false)),
     })),
@@ -73,7 +75,7 @@ export function YearTimeline({
             ))}
           </div>
           {rows.map((row) => (
-            <div key={row.label} className="contents">
+            <div key={row.id} className="contents">
               <span className="flex items-center border-t border-border py-2 pr-2 text-xs text-muted-foreground">
                 <span className="truncate">{row.label}</span>
               </span>

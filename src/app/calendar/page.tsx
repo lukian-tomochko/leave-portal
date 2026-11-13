@@ -42,7 +42,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   const closures = closuresInSchoolYear(allClosures, year);
 
   const mine = records.map((record) => ({ date: record.date, status: record.status, leaveType: record.leaveType }));
-  const teamActive = teamData.records.filter((record) => PENDING_OR_APPROVED.includes(record.status));
+  const teamActive = teamData.records.filter((record) => PENDING_OR_APPROVED.includes(record.status) && record.date <= `${year + 1}-08-31`);
   const nameOf = new Map(teamData.team.map((member) => [member.id, member.name]));
   const dayMap = buildDayMap({
     month,
@@ -50,10 +50,11 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     mine,
     team: teamActive.flatMap((record) => {
       const name = nameOf.get(record.employeeId);
-      return name ? [{ name, date: record.date, status: record.status }] : [];
+      return name ? [{ employeeId: record.employeeId, name, date: record.date, status: record.status }] : [];
     }),
   });
   const teamRows = teamData.team.map((member) => ({
+    id: member.id,
     name: member.name,
     absences: groupAbsences(teamActive.filter((record) => record.employeeId === member.id)),
   }));
@@ -85,7 +86,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
                 year={year}
                 today={today}
                 closures={closures}
-                mine={groupAbsences(mine.filter((record) => record.status !== "cancelled"))}
+                mine={groupAbsences(mine.filter((record) => record.status !== "cancelled" && record.date >= `${year}-09-01` && record.date <= `${year + 1}-08-31`))}
                 team={deciding ? teamRows : undefined}
               />
             )}
