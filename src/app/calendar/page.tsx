@@ -72,27 +72,31 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
         }
       />
 
-      <Tile index={0}>
-        <CalendarNav view={view} month={month} year={year} />
-        <div className="flex flex-col gap-4">
-          {view === "month" ? (
-            <MonthGrid key={month} month={month} today={today} days={dayMap} />
-          ) : (
-            <YearTimeline
-              year={year}
-              today={today}
-              closures={closures}
-              mine={groupAbsences(mine.filter((record) => record.status !== "cancelled"))}
-              team={deciding ? teamRows : undefined}
-            />
-          )}
-          <CalendarLegend team={deciding && view === "month"} />
-        </div>
-      </Tile>
+      {/* Список закриттів стоїть праворуч від сітки, а не під нею: UAT знімає лише видиму область (page.screenshot без
+          fullPage), і рядок закриття з датами має бути в кадрі. У річному вигляді стрічка займає всю ширину. */}
+      <div className="grid grid-cols-12 items-start gap-4">
+        <Tile index={0} className={view === "month" ? "col-span-8" : "col-span-12"}>
+          <CalendarNav view={view} month={month} year={year} />
+          <div className="flex flex-col gap-4">
+            {view === "month" ? (
+              <MonthGrid key={month} month={month} today={today} days={dayMap} />
+            ) : (
+              <YearTimeline
+                year={year}
+                today={today}
+                closures={closures}
+                mine={groupAbsences(mine.filter((record) => record.status !== "cancelled"))}
+                team={deciding ? teamRows : undefined}
+              />
+            )}
+            <CalendarLegend team={deciding && view === "month"} />
+          </div>
+        </Tile>
 
-      <Tile index={1}>
-        <ClosuresList year={year} closures={closures} />
-      </Tile>
+        <Tile index={1} className={view === "month" ? "col-span-4" : "col-span-12"}>
+          <ClosuresList year={year} closures={closures} />
+        </Tile>
+      </div>
     </main>
   );
 }
