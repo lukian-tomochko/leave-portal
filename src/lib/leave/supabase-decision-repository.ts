@@ -178,24 +178,21 @@ export async function countAwaiting(supabase: SupabaseClient<Database>, actor: A
 }
 
 // Хто діє: id із claims, роль із profiles (ніколи з user_metadata) і посади, за які відповідає. Без профілю — null.
-export async function loadActor(supabase: SupabaseClient<Database>, userId: string): Promise<Actor | null> {
-  const { data: profile, error } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
-  if (error) {
-    throw new Error(`loadActor failed: ${error.code ?? "unknown"}`);
+export async function loadActor(supabase: SupabaseClient<Database>, userId: string, knownRole?: Actor["role"]): Promise<Actor | null> {
+  let role = knownRole;
+  if (!role) {
+    const { data: profile, error } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
+    if (error) {
+      throw new Error(`loadActor failed: ${error.code ?? "unknown"}`);
+    }
+    if (!profile) {
+      return null;
+    }
+    role = profile.role as Actor["role"];
   }
-  if (!profile) {
-    return null;
-  }
-  const { data: managed, error: managedError } = await supabase
-    .from("position_managers")
-    .select("position_id")
-    .eq("manager_id", userId);
+  const { data: managed, error: managedError } = await supabase.from("position_managers").select("position_id").eq("manager_id", userId);
   if (managedError) {
     throw new Error(`loadActor(positions) failed: ${managedError.code ?? "unknown"}`);
   }
-  return {
-    id: userId,
-    role: profile.role as Actor["role"],
-    managedPositionIds: managed.map((row) => row.position_id),
-  };
+  return { id: userId, role, managedPositionIds: managed.map((row) => row.position_id) };
 }

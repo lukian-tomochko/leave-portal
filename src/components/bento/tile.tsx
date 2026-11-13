@@ -25,7 +25,7 @@ export function Tile({
         hero ? "border-transparent bg-foreground text-background" : "border-border bg-card text-card-foreground",
         className,
       )}
-      style={{ animationDelay: `${Math.min(index, 10) * 90}ms`, ...style }}
+      style={{ animationDelay: `${Math.min(index, 8) * 60}ms`, ...style }}
       onPointerMove={(event) => {
         const el = event.currentTarget;
         const rect = el.getBoundingClientRect();

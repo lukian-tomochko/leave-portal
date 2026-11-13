@@ -12,7 +12,7 @@ export function SplitBar({ label, parts }: { label: string; parts: { key: string
           <i
             key={part.key}
             className={cn("block h-full origin-left animate-stack-grow", part.className)}
-            style={{ width: `${(part.value / total) * 100}%`, animationDelay: `${550 + index * 120}ms` }}
+            style={{ width: `${(part.value / total) * 100}%`, animationDelay: `${250 + index * 80}ms` }}
           />
         ))}
     </div>

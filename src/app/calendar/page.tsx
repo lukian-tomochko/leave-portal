@@ -11,7 +11,7 @@ import { closuresInSchoolYear } from "@/lib/leave/closures";
 import { groupAbsences } from "@/lib/leave/dashboard";
 import { isDecider } from "@/lib/leave/decision";
 import { loadClosures, loadTeam } from "@/lib/leave/supabase-dashboard-repository";
-import { loadActor } from "@/lib/leave/supabase-decision-repository";
+import { getActor } from "@/lib/supabase/session";
 import { createSupabaseLeaveRepository } from "@/lib/leave/supabase-repository";
 import { todayInKyiv } from "@/lib/leave/time";
 import { listMyRecords } from "@/lib/leave/use-cases";
@@ -31,7 +31,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   }
   const today = todayInKyiv();
   const { year, month, view } = resolveCalendar(await searchParams, today);
-  const actor = await loadActor(supabase, userId);
+  const actor = await getActor(userId);
   const deciding = actor !== null && isDecider(actor.role);
 
   const [allClosures, records, teamData] = await Promise.all([

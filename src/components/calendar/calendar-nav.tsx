@@ -101,7 +101,7 @@ export function ClosuresList({ year, closures }: { year: number; closures: Closu
             <li
               key={`${closure.startsOn}-${closure.name}`}
               className={`flex animate-rise flex-wrap items-center justify-between gap-2 p-3 ${listItemCard}`}
-              style={{ animationDelay: `${Math.min(index, 8) * 60 + 500}ms` }}
+              style={{ animationDelay: `${Math.min(index, 8) * 60 + 300}ms` }}
             >
               <span className="font-medium">{closure.name}</span>
               <span className="text-muted-foreground tabular-nums">{describeClosure(closure)}</span>
