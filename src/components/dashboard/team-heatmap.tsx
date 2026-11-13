@@ -1,4 +1,4 @@
-import { WEEKDAYS_UK, dayLabel } from "@/lib/leave/calendar-view";
+import { WEEKDAYS, dayLabel } from "@/lib/leave/calendar-view";
 import type { HeatCell, TeamOverview } from "@/lib/leave/dashboard";
 import { weekdayOf } from "@/lib/leave/time";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ const CELL_CLASS: Record<string, string> = {
 const CELL_TEXT: Record<string, string> = {
   approved: ": Approved",
   awaiting: ": Awaiting decision",
-  closed: ": школа закрита",
+  closed: ": School closed",
 };
 
 const cellClass = (cell: HeatCell) => (cell ? CELL_CLASS[cell] : "bg-muted");
@@ -32,7 +32,7 @@ export function TeamHeatmap({ overview, today }: { overview: TeamOverview; today
           <span key={date} className="text-center text-[10px] leading-tight text-muted-foreground">
             {Number(date.slice(8, 10))}
             <br />
-            {WEEKDAYS_UK[weekdayOf(date) - 1]}
+            {WEEKDAYS[weekdayOf(date) - 1]}
           </span>
         ))}
         {rows.map((row, rowIndex) => (
@@ -52,7 +52,7 @@ export function TeamHeatmap({ overview, today }: { overview: TeamOverview; today
           </div>
         ))}
       </div>
-      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label="Легенда">
+      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label="Legend">
         <li className="flex items-center gap-1.5">
           <span aria-hidden="true" className="size-2.5 rounded-sm bg-fill-approved" />
           Approved
@@ -63,9 +63,9 @@ export function TeamHeatmap({ overview, today }: { overview: TeamOverview; today
         </li>
         <li className="flex items-center gap-1.5">
           <span aria-hidden="true" className="hatch size-2.5 rounded-sm border border-border" />
-          Школа закрита
+          School closed
         </li>
-        {overview.rows.length > MAX_ROWS ? <li>Показано {MAX_ROWS} із {overview.rows.length} працівників</li> : null}
+        {overview.rows.length > MAX_ROWS ? <li>Showing {MAX_ROWS} of {overview.rows.length} employees</li> : null}
       </ul>
     </>
   );

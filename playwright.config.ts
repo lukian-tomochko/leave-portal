@@ -36,7 +36,7 @@ export default defineConfig({
   use: {
     ...devices["Desktop Chrome"],
     baseURL,
-    locale: "uk-UA",
+    locale: "en-US",
     timezoneId: "Europe/Kyiv",
     // Кадри «Тоді» знімаються без animations: "disabled": зі зменшеним рухом (globals.css) кінцевий стан одразу в кадрі.
     reducedMotion: "reduce",

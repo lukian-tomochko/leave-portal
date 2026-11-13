@@ -68,7 +68,7 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
   return (
     <main className="flex w-full max-w-3xl flex-1 flex-col gap-4 py-2">
       <Link href={isDecider(actor.role) ? "/decisions" : "/leave"} className="w-fit px-1 text-sm text-muted-foreground underline">
-        ← Назад
+        ← Back
       </Link>
       <PageHeader title="Leave record" />
 
@@ -103,7 +103,7 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
           Decision history
         </h2>
         {record.entries.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Рішень ще немає.</p>
+          <p className="text-sm text-muted-foreground">No decisions yet.</p>
         ) : (
           <ul className="flex flex-col gap-2 text-sm" data-testid="decision-history">
             {record.entries.map((entry, index) => (
@@ -125,10 +125,10 @@ export default async function RecordPage({ params }: PageProps<"/records/[id]">)
         <Tile index={2}>
         <section aria-labelledby="edit-title" className="flex flex-col gap-3">
           <h2 id="edit-title" className="text-lg font-semibold">
-            Ваш запис
+            Your record
           </h2>
           <p className="text-sm text-muted-foreground">
-            Можна змінити лише години. Щоб змінити дату, посаду чи тип відпустки, скасуйте запис і подайте нову заявку.
+            You can only change the hours. To change the date, position or leave type, cancel the record and submit a new request.
           </p>
           <EmployeeActions recordId={record.id} startsAt={record.startsAt} endsAt={record.endsAt} />
         </section>

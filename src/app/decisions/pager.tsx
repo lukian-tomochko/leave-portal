@@ -7,16 +7,16 @@ export function Pager({ basePath, page, hasNext }: { basePath: string; page: num
     return null;
   }
   return (
-    <nav aria-label="Сторінки списку" className="flex items-center gap-3 px-1 text-sm">
+    <nav aria-label="List pages" className="flex items-center gap-3 px-1 text-sm">
       {page > 1 ? (
         <Link href={`${basePath}?page=${page - 1}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-          Назад
+          Previous
         </Link>
       ) : null}
-      <span className="text-muted-foreground">Сторінка {page}</span>
+      <span className="text-muted-foreground">Page {page}</span>
       {hasNext ? (
         <Link href={`${basePath}?page=${page + 1}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-          Далі
+          Next
         </Link>
       ) : null}
     </nav>

@@ -1,5 +1,5 @@
 import { STATUS_FILL } from "@/components/status-badge";
-import { MONTHS_UK, dayLabel } from "@/lib/leave/calendar-view";
+import { MONTHS, dayLabel } from "@/lib/leave/calendar-view";
 import type { Closure } from "@/lib/leave/closures";
 import { type Absence, daysBetween } from "@/lib/leave/dashboard";
 import { LEAVE_TYPE_LABELS, STATUS_LABELS } from "@/lib/leave/messages";
@@ -31,14 +31,14 @@ export function YearTimeline({
   const monthStarts = Array.from({ length: 12 }, (_, index) => {
     const monthNumber = ((index + 8) % 12) + 1;
     const monthYear = monthNumber >= 9 ? year : year + 1;
-    return { label: MONTHS_UK[monthNumber - 1].slice(0, 3), date: `${monthYear}-${String(monthNumber).padStart(2, "0")}-01` };
+    return { label: MONTHS[monthNumber - 1].slice(0, 3), date: `${monthYear}-${String(monthNumber).padStart(2, "0")}-01` };
   });
   const nowPercent = today >= start && today < `${year + 1}-09-01` ? pct(today) : null;
 
   const rows: { id: string; label: string; bars: React.ReactNode[] }[] = [
     {
       id: "school",
-      label: "Школа",
+      label: "School",
       bars: closures.map((closure, index) => {
         const early = closure.closedFrom !== null;
         return (
@@ -54,7 +54,7 @@ export function YearTimeline({
         );
       }),
     },
-    { id: "mine", label: "Ви", bars: mine.map((absence, index) => absenceBar(absence, index + 2, span)) },
+    { id: "mine", label: "You", bars: mine.map((absence, index) => absenceBar(absence, index + 2, span)) },
     ...(team ?? []).map((member, row) => ({
       id: `employee:${member.id}`,
       label: member.name,
@@ -63,7 +63,7 @@ export function YearTimeline({
   ];
 
   return (
-    <div role="group" aria-label="Стрічка навчального року" className="overflow-x-auto pb-1">
+    <div role="group" aria-label="School year timeline" className="overflow-x-auto pb-1">
       <div className="relative min-w-[720px] pt-5">
         <div className="grid grid-cols-[110px_minmax(0,1fr)]">
           <span />
@@ -90,7 +90,7 @@ export function YearTimeline({
           ))}
           {nowPercent !== null ? (
             <span className="absolute top-0 bottom-0 w-0.5 bg-primary" style={{ left: `${nowPercent}%` }}>
-              <span className="absolute -top-5 -left-3.5 text-[10px] font-bold text-link">Сьогодні</span>
+              <span className="absolute -top-5 -left-3.5 text-[10px] font-bold text-link">Today</span>
             </span>
           ) : null}
         </div>

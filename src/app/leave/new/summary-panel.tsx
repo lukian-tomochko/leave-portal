@@ -24,28 +24,28 @@ export function DraftPanel({ form, remaining }: { form: LeaveFormModel; remainin
   const typeLabel = form.leaveTypes.find((type) => type.value === leaveType)?.label ?? "";
   const left = remainingFor(leaveType, remaining);
   const sorted = [...form.acceptedDates].sort();
-  const hours = mode === "hours" && startsAt && endsAt ? `${startsAt}–${endsAt}` : "Цілий день";
+  const hours = mode === "hours" && startsAt && endsAt ? `${startsAt}–${endsAt}` : "Whole day";
   return (
     <div className="flex flex-col gap-3 text-sm">
-      <h2 className="text-sm font-semibold">Чернетка</h2>
+      <h2 className="text-sm font-semibold">Draft</h2>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-        <dt className="text-muted-foreground">Тип</dt>
+        <dt className="text-muted-foreground">Type</dt>
         <dd className="text-right font-medium">{typeLabel}</dd>
-        <dt className="text-muted-foreground">Днів</dt>
+        <dt className="text-muted-foreground">Days</dt>
         <dd className="text-right font-medium tabular-nums">{sorted.length}</dd>
-        <dt className="text-muted-foreground">Час</dt>
+        <dt className="text-muted-foreground">Time</dt>
         <dd className="text-right font-medium tabular-nums">{hours}</dd>
-        <dt className="text-muted-foreground">Посад</dt>
+        <dt className="text-muted-foreground">Positions</dt>
         <dd className="text-right font-medium tabular-nums">{selected.length}</dd>
         {left === null ? null : (
           <>
-            <dt className="text-muted-foreground">Залишок типу</dt>
-            <dd className="text-right font-medium tabular-nums">{left.toFixed(2)} дн.</dd>
+            <dt className="text-muted-foreground">Balance left</dt>
+            <dd className="text-right font-medium tabular-nums">{left.toFixed(2)} days</dd>
           </>
         )}
       </dl>
       {sorted.length > 0 ? (
-        <ul className="flex flex-wrap gap-1.5" aria-label="Вибрані дні">
+        <ul className="flex flex-wrap gap-1.5" aria-label="Selected days">
           {sorted.map((date) => (
             <li key={date} className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground">
               {dayLabel(date)}
@@ -53,7 +53,7 @@ export function DraftPanel({ form, remaining }: { form: LeaveFormModel; remainin
           ))}
         </ul>
       ) : (
-        <p className="text-xs text-muted-foreground">Оберіть дні в календарі.</p>
+        <p className="text-xs text-muted-foreground">Pick days in the calendar.</p>
       )}
     </div>
   );
@@ -91,10 +91,10 @@ function ConfirmForm({ form }: { form: LeaveFormModel }) {
       <div className="flex items-center gap-4">
         <Button type="submit" disabled={form.submitPending} aria-busy={form.submitPending}>
           {form.submitPending ? <Spinner /> : null}
-          Підтвердити
+          Submit request
         </Button>
         <Link href="/leave/new" className={buttonVariants({ variant: "link" })}>
-          Скасувати
+          Cancel
         </Link>
       </div>
     </form>
@@ -110,10 +110,10 @@ export function SummaryPanel({ form }: { form: LeaveFormModel }) {
   return (
     <section aria-labelledby="summary-title" className="flex animate-rise flex-col gap-3">
       <h2 id="summary-title" className="text-sm font-semibold">
-        Підсумок
+        Summary
       </h2>
-      <p className="text-sm text-muted-foreground">Тип: {summary.leaveTypeLabel}</p>
-      {summary.comment ? <p className="text-sm">Коментар: {summary.comment}</p> : null}
+      <p className="text-sm text-muted-foreground">Type: {summary.leaveTypeLabel}</p>
+      {summary.comment ? <p className="text-sm">Comment: {summary.comment}</p> : null}
       {summary.warning ? (
         <Alert variant="warning" role="status" data-testid="balance-warning">
           <AlertDescription>{summary.warning}</AlertDescription>

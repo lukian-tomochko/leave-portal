@@ -150,7 +150,7 @@ test.describe("адміністратор", () => {
       await removeClosureByName(page, "Winter break");
       await actAs(page, employeeSession);
       await fillRequest(page, { date: "2026-12-29", type: "personal" });
-      await page.getByRole("button", { name: "Показати підсумок" }).click();
+      await page.getByRole("button", { name: "Show summary" }).click();
     });
     await thenStep(
       page,
@@ -174,11 +174,11 @@ test.describe("адміністратор", () => {
       async () => {
         await actAs(page, employeeSession);
         await fillRequest(page, { date: "2026-12-29", type: "personal" });
-        await page.getByRole("button", { name: "Показати підсумок" }).click();
+        await page.getByRole("button", { name: "Show summary" }).click();
         await expect(page.getByTestId("summary-lines")).toContainText("2026-12-29, 08:30–15:30");
         await expect(page.getByText("The school is closed on this day")).toHaveCount(0);
         // Кадр знімає лише видиму частину: підсумок має бути в кадрі, а не під заголовком.
-        await page.getByRole("button", { name: "Підтвердити" }).scrollIntoViewIfNeeded();
+        await page.getByRole("button", { name: "Submit request" }).scrollIntoViewIfNeeded();
       },
     );
   });
@@ -201,9 +201,9 @@ test.describe("адміністратор", () => {
       async () => {
         await expect(page.getByRole("alert").filter({ hasText: "The end date cannot be earlier than the start date" })).toBeVisible();
         // Введене лишається у формі (DESIGN.md): адміністратор виправляє дату, а не вводить усе заново.
-        await expect(page.getByLabel("Назва")).toHaveValue("Winter break");
-        await expect(page.getByLabel("Початкова дата")).toHaveValue("2027-01-08");
-        await expect(page.getByLabel("Кінцева дата")).toHaveValue("2026-12-28");
+        await expect(page.getByLabel("Name")).toHaveValue("Winter break");
+        await expect(page.getByLabel("Start date")).toHaveValue("2027-01-08");
+        await expect(page.getByLabel("End date")).toHaveValue("2026-12-28");
       },
     );
     await thenStep(
@@ -233,8 +233,8 @@ test.describe("адміністратор", () => {
       },
       async () => {
         await expect(page.getByRole("alert").filter({ hasText: "2026-12-30 is already closed: Winter break" })).toBeVisible();
-        await expect(page.getByLabel("Назва")).toHaveValue("Staff day");
-        await expect(page.getByLabel("Початкова дата")).toHaveValue("2026-12-30");
+        await expect(page.getByLabel("Name")).toHaveValue("Staff day");
+        await expect(page.getByLabel("Start date")).toHaveValue("2026-12-30");
         await expect(page.getByTestId("manage-closures").getByText("Staff day")).toHaveCount(0);
       },
     );
@@ -250,17 +250,17 @@ test.describe("працівник і календар", () => {
     await when("teacher1@example.test відкриває шкільний календар", async () => {
       await actAs(page, teacher1);
       await page.goto("/");
-      await page.getByRole("link", { name: "Календар" }).click();
+      await page.getByRole("link", { name: "Calendar" }).click();
       await page.waitForURL((url) => url.pathname === "/calendar");
     });
     await thenStep(
       page,
       {
         clause: 'teacher1@example.test sees "Winter break" with the dates 2026-12-28 – 2027-01-08',
-        visible: ["заголовок «Шкільний календар»", "навчальний рік 2026–2027", "рядок «Winter break» з датами 2026-12-28 – 2027-01-08"],
+        visible: ["заголовок «School calendar»", "навчальний рік 2026–2027", "рядок «Winter break» з датами 2026-12-28 – 2027-01-08"],
       },
       async () => {
-        await expect(page.getByRole("heading", { name: "Шкільний календар" })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "School calendar" })).toBeVisible();
         await expect(closureRow(page, "Winter break")).toContainText("2026-12-28 – 2027-01-08");
       },
     );
@@ -298,9 +298,9 @@ test.describe("працівник і календар", () => {
     });
     await when('працівник просить "Personal leave" на цілий день 2026-11-20 і підтверджує підсумок', async () => {
       await fillRequest(page, { date: "2026-11-20", type: "personal" });
-      await page.getByRole("button", { name: "Показати підсумок" }).click();
+      await page.getByRole("button", { name: "Show summary" }).click();
       await expect(page.getByTestId("summary-lines")).toContainText("2026-11-20, 08:30–12:00");
-      await page.getByRole("button", { name: "Підтвердити" }).click();
+      await page.getByRole("button", { name: "Submit request" }).click();
       await page.waitForURL((url) => url.pathname === "/leave");
     });
     await thenStep(
@@ -326,7 +326,7 @@ test.describe("працівник і календар", () => {
     });
     await when("працівник вводить години 13:00–14:00 на 2026-11-20", async () => {
       await fillRequest(page, { date: "2026-11-20", type: "personal", hours: { from: "13:00", to: "14:00" } });
-      await page.getByRole("button", { name: "Показати підсумок" }).click();
+      await page.getByRole("button", { name: "Show summary" }).click();
     });
     await thenStep(
       page,
@@ -340,10 +340,10 @@ test.describe("працівник і календар", () => {
     );
     await thenStep(
       page,
-      { clause: "no request is created", visible: ["«My requests»", "повідомлення «Заявок ще немає.»"] },
+      { clause: "no request is created", visible: ["«My requests»", "повідомлення «No requests yet.»"] },
       async () => {
         await page.goto("/leave");
-        await expect(page.getByText("Заявок ще немає.")).toBeVisible();
+        await expect(page.getByText("No requests yet.")).toBeVisible();
       },
     );
   });
@@ -361,12 +361,12 @@ test.describe("працівник і календар", () => {
       {
         clause: 'teacher1@example.test sees the message "Only an administrator can change the school calendar"',
         visible: ["сторінка «Керування календарем»", "повідомлення «Only an administrator can change the school calendar»", "форми додавання закриття немає"],
-        hidden: ["у розмітці немає форми й кнопки «Додати закриття»"],
+        hidden: ["у розмітці немає форми й кнопки «Add closure»"],
       },
       async () => {
         await expect(page.getByText("Only an administrator can change the school calendar")).toBeVisible();
         await expect(page.getByTestId("closure-form")).toHaveCount(0);
-        await expect(page.getByRole("button", { name: "Додати закриття" })).toHaveCount(0);
+        await expect(page.getByRole("button", { name: "Add closure" })).toHaveCount(0);
       },
     );
     await thenStep(
@@ -422,9 +422,9 @@ test.describe("працівник і календар", () => {
       async () => {
         await actAs(page, employeeSession);
         await fillRequest(page, { date: "2026-11-27", type: "personal" });
-        await page.getByRole("button", { name: "Показати підсумок" }).click();
+        await page.getByRole("button", { name: "Show summary" }).click();
         await expect(page.getByTestId("summary-lines")).toContainText("2026-11-27, 08:30–15:30");
-        await page.getByRole("button", { name: "Підтвердити" }).scrollIntoViewIfNeeded();
+        await page.getByRole("button", { name: "Submit request" }).scrollIntoViewIfNeeded();
       },
     );
   });
@@ -441,7 +441,7 @@ test.describe("працівник і календар", () => {
       page,
       {
         clause: 'the employee sees the message "No closed days in school year 2026–2027"',
-        visible: ["заголовок «Шкільний календар»", "навчальний рік 2026–2027", `повідомлення «${EMPTY_2026}»`],
+        visible: ["заголовок «School calendar»", "навчальний рік 2026–2027", `повідомлення «${EMPTY_2026}»`],
       },
       async () => {
         await expect(page.getByText(EMPTY_2026)).toBeVisible();
@@ -457,7 +457,7 @@ test.describe("працівник і календар", () => {
     });
     await when('працівник просить "Personal leave" на 2026-11-03 з 09:00 до 12:30', async () => {
       await fillRequest(page, { date: "2026-11-03", type: "personal", hours: { from: "09:00", to: "12:30" } });
-      await page.getByRole("button", { name: "Показати підсумок" }).click();
+      await page.getByRole("button", { name: "Show summary" }).click();
     });
     await thenStep(
       page,
@@ -467,11 +467,11 @@ test.describe("працівник і календар", () => {
       },
       async () => {
         await expect(page.getByTestId("summary-lines")).toContainText("2026-11-03, 09:00–12:30 (3 h");
-        await page.getByRole("button", { name: "Підтвердити" }).scrollIntoViewIfNeeded();
+        await page.getByRole("button", { name: "Submit request" }).scrollIntoViewIfNeeded();
       },
     );
     await when("працівник підтверджує підсумок", async () => {
-      await page.getByRole("button", { name: "Підтвердити" }).click();
+      await page.getByRole("button", { name: "Submit request" }).click();
       await page.waitForURL((url) => url.pathname === "/leave");
     });
     await thenStep(

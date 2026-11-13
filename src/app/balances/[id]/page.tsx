@@ -36,9 +36,9 @@ export default async function EmployeeBalancePage({ params }: PageProps<"/balanc
   return (
     <main className="flex w-full max-w-3xl flex-1 flex-col gap-4 py-2">
       <Link href="/balances" className="w-fit px-1 text-sm text-muted-foreground underline">
-        ← Баланс
+        ← Balances
       </Link>
-      <PageHeader title="Баланс працівника" />
+      <PageHeader title="Employee balance" />
       {balances ? (
         <BalanceView balances={balances} />
       ) : (

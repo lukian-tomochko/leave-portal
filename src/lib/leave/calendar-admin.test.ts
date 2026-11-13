@@ -80,20 +80,20 @@ describe("відповіді бази на додавання й видален�
 
   it("успіх не дає повідомлення, а невідомий код — технічну помилку", () => {
     expect(addClosureMessage({ ok: true, id: "1" })).toBeNull();
-    expect(addClosureMessage({ ok: false, code: "something_new" })).toMatch(/Не вдалося/);
-    expect(addClosureMessage(null)).toMatch(/Не вдалося/);
+    expect(addClosureMessage({ ok: false, code: "something_new" })).toMatch(/Couldn't save/);
+    expect(addClosureMessage(null)).toMatch(/Couldn't save/);
     expect(removeClosureMessage({ ok: true })).toBeNull();
-    expect(removeClosureMessage({ ok: false, code: "not_found" })).toMatch(/вже видалено/);
+    expect(removeClosureMessage({ ok: false, code: "not_found" })).toMatch(/already removed/);
   });
 
   it("відмови бази за назвою й часом, а також порожні списки перетинів чи записів дають зрозумілі повідомлення", () => {
-    expect(addClosureMessage({ ok: false, code: "name_empty" })).toBe("Вкажіть назву закриття");
-    expect(addClosureMessage({ ok: false, code: "name_too_long" })).toMatch(/100 символів/);
-    expect(addClosureMessage({ ok: false, code: "invalid_time" })).toMatch(/кроком 5 хвилин/);
-    expect(addClosureMessage({ ok: false, code: "overlap", overlaps: [] })).toMatch(/Не вдалося/);
-    expect(addClosureMessage({ ok: false, code: "blocked" })).toMatch(/Не вдалося/);
-    expect(removeClosureMessage({ ok: false, code: "other" })).toMatch(/Не вдалося/);
-    expect(removeClosureMessage("x")).toMatch(/Не вдалося/);
+    expect(addClosureMessage({ ok: false, code: "name_empty" })).toBe("Enter a closure name");
+    expect(addClosureMessage({ ok: false, code: "name_too_long" })).toMatch(/100 characters/);
+    expect(addClosureMessage({ ok: false, code: "invalid_time" })).toMatch(/5-minute steps/);
+    expect(addClosureMessage({ ok: false, code: "overlap", overlaps: [] })).toMatch(/Couldn't save/);
+    expect(addClosureMessage({ ok: false, code: "blocked" })).toMatch(/Couldn't save/);
+    expect(removeClosureMessage({ ok: false, code: "other" })).toMatch(/Couldn't save/);
+    expect(removeClosureMessage("x")).toMatch(/Couldn't save/);
   });
 
   it("час закриття 25:99 у правильній формі, але неіснуючий, відхиляється", () => {

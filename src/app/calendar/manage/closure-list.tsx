@@ -42,7 +42,7 @@ export function ClosureList({ rows }: { rows: ClosureRow[] }) {
             <span className="font-medium">{row.name}</span>
             <span className="tabular-nums text-muted-foreground">{row.dates}</span>
             <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => setTarget(row)}>
-              Видалити
+              Delete
             </Button>
           </li>
         ))}
@@ -51,9 +51,9 @@ export function ClosureList({ rows }: { rows: ClosureRow[] }) {
       <Dialog open={target !== null} onOpenChange={(open) => (open ? undefined : setTarget(null))}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Видалити закриття «{target?.name}»?</DialogTitle>
+            <DialogTitle>Delete closure “{target?.name}”?</DialogTitle>
             <DialogDescription>
-              Дні знову стануть робочими за розкладами. Записи відпустки не змінюються. Щоб змінити закриття, додайте нове.
+              The days become working days again in schedules. Leave records are not changed. To change a closure, add a new one.
             </DialogDescription>
           </DialogHeader>
           <form
@@ -66,9 +66,9 @@ export function ClosureList({ rows }: { rows: ClosureRow[] }) {
             <input type="hidden" name="id" value={target?.id ?? ""} />
           </form>
           <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>Скасувати</DialogClose>
+            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
             <Button type="submit" form="remove-closure-form" variant="destructive" disabled={pending}>
-              Видалити
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

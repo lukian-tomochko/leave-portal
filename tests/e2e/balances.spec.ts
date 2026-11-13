@@ -31,7 +31,7 @@ test.describe("власний баланс", () => {
           hidden: ["заголовок «Навчальний рік 2026–2027» (точний тире на кадрі не доводиться)"],
         },
         async () => {
-          await expect(page.getByRole("heading", { name: "Навчальний рік 2026–2027" })).toBeVisible();
+          await expect(page.getByRole("heading", { name: "School year 2026–2027" })).toBeVisible();
           // Колонки таблиці: Leave type, Granted, Carried over, Used, Remaining.
           await expect(page.getByTestId("balance-sick").getByRole("cell")).toHaveText(["Sick leave", "18.00", "0.00", "0.00", "18.00"]);
           await expect(page.getByTestId("balance-personal").getByRole("cell")).toHaveText([
@@ -59,7 +59,7 @@ test.describe("баланс іншого працівника", () => {
       let otherEmployeePath = "";
 
       await given("працівник teacher1@example.test і інший працівник з власним балансом", async () => {
-        // Адресу сторінки балансу іншого працівника бере менеджер, який керує його посадою (посилання «Відкрити» у списку
+        // Адресу сторінки балансу іншого працівника бере менеджер, який керує його посадою (посилання «Open» у списку
         // «Баланси працівників»). Окремий контекст без запису відео: це підготовка, а не крок AC.
         const manager = await browser.newContext({
           baseURL: test.info().project.use.baseURL,
@@ -88,8 +88,8 @@ test.describe("баланс іншого працівника", () => {
           hidden: ["у розмітці немає рядків «Sick leave» і «Personal leave», таблиці балансів теж"],
         },
         async () => {
-          await expect(page.getByRole("heading", { name: "Баланс працівника" })).toBeVisible();
-          await expect(page.getByRole("main").getByText("Недостатньо прав або запис змінився. Оновіть сторінку.")).toBeVisible();
+          await expect(page.getByRole("heading", { name: "Employee balance" })).toBeVisible();
+          await expect(page.getByRole("main").getByText("You don't have permission, or the record has changed. Refresh the page.")).toBeVisible();
           await expect(page.getByTestId("balances")).toHaveCount(0);
           await expect(page.getByText("Sick leave")).toHaveCount(0);
           await expect(page.getByText("Personal leave")).toHaveCount(0);

@@ -54,7 +54,7 @@ export function EmployeeDashboard({
         <span aria-hidden="true" className="pointer-events-none absolute top-28 right-36 size-20 animate-float rounded-full bg-leave-personal opacity-90" style={{ animationDuration: "9s", animationDelay: "-3s" }} />
         <span aria-hidden="true" className="pointer-events-none absolute top-44 right-16 size-8 animate-float rounded-full bg-leave-family opacity-90" style={{ animationDuration: "5s" }} />
         <div className="relative max-w-[70%]">
-          <p className="text-xs text-background/70">Найближча відпустка</p>
+          <p className="text-xs text-background/70">Next leave</p>
           {next ? (
             <>
               <p className="mt-2 font-display text-3xl leading-tight font-bold tracking-tight">
@@ -62,20 +62,20 @@ export function EmployeeDashboard({
               </p>
               <p className="mt-3 flex flex-wrap items-center gap-2 text-sm text-background/70">
                 <StatusBadge status={next.status} />
-                {next.daysUntil === 0 ? "починається сьогодні" : `починається через ${next.daysUntil} дн.`}
+                {next.daysUntil === 0 ? "starts today" : `starts in ${next.daysUntil} ${next.daysUntil === 1 ? "day" : "days"}`}
               </p>
             </>
           ) : (
-            <p className="mt-2 font-display text-3xl leading-tight font-bold tracking-tight">Відсутностей поки не заплановано</p>
+            <p className="mt-2 font-display text-3xl leading-tight font-bold tracking-tight">No absences planned yet</p>
           )}
         </div>
         <div className="relative flex flex-wrap gap-3">
           <Link href="/leave/new" className={buttonVariants({ size: "lg" })}>
             <CalendarPlusIcon aria-hidden="true" />
-            Подати заявку
+            New request
           </Link>
           <Link href="/leave" className={buttonVariants({ variant: "outline", size: "lg", className: "border-background/30 bg-transparent text-background hover:bg-background/10 hover:text-background" })}>
-            Усі мої заявки
+            All my requests
           </Link>
         </div>
       </Tile>
@@ -86,38 +86,38 @@ export function EmployeeDashboard({
           <CountUp value={counts.awaiting_decision} />
         </p>
         <p className="mt-3 text-sm text-muted-foreground">
-          {counts.awaiting_decision > 0 ? "Менеджер ще не вирішив. Поки так, заявку можна змінити чи скасувати." : "Усі ваші заявки опрацьовано."}
+          {counts.awaiting_decision > 0 ? "Your manager has not decided yet. Until then, you can edit or cancel the request." : "All your requests have been processed."}
         </p>
       </Tile>
 
       {limited.map(({ key, title, balance, ring }, index) => (
         <Tile key={key} index={2 + index} className="col-span-4">
-          <TileHeader title={title} aside={`із ${(balance.granted + balance.carriedOver).toFixed(0)} днів`} />
+          <TileHeader title={title} aside={`of ${(balance.granted + balance.carriedOver).toFixed(0)} days`} />
           <div className="flex items-center gap-4">
-            <Ring percent={(balance.remaining / Math.max(balance.granted + balance.carriedOver, 1)) * 100} label={`${title}: залишилось ${balance.remaining.toFixed(2)} дня`} className={ring} />
+            <Ring percent={(balance.remaining / Math.max(balance.granted + balance.carriedOver, 1)) * 100} label={`${title}: ${balance.remaining.toFixed(2)} days left`} className={ring} />
             <div>
               <p className="font-display text-3xl leading-none font-bold tracking-tight">
                 <CountUp value={balance.remaining} decimals={2} />
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">днів залишилось</p>
+              <p className="mt-1 text-xs text-muted-foreground">days left</p>
               <p className="text-xs text-muted-foreground">
-                використано {balance.used.toFixed(2)}
-                {balance.carriedOver > 0 ? `, перенесено ${balance.carriedOver.toFixed(2)}` : ""}
+                used {balance.used.toFixed(2)}
+                {balance.carriedOver > 0 ? `, carried over ${balance.carriedOver.toFixed(2)}` : ""}
               </p>
             </div>
           </div>
           {balance.remaining < 3 ? (
-            <p className="mt-3 rounded-xl bg-warning px-3 py-2 text-xs text-warning-foreground">Лишилось мало. Понад ліміт дні рахуються як Unpaid leave.</p>
+            <p className="mt-3 rounded-xl bg-warning px-3 py-2 text-xs text-warning-foreground">Running low. Days beyond the limit are counted as Unpaid leave.</p>
           ) : null}
         </Tile>
       ))}
 
       <Tile index={4} className="col-span-4">
-        <TileHeader title="Заявки за статусами" aside={`${totalRecords} записів`} />
+        <TileHeader title="Requests by status" aside={`${totalRecords} ${totalRecords === 1 ? "record" : "records"}`} />
         {totalRecords > 0 ? (
-          <SplitBar label="Частка записів за статусами" parts={RECORD_STATUSES.map((status) => ({ key: status, value: counts[status], className: STATUS_FILL[status] }))} />
+          <SplitBar label="Share of records by status" parts={RECORD_STATUSES.map((status) => ({ key: status, value: counts[status], className: STATUS_FILL[status] }))} />
         ) : (
-          <p className="my-3 text-sm text-muted-foreground">Заявок ще немає.</p>
+          <p className="my-3 text-sm text-muted-foreground">No requests yet.</p>
         )}
         <ul className="flex flex-col gap-1.5 text-sm">
           {RECORD_STATUSES.map((status) => (
@@ -128,47 +128,47 @@ export function EmployeeDashboard({
 
       <Tile index={5} className="col-span-5">
         <TileHeader
-          title={`Цей місяць`}
+          title="This month"
           aside={
-            <Link href="/calendar" aria-label="Усі дні" className="text-link underline-offset-4 hover:underline">
-              Усі дні
+            <Link href="/calendar" aria-label="All days" className="text-link underline-offset-4 hover:underline">
+              All days
             </Link>
           }
         />
         <MonthGrid month={month} today={today} days={dayMap} interactive={false} compact />
-        {todayClosure ? <p className="mt-3 text-xs text-muted-foreground">Сьогодні: {todayClosure.name}</p> : null}
+        {todayClosure ? <p className="mt-3 text-xs text-muted-foreground">Today: {todayClosure.name}</p> : null}
       </Tile>
 
       <Tile index={6} className="col-span-4">
-        <TileHeader title="Використано днів за місяцями" aside="Approved" />
-        <MonthlyChart labels={SCHOOL_MONTHS.slice(0, 6)} values={used.slice(0, 6)} highlight={schoolMonthIndex(today)} unit="дн." />
-        <p className="mt-2 text-xs text-muted-foreground">Перші шість місяців навчального року: вересень – лютий.</p>
+        <TileHeader title="Days used per month" aside="Approved" />
+        <MonthlyChart labels={SCHOOL_MONTHS.slice(0, 6)} values={used.slice(0, 6)} highlight={schoolMonthIndex(today)} unit="days" />
+        <p className="mt-2 text-xs text-muted-foreground">The first six months of the school year: September to February.</p>
       </Tile>
 
       <Tile index={7} className="col-span-3">
-        <TileHeader title="Наступне закриття" aside={<WavesIcon aria-hidden="true" className="size-4" />} />
+        <TileHeader title="Next closure" aside={<WavesIcon aria-hidden="true" className="size-4" />} />
         {upcomingClosure ? (
           <>
             <p className="font-display text-xl leading-tight font-bold tracking-tight">{upcomingClosure.name}</p>
             <p className="mt-2 text-sm text-muted-foreground">{describeClosure(upcomingClosure)}</p>
-            <p className="mt-3 text-xs text-muted-foreground">Школа закрита, відпустку подавати не потрібно.</p>
+            <p className="mt-3 text-xs text-muted-foreground">The school is closed, so no leave request is needed.</p>
           </>
         ) : (
-          <p className="text-sm text-muted-foreground">Закриттів до кінця навчального року немає.</p>
+          <p className="text-sm text-muted-foreground">No closures until the end of the school year.</p>
         )}
       </Tile>
 
       <Tile index={8} className="col-span-12">
         <TileHeader
-          title="Останні записи"
+          title="Latest records"
           aside={
             <Link href="/leave" className="text-link underline-offset-4 hover:underline">
-              Усі заявки
+              All requests
             </Link>
           }
         />
         {latest.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Заявок ще немає.</p>
+          <p className="text-sm text-muted-foreground">No requests yet.</p>
         ) : (
           <ul className="flex flex-col">
             {latest.map((record) => (
@@ -181,7 +181,7 @@ export function EmployeeDashboard({
                 </div>
                 <StatusBadge status={record.status} />
                 <Link href={`/records/${record.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-                  Деталі
+                  Details
                 </Link>
               </li>
             ))}

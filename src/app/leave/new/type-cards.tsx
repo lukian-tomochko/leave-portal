@@ -6,19 +6,19 @@ import { cn } from "@/lib/utils";
 import type { LeaveFormModel } from "./use-leave-form";
 
 const HINTS: Record<string, string> = {
-  sick: "Хвороба",
-  personal: "Особисті справи",
-  unpaid: "Відпустка без оплати",
-  family: "Сімейна подія",
+  sick: "Illness",
+  personal: "Personal matters",
+  unpaid: "Time off without pay",
+  family: "Family occasion",
 };
 
-// Картки типів відпустки. Справжній вибір тримає прихований select з підписом «Тип відпустки» (його знають тести й читачі з
+// Картки типів відпустки. Справжній вибір тримає прихований select з підписом «Leave type» (його знають тести й читачі з
 // екрана); картки лише швидший спосіб змінити його значення. Тип завжди написаний словами.
 export function TypeCards({ form }: { form: LeaveFormModel }) {
   const { leaveType } = form.values;
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="mb-1 text-sm font-semibold">1 · Оберіть тип</legend>
+      <legend className="mb-1 text-sm font-semibold">1 · Choose a type</legend>
       <div className="grid grid-cols-2 gap-2">
         {form.leaveTypes.map((type) => (
           <button
@@ -37,7 +37,7 @@ export function TypeCards({ form }: { form: LeaveFormModel }) {
         ))}
       </div>
       <div className="sr-only">
-        <Label htmlFor="leave-type">Тип відпустки</Label>
+        <Label htmlFor="leave-type">Leave type</Label>
         <NativeSelect id="leave-type" value={leaveType} onChange={(event) => form.set.setLeaveType(event.target.value)}>
           {form.leaveTypes.map((type) => (
             <option key={type.value} value={type.value}>

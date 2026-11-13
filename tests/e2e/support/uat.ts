@@ -88,15 +88,15 @@ export async function attachRuntimeErrors(page: Page) {
 /**
  * Вхід через форму /login. Пароль вводимо через evaluate, а не fill: назва кроку fill містить введене значення,
  * і пароль потрапив би у звіт і трасу.
- * Локатори — форма /login шаблону курсу (поля «Email» і «Пароль», кнопка «Увійти») і перехід на «/» після входу.
+ * Локатори — форма /login шаблону курсу (поля «Email» і «Пароль», кнопка «Sign in») і перехід на «/» після входу.
  * Ваша форма чи сторінка після входу інші — змініть їх тут.
  */
 export async function signIn(page: Page, email: string, password: string) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Пароль").evaluate((el, value) => {
+  await page.getByLabel("Password").evaluate((el, value) => {
     (el as HTMLInputElement).value = value;
   }, password);
-  await page.getByRole("button", { name: "Увійти" }).click();
+  await page.getByRole("button", { name: "Sign in" }).click();
   await page.waitForURL((url) => url.pathname === "/");
 }

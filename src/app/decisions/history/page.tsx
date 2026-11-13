@@ -41,7 +41,7 @@ export default async function HistoryPage({ searchParams }: PageProps<"/decision
       </div>
       {records.length === 0 ? (
         <Tile index={0}>
-          <p className="py-6 text-center text-sm text-muted-foreground">Рішень ще немає.</p>
+          <p className="py-6 text-center text-sm text-muted-foreground">No decisions yet.</p>
         </Tile>
       ) : (
         <>

@@ -8,8 +8,8 @@ import { SubmitButton } from "@/components/submit-button";
 import { login } from "./actions";
 
 const ERRORS: Record<string, string> = {
-  missing: "Вкажіть email і пароль.",
-  invalid: "Невірний email або пароль.",
+  missing: "Enter your email and password.",
+  invalid: "Invalid email or password.",
 };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
@@ -24,12 +24,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <span className="grid size-16 animate-wobble place-items-center rounded-3xl bg-primary text-primary-foreground shadow-tile">
           <CalendarDaysIcon aria-hidden="true" className="size-8" />
         </span>
-        <p className="font-display text-3xl font-bold tracking-tight">Портал відпусток</p>
+        <p className="font-display text-3xl font-bold tracking-tight">Leave portal</p>
       </div>
       <Card className="w-full animate-bloom shadow-tile" style={{ animationDelay: "120ms" }}>
         <CardHeader>
-          <CardTitle className="font-display text-xl font-bold">Вхід</CardTitle>
-          <CardDescription>Увійдіть, щоб подати заявку на відпустку або ухвалити рішення.</CardDescription>
+          <CardTitle className="font-display text-xl font-bold">Sign in</CardTitle>
+          <CardDescription>Sign in to request leave or make decisions.</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={login} className="flex flex-col gap-4">
@@ -38,7 +38,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
               <Input id="email" name="email" type="email" autoComplete="email" required />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password">Пароль</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 name="password"
@@ -52,7 +52,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
                 <AlertDescription>{message}</AlertDescription>
               </Alert>
             ) : null}
-            <SubmitButton size="lg">Увійти</SubmitButton>
+            <SubmitButton size="lg">Sign in</SubmitButton>
           </form>
         </CardContent>
       </Card>

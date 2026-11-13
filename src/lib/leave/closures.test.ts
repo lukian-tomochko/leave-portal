@@ -232,7 +232,7 @@ describe("шкільний календар за навчальний рік", (
 
     expect(rows.map((row) => row.name)).toEqual(["Teachers' meeting", "Winter break"]);
     expect(describeClosure(WINTER_BREAK)).toBe("2026-12-28 – 2027-01-08");
-    expect(describeClosure(TEACHERS_MEETING)).toBe("2026-11-20 з 12:00");
+    expect(describeClosure(TEACHERS_MEETING)).toBe("2026-11-20 from 12:00");
   });
 
   it("AC-CAL-02: закриття через 31.08 показується в обох навчальних роках, а закриття поза роком — ні", () => {

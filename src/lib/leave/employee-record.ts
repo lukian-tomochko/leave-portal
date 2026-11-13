@@ -56,7 +56,7 @@ export type EmployeeOutcome =
     };
 
 // Нейтральна фраза, де PM тексту не дав (відхилений, скасований чи повернений запис без права змін): нових правил не вигадуємо.
-export const RECORD_NOT_EDITABLE = "Цей запис уже не можна змінити.";
+export const RECORD_NOT_EDITABLE = "This record can no longer be changed.";
 
 const EDITABLE: RecordStatus[] = ["awaiting_decision", "returned_for_revision"];
 

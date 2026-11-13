@@ -50,7 +50,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <span className="grid size-9 animate-wobble place-items-center rounded-xl bg-primary text-primary-foreground">
             <CalendarDaysIcon aria-hidden="true" className="size-5" />
           </span>
-          Портал відпусток
+          Leave portal
         </Link>
         {role === "manager" || role === "admin" ? (
           <Suspense fallback={<NavLinks role={role} />}>
@@ -68,7 +68,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             {initials}
           </span>
           <div className="min-w-0 text-xs">
-            <p className="truncate font-semibold text-foreground">{profile?.full_name ?? "Користувач"}</p>
+            <p className="truncate font-semibold text-foreground">{profile?.full_name ?? "User"}</p>
             <p className="truncate text-muted-foreground" data-testid="user-email">
               {email}
             </p>
@@ -82,7 +82,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         <form action={signOut}>
           <SubmitButton variant="ghost" size="sm" className="w-full justify-start gap-3 rounded-xl px-3 text-muted-foreground">
             <LogOutIcon aria-hidden="true" />
-            Вийти
+            Sign out
           </SubmitButton>
         </form>
       </aside>

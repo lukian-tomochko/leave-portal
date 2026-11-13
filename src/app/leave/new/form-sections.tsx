@@ -14,7 +14,7 @@ export function PositionsSection({ form }: { form: LeaveFormModel }) {
   const { selected } = form.values;
   return (
     <fieldset className="flex flex-col gap-2 text-sm">
-      <legend className="mb-1 text-sm font-semibold">3 · Посади</legend>
+      <legend className="mb-1 text-sm font-semibold">3 · Positions</legend>
       {form.positions.map((position) => (
         <label
           key={position.id}
@@ -50,23 +50,23 @@ export function TimeSection({ form }: { form: LeaveFormModel }) {
   const { mode, startsAt, endsAt } = form.values;
   return (
     <fieldset className="flex flex-col gap-3 text-sm">
-      <legend className="mb-1 text-sm font-semibold">4 · Скільки часу</legend>
+      <legend className="mb-1 text-sm font-semibold">4 · How much time</legend>
       <div className="flex gap-1 rounded-full bg-muted p-1">
         <ModeOption value="whole-day" current={mode} onSelect={form.set.setMode}>
-          Цілий день
+          Whole day
         </ModeOption>
         <ModeOption value="hours" current={mode} onSelect={form.set.setMode}>
-          Години
+          Hours
         </ModeOption>
       </div>
       {mode === "hours" ? (
         <div className="flex animate-rise items-center gap-3">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="starts-at">З</Label>
+            <Label htmlFor="starts-at">From</Label>
             <Input id="starts-at" type="time" step={300} required value={startsAt} onChange={(event) => form.set.setStartsAt(event.target.value)} className="w-auto" />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ends-at">До</Label>
+            <Label htmlFor="ends-at">To</Label>
             <Input id="ends-at" type="time" step={300} required value={endsAt} onChange={(event) => form.set.setEndsAt(event.target.value)} className="w-auto" />
           </div>
         </div>
@@ -75,7 +75,7 @@ export function TimeSection({ form }: { form: LeaveFormModel }) {
   );
 }
 
-// Спорідненість (лише для Family) і коментар. Без maxLength: довжину перевіряє сервер і повертає повідомлення PM (AC-LEAVE-18);
+// Relationship (лише для Family) і коментар. Без maxLength: довжину перевіряє сервер і повертає повідомлення PM (AC-LEAVE-18);
 // лічильник лише підказує.
 export function ExtraFields({ form }: { form: LeaveFormModel }) {
   const { relationship, comment } = form.values;
@@ -83,7 +83,7 @@ export function ExtraFields({ form }: { form: LeaveFormModel }) {
     <div className="flex flex-col gap-4">
       {form.isFamily ? (
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="relationship">Спорідненість</Label>
+          <Label htmlFor="relationship">Relationship</Label>
           <NativeSelect id="relationship" value={relationship} onChange={(event) => form.set.setRelationship(event.target.value)}>
             <option value="">—</option>
             {RELATIONSHIPS.map((value) => (
@@ -96,7 +96,7 @@ export function ExtraFields({ form }: { form: LeaveFormModel }) {
       ) : null}
       <div className="flex flex-col gap-1.5">
         <div className="flex items-baseline justify-between">
-          <Label htmlFor="comment">Коментар (необов&apos;язково)</Label>
+          <Label htmlFor="comment">Comment (optional)</Label>
           <span className="text-xs text-muted-foreground tabular-nums" aria-hidden="true">
             {comment.length}/500
           </span>

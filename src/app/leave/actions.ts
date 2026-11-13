@@ -14,7 +14,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { LeaveFormState } from "./state";
 
 // Нейтральна фраза для технічних помилок: PM тексту для них не давав, а деталей користувачу не показуємо.
-const TECHNICAL_ERROR = "Не вдалося обробити заявку. Спробуйте ще раз.";
+const TECHNICAL_ERROR = "Couldn't process the request. Please try again.";
 
 // Технічні відмови не мають тексту PM, тож у лог (без особистих даних) пишемо, де саме вони сталися: інакше причину не знайти.
 function logFailure(action: string, detail: unknown) {

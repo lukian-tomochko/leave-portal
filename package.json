@@ -16,6 +16,7 @@
     "db:types": "supabase gen types typescript --linked > src/lib/supabase/database.types.ts",
     "users:demo": "node --env-file=.env.local scripts/create-demo-users.mjs",
     "check:design": "node scripts/check-design-tokens.mjs",
+    "check:english": "node scripts/check-english-ui.mjs",
     "check:boundary": "node scripts/check-server-boundary.mjs",
     "smoke": "node scripts/smoke.mjs",
     "accounts:zip": "node scripts/zip-accounts.mjs",

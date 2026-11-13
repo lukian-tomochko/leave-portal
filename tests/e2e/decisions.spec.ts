@@ -20,12 +20,12 @@ test(
       {
         clause: 'the manager sees the message "No records awaiting decision"',
         visible: ["сторінка зі списком «Awaiting decision»", "повідомлення «No records awaiting decision»", "жодного запису в списку немає"],
-        hidden: ["у розмітці немає жодного посилання «Відкрити» на запис"],
+        hidden: ["у розмітці немає жодного посилання «Open» на запис"],
       },
       async () => {
         await expect(page.getByRole("heading", { name: "Awaiting decision" })).toBeVisible();
         await expect(page.getByRole("main").getByText("No records awaiting decision")).toBeVisible();
-        await expect(page.getByRole("link", { name: "Відкрити" })).toHaveCount(0);
+        await expect(page.getByRole("link", { name: "Open" })).toHaveCount(0);
       },
     );
   },

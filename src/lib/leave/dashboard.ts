@@ -19,7 +19,7 @@ export const addDays = (date: string, days: number): string => new Date(toMs(dat
 export const daysBetween = (from: string, to: string): number => Math.round((toMs(to) - toMs(from)) / DAY_MS);
 
 // Місяці навчального року: вересень першим (так само, як рахує школа).
-export const SCHOOL_MONTHS = ["Вер", "Жов", "Лис", "Гру", "Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер"] as const;
+export const SCHOOL_MONTHS = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"] as const;
 
 // 0 для вересня … 11 для серпня.
 export const schoolMonthIndex = (date: string): number => (Number(date.slice(5, 7)) + 3) % 12;

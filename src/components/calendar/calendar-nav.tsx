@@ -46,29 +46,29 @@ export function CalendarNav({ view, month, year }: { view: CalendarView; month: 
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
       {view === "month" ? (
         <Stepper
-          label="Місяць"
+          label="Month"
           title={monthLabel(month)}
           prev={monthHref(shiftMonth(month, -1))}
           next={monthHref(shiftMonth(month, 1))}
-          prevLabel="Попередній місяць"
-          nextLabel="Наступний місяць"
+          prevLabel="Previous month"
+          nextLabel="Next month"
         />
       ) : (
         <Stepper
-          label="Рік стрічки"
-          title={`Рік ${schoolYearLabel(year)}`}
+          label="Timeline year"
+          title={`Year ${schoolYearLabel(year)}`}
           prev={yearHref(year - 1)}
           next={yearHref(year + 1)}
-          prevLabel="Попередній навчальний рік"
-          nextLabel="Наступний навчальний рік"
+          prevLabel="Previous school year"
+          nextLabel="Next school year"
         />
       )}
-      <nav aria-label="Вигляд" className="flex gap-1 rounded-full bg-muted p-1 text-sm font-medium">
+      <nav aria-label="View" className="flex gap-1 rounded-full bg-muted p-1 text-sm font-medium">
         <ViewLink href={monthHref(month)} active={view === "month"}>
-          Місяць
+          Month
         </ViewLink>
         <ViewLink href={yearHref(year)} active={view === "year"}>
-          Навчальний рік
+          School year
         </ViewLink>
       </nav>
     </div>
@@ -81,8 +81,8 @@ export function ClosuresList({ year, closures }: { year: number; closures: Closu
   return (
     <>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-display text-lg font-bold tracking-tight tabular-nums">Навчальний рік {schoolYearLabel(year)}</h2>
-        <nav aria-label="Навчальний рік" className="flex items-center gap-2">
+        <h2 className="font-display text-lg font-bold tracking-tight tabular-nums">School year {schoolYearLabel(year)}</h2>
+        <nav aria-label="School year" className="flex items-center gap-2">
           <Link href={`/calendar?year=${year - 1}`} className={navButton}>
             ← {schoolYearLabel(year - 1)}
           </Link>

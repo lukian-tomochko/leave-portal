@@ -35,7 +35,7 @@ export function EmployeeActions({ recordId, startsAt, endsAt }: { recordId: stri
         <input type="hidden" name="recordId" value={recordId} />
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="starts-at">З</Label>
+            <Label htmlFor="starts-at">From</Label>
             <Input
               id="starts-at"
               name="startsAt"
@@ -48,7 +48,7 @@ export function EmployeeActions({ recordId, startsAt, endsAt }: { recordId: stri
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ends-at">До</Label>
+            <Label htmlFor="ends-at">To</Label>
             <Input
               id="ends-at"
               name="endsAt"
@@ -62,7 +62,7 @@ export function EmployeeActions({ recordId, startsAt, endsAt }: { recordId: stri
           </div>
           <Button type="submit" disabled={hoursPending} aria-busy={hoursPending}>
             {hoursPending ? <Spinner /> : null}
-            Зберегти години
+            Save hours
           </Button>
         </div>
         {hoursState.status === "error" ? (
@@ -89,20 +89,20 @@ export function EmployeeActions({ recordId, startsAt, endsAt }: { recordId: stri
         ) : null}
         <Button type="button" variant="destructive" className="self-start" disabled={cancelPending} aria-busy={cancelPending} onClick={() => setConfirmOpen(true)}>
           {cancelPending ? <Spinner /> : null}
-          Скасувати запис
+          Cancel record
         </Button>
       </form>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Скасувати цей запис?</DialogTitle>
-            <DialogDescription>Скасований запис не можна повернути в роботу: потрібна нова заявка.</DialogDescription>
+            <DialogTitle>Cancel this record?</DialogTitle>
+            <DialogDescription>A cancelled record can&apos;t be reopened: a new request is needed.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>Не скасовувати</DialogClose>
+            <DialogClose render={<Button variant="outline" />}>Keep record</DialogClose>
             <Button type="submit" form="cancel-form" variant="destructive" disabled={cancelPending}>
-              Скасувати запис
+              Cancel record
             </Button>
           </DialogFooter>
         </DialogContent>

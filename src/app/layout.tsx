@@ -22,8 +22,8 @@ const onest = Onest({
 });
 
 export const metadata: Metadata = {
-  title: "Портал відпусток",
-  description: "Заявки на відпустку, баланси, календар і рішення менеджера для персоналу школи",
+  title: "Leave portal",
+  description: "Leave requests, balances, calendar and manager decisions for school staff",
 };
 
 // Тема й режим руху ставляться до першого малювання (guide «Preventing flash before hydration»): збережений вибір, інакше
@@ -33,7 +33,7 @@ const BOOT_SCRIPT = `(function(){try{var d=document.documentElement,s=localStora
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="uk"
+      lang="en"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${onest.variable} h-full antialiased`}
     >

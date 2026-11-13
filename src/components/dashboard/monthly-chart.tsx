@@ -24,7 +24,7 @@ export function MonthlyChart({
   const summary = data.map((item) => `${item.label}: ${item.value}`).join(", ");
 
   return (
-    <div role="img" aria-label={`Діаграма за місяцями (${unit}): ${summary}`} style={{ height }} className="w-full">
+    <div role="img" aria-label={`Chart by month (${unit}): ${summary}`} style={{ height }} className="w-full">
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height }}>
         <BarChart data={data} margin={{ top: 18, right: 4, bottom: 0, left: 4 }}>
           <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} interval={0} />
