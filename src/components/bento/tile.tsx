@@ -8,14 +8,34 @@ function motionAllowed() {
   return !(document.documentElement.dataset.motion === "calm" || window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 }
 
+// Підсвічування й нахил за курсором; interactive={false} вимикає їх (плитки з формами не мають «пливти» під рукою).
+function followPointer(event: React.PointerEvent<HTMLDivElement>) {
+  const el = event.currentTarget;
+  const rect = el.getBoundingClientRect();
+  const x = (event.clientX - rect.left) / rect.width;
+  const y = (event.clientY - rect.top) / rect.height;
+  el.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
+  el.style.setProperty("--my", `${(y * 100).toFixed(1)}%`);
+  if (rect.width < 700 && motionAllowed()) {
+    el.style.setProperty("--rx", `${((0.5 - y) * 5).toFixed(2)}deg`);
+    el.style.setProperty("--ry", `${((x - 0.5) * 6).toFixed(2)}deg`);
+  }
+}
+
+function resetTilt(event: React.PointerEvent<HTMLDivElement>) {
+  event.currentTarget.style.setProperty("--rx", "0deg");
+  event.currentTarget.style.setProperty("--ry", "0deg");
+}
+
 export function Tile({
   index = 0,
   hero = false,
+  interactive = true,
   className,
   style,
   children,
   ...props
-}: Omit<React.ComponentProps<"div">, "onPointerMove" | "onPointerLeave"> & { index?: number; hero?: boolean }) {
+}: Omit<React.ComponentProps<"div">, "onPointerMove" | "onPointerLeave"> & { index?: number; hero?: boolean; interactive?: boolean }) {
   return (
     <div
       data-slot="tile"
@@ -26,22 +46,8 @@ export function Tile({
         className,
       )}
       style={{ animationDelay: `${Math.min(index, 8) * 60}ms`, ...style }}
-      onPointerMove={(event) => {
-        const el = event.currentTarget;
-        const rect = el.getBoundingClientRect();
-        const x = (event.clientX - rect.left) / rect.width;
-        const y = (event.clientY - rect.top) / rect.height;
-        el.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
-        el.style.setProperty("--my", `${(y * 100).toFixed(1)}%`);
-        if (rect.width < 700 && motionAllowed()) {
-          el.style.setProperty("--rx", `${((0.5 - y) * 5).toFixed(2)}deg`);
-          el.style.setProperty("--ry", `${((x - 0.5) * 6).toFixed(2)}deg`);
-        }
-      }}
-      onPointerLeave={(event) => {
-        event.currentTarget.style.setProperty("--rx", "0deg");
-        event.currentTarget.style.setProperty("--ry", "0deg");
-      }}
+      onPointerMove={interactive ? followPointer : undefined}
+      onPointerLeave={interactive ? resetTilt : undefined}
       {...props}
     >
       {children}
