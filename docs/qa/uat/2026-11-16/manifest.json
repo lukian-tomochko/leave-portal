@@ -1,0 +1,257 @@
+{
+  "kind": "uat",
+  "generatedAt": "2026-11-16T08:51:46.344Z",
+  "baseURL": "https://leave-portal-blush.vercel.app",
+  "deployedSha": "449975b919f7ad667d314f926cc459e805e29783",
+  "testsCommit": "9e65e79feaed3f37c686bfd855107cfb059614b8",
+  "reviewer": {
+    "model": "claude-haiku-5-5",
+    "disputes": "claude-sonnet-5-5"
+  },
+  "note": "Відео й траси не в git (test-results/ локально, артефакт CI). check-recordings конвеєра WS9 вимагає відео на диску — для нього цей manifest треба доповнити.",
+  "results": [
+    {
+      "id": "AC-ASSIST-01",
+      "proof": "AC-ASSIST-01",
+      "title": "AC-ASSIST-01: два закриття з тексту пропонуються на перегляд, а шкільний календар лишається без закриттів",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-ASSIST-01-then-1.png",
+      "video": "test-results/artifacts/assistant-адміністратор-AC-49564-дар-лишається-без-закриттів-chromium/video.webm",
+      "trace": "test-results/artifacts/assistant-адміністратор-AC-49564-дар-лишається-без-закриттів-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі 1 видно розділ «Suggested closures» з двома пропозиціями (Teachers' meeting з 12:00 на 20.11.2026 та Winter break з 28.12.2026 по 08.01.2027) і підказку «Nothing is saved yet». На кадрі 2 сторінка «School calendar» показує «School year 2026–2027» і «No closed days in school year 2026–2027», тобто закриттів не додано. Поле тексту на кадрі 1 порожнє, але це не частина «Тоді», тому на вердикт не впливає."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Suggested closures",
+          "onPage": true
+        },
+        {
+          "quote": "Teachers' meeting: early dismissal on 2026-11-20 from 12:00",
+          "onPage": true
+        },
+        {
+          "quote": "Winter break: whole days 2026-12-28 – 2027-01-08",
+          "onPage": true
+        },
+        {
+          "quote": "Teachers' meeting: early dismissal on 2026-11-20 from 12:00",
+          "onPage": true
+        },
+        {
+          "quote": "Winter break: whole days 2026-12-28 – 2027-01-08",
+          "onPage": true
+        },
+        {
+          "quote": "Nothing is saved yet. Review, correct or remove suggestions, then save.",
+          "onPage": true
+        },
+        {
+          "quote": "School calendar",
+          "onPage": true
+        },
+        {
+          "quote": "School year 2026–2027",
+          "onPage": true
+        },
+        {
+          "quote": "No closed days in school year 2026–2027",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 17847,
+      "reviewCostUsd": 0.00284,
+      "reviewWallMs": 14164
+    },
+    {
+      "id": "AC-ASSIST-02",
+      "proof": "AC-ASSIST-02",
+      "title": "AC-ASSIST-02: збереження двох пропозицій без змін — календар показує обидва закриття",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-ASSIST-02-then-1.png",
+      "video": "test-results/artifacts/assistant-адміністратор-AC-95f99-дар-показує-обидва-закриття-chromium/video.webm",
+      "trace": "test-results/artifacts/assistant-адміністратор-AC-95f99-дар-показує-обидва-закриття-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки School calendar у блоці «School year 2026–2027» видно два рядки: «Teachers' meeting» з «2026-11-20 from 12:00» і «Winter break» з «2026-12-28 – 2027-01-08». Текст читабельний і збігається з критерієм посимвольно. Частина «Дано/Коли» перевіряється не з кадрів, тому тут не оцінювалася."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "School calendar",
+          "onPage": true
+        },
+        {
+          "quote": "School year 2026–2027",
+          "onPage": true
+        },
+        {
+          "quote": "Teachers' meeting",
+          "onPage": true
+        },
+        {
+          "quote": "2026-11-20 from 12:00",
+          "onPage": true
+        },
+        {
+          "quote": "Winter break",
+          "onPage": true
+        },
+        {
+          "quote": "2026-12-28 – 2027-01-08",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 38469,
+      "reviewCostUsd": 0.00194,
+      "reviewWallMs": 10542
+    },
+    {
+      "id": "AC-ASSIST-08",
+      "proof": "AC-ASSIST-08",
+      "title": "AC-ASSIST-08: поки помічник не відповів, адміністратор бачить «Preparing suggestions…» і не може запитати знову",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-ASSIST-08-then-1.png",
+      "video": "test-results/artifacts/assistant-адміністратор-AC-948c7-…»-і-не-може-запитати-знову-chromium/video.webm",
+      "trace": "test-results/artifacts/assistant-адміністратор-AC-948c7-…»-і-не-може-запитати-знову-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі під полем тексту видно напис «Preparing suggestions…». Кнопка «Suggest closures» блідіша за звичайну, з рядком спінера, що вказує на недоступність; сам атрибут disabled з кадру не видно, тому стан виведено зі стилю. Частина про повторний запит до відповіді не є видимою частиною «Тоді» і тут не оцінювалась."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Preparing suggestions…",
+          "onPage": true
+        },
+        {
+          "quote": "Suggest closures",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 10943,
+      "reviewCostUsd": 0.00184,
+      "reviewWallMs": 9454
+    },
+    {
+      "id": "AC-ASSIST-10",
+      "proof": "AC-ASSIST-10",
+      "title": "AC-ASSIST-10: текст із 2001 символу — помічника не питаємо, адміністратор бачить повідомлення про 2000 символів",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-ASSIST-10-then-1.png",
+      "video": "test-results/artifacts/assistant-адміністратор-AC-02b88-ідомлення-про-2000-символів-chromium/video.webm",
+      "trace": "test-results/artifacts/assistant-адміністратор-AC-02b88-ідомлення-про-2000-символів-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки «Calendar assistant» видно форму з полем «School calendar text» і лічильником «2001 / 2000», під полем червоне повідомлення «The text can be at most 2000 characters», а кнопка «Suggest closures» є останнім елементом форми. Під формою нічого немає: пропозицій закриття на кадрі не видно. Частину «жодної пропозиції немає» підтверджую відсутністю контенту на кадрі; цитата з кнопки лише вказує на місце, де він мав би бути."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "School calendar text",
+          "onPage": true
+        },
+        {
+          "quote": "2001 / 2000",
+          "onPage": true
+        },
+        {
+          "quote": "Suggest closures",
+          "onPage": true
+        },
+        {
+          "quote": "The text can be at most 2000 characters",
+          "onPage": true
+        },
+        {
+          "quote": "Suggest closures",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 17022,
+      "reviewCostUsd": 0.00219,
+      "reviewWallMs": 10698
+    },
+    {
+      "id": "AC-ASSIST-11",
+      "proof": "AC-ASSIST-11",
+      "title": "AC-ASSIST-11: працівник за прямим посиланням бачить, що календар змінює лише адміністратор, і жодних пропозицій немає",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-ASSIST-11-then-1.png",
+      "video": "test-results/artifacts/assistant-працівник-AC-ASS-8e9d3-р-і-жодних-пропозицій-немає-chromium/video.webm",
+      "trace": "test-results/artifacts/assistant-працівник-AC-ASS-8e9d3-р-і-жодних-пропозицій-немає-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно заголовок «Calendar assistant» і червоне повідомлення «Only an administrator can change the school calendar» у білій картці. Під повідомленням нічого немає: форми помічника з пропозиціями змін на сторінці не видно. Для третьої частини («форми немає») цитати немає, бо це відсутність елемента, тому quoted_text порожній."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Calendar assistant",
+          "onPage": true
+        },
+        {
+          "quote": "Only an administrator can change the school calendar",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 6763,
+      "reviewCostUsd": 0.00199,
+      "reviewWallMs": 8571
+    }
+  ],
+  "negativeControls": [],
+  "cleanup": {
+    "at": "2026-11-16T08:47:55.977Z",
+    "deleted": [],
+    "remaining": [],
+    "leftoverRequests": 0
+  }
+}
