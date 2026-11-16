@@ -108,25 +108,40 @@ test.describe("адміністратор", () => {
     "AC-ASSIST-08: поки помічник не відповів, адміністратор бачить «Preparing suggestions…» і не може запитати знову",
     { tag: ["@uat"], annotation: ac("AC-ASSIST-08") },
     async ({ page }) => {
-      await given("адміністратор попросив пропозиції, а помічник ще не відповів", async () => {
-        await askAssistant(page, CALENDAR_TEXT);
+      // Відповідь сервера тримаємо в браузері, доки не зроблено перевірки й знімок: інакше швидка відповідь моделі
+      // встигла б прибрати «Preparing suggestions…» раніше за кадр «Тоді».
+      let release: () => void = () => {};
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
       });
-      await when("адміністратор дивиться на помічника", async () => {
-        await expect(page.getByTestId("assistant-preparing")).toBeVisible();
+      await page.route("**/calendar/assistant", async (route) => {
+        if (route.request().method() === "POST") await held;
+        await route.continue();
       });
-      await thenStep(
-        page,
-        {
-          clause: 'the administrator sees "Preparing suggestions…", and cannot ask for suggestions again until it answers',
-          visible: ["повідомлення «Preparing suggestions…»", "кнопка «Suggest closures» недоступна (disabled)"],
-        },
-        async () => {
-          await expect(page.getByTestId("assistant-preparing")).toHaveText("Preparing suggestions…");
-          await expect(page.getByRole("button", { name: "Suggest closures" })).toBeDisabled();
-        },
-      );
-      // Дочікуємося відповіді, щоб не лишати запит у польоті після сценарію.
-      await expect(page.getByTestId("assistant-suggestions")).toBeVisible({ timeout: 120_000 });
+      try {
+        await given("адміністратор попросив пропозиції, а помічник ще не відповів", async () => {
+          await askAssistant(page, CALENDAR_TEXT);
+        });
+        await when("адміністратор дивиться на помічника", async () => {
+          await expect(page.getByTestId("assistant-preparing")).toBeVisible();
+        });
+        await thenStep(
+          page,
+          {
+            clause: 'the administrator sees "Preparing suggestions…", and cannot ask for suggestions again until it answers',
+            visible: ["повідомлення «Preparing suggestions…»", "кнопка «Suggest closures» недоступна (disabled)"],
+          },
+          async () => {
+            await expect(page.getByTestId("assistant-preparing")).toHaveText("Preparing suggestions…");
+            await expect(page.getByRole("button", { name: "Suggest closures" })).toBeDisabled();
+          },
+        );
+      } finally {
+        release();
+      }
+      // AC перевіряє очікування, а не успіх моделі: чекаємо, поки запит завершиться (з пропозиціями чи без),
+      // щоб не лишати його в польоті після сценарію.
+      await expect(page.getByTestId("assistant-preparing")).toHaveCount(0, { timeout: 120_000 });
     },
   );
 
