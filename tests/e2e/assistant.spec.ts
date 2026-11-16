@@ -105,6 +105,32 @@ test.describe("адміністратор", () => {
   );
 
   test(
+    "AC-ASSIST-08: поки помічник не відповів, адміністратор бачить «Preparing suggestions…» і не може запитати знову",
+    { tag: ["@uat"], annotation: ac("AC-ASSIST-08") },
+    async ({ page }) => {
+      await given("адміністратор попросив пропозиції, а помічник ще не відповів", async () => {
+        await askAssistant(page, CALENDAR_TEXT);
+      });
+      await when("адміністратор дивиться на помічника", async () => {
+        await expect(page.getByTestId("assistant-preparing")).toBeVisible();
+      });
+      await thenStep(
+        page,
+        {
+          clause: 'the administrator sees "Preparing suggestions…", and cannot ask for suggestions again until it answers',
+          visible: ["повідомлення «Preparing suggestions…»", "кнопка «Suggest closures» недоступна (disabled)"],
+        },
+        async () => {
+          await expect(page.getByTestId("assistant-preparing")).toHaveText("Preparing suggestions…");
+          await expect(page.getByRole("button", { name: "Suggest closures" })).toBeDisabled();
+        },
+      );
+      // Дочікуємося відповіді, щоб не лишати запит у польоті після сценарію.
+      await expect(page.getByTestId("assistant-suggestions")).toBeVisible({ timeout: 120_000 });
+    },
+  );
+
+  test(
     "AC-ASSIST-10: текст із 2001 символу — помічника не питаємо, адміністратор бачить повідомлення про 2000 символів",
     { tag: ["@uat"], annotation: ac("AC-ASSIST-10") },
     async ({ page }) => {
