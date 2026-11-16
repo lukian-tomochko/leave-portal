@@ -116,19 +116,19 @@
 | AC-CAL-13 | Менеджер закриває день напряму | `supabase/migrations/20261109120000_school_closures.sql` (add_school_closure, remove_school_closure) | `tests/db/school-calendar.test.ts`, `tests/e2e/calendar.spec.ts` | реалізовано |
 | AC-CAL-14 | Відвідувач без входу | `src/app/calendar/page.tsx`, `src/lib/supabase/proxy.ts` | `tests/e2e/calendar.spec.ts` | реалізовано |
 | AC-CAL-15 | Календар без закриттів | `src/app/calendar/page.tsx`, `src/lib/leave/closures.ts` (closuresInSchoolYear, describeClosure, parseSchoolYear), `src/lib/leave/messages.ts` (noClosuresInYear) | `src/lib/leave/closures.test.ts`, `tests/e2e/calendar.spec.ts` | реалізовано |
-| AC-CAL-16 | Скорочений день без залишку розкладу працівника | — | — | відкладено (чекає реалізації) |
-| AC-CAL-17 | Кілька перетинів в одному повідомленні | — | — | відкладено (чекає реалізації) |
-| AC-CAL-18 | Порожня назва закриття | — | — | відкладено (чекає реалізації) |
-| AC-CAL-19 | Назва закриття зі 101 символу | — | — | відкладено (чекає реалізації) |
-| AC-CAL-20 | Закриття після погодження не змінює частку дня | — | — | відкладено (чекає реалізації) |
-| AC-ASSIST-01 | Два закриття з тексту, нічого не збережено | — | — | відкладено (чекає реалізації) |
-| AC-ASSIST-02 | Збереження двох пропозицій | — | — | відкладено (чекає реалізації) |
-| AC-ASSIST-03 | Видалення й перейменування пропозицій | — | — | відкладено (чекає реалізації) |
-| AC-ASSIST-04 | Одна пропозиція вже закрита | — | — | відкладено (чекає реалізації) |
-| AC-ASSIST-05 | Дат закриття немає (needs_info) | — | — | відкладено (чекає реалізації) |
-| AC-ASSIST-06 | Запит про вірш (відмова) | — | — | відкладено (чекає реалізації) |
-| AC-ASSIST-07 | Ін'єкція всередині календаря | — | — | відкладено (чекає реалізації) |
-| AC-ASSIST-08 | Помічник ще не відповів (очікування) | — | — | відкладено (чекає реалізації) |
-| AC-ASSIST-09 | Немає відповіді чи ліміт вичерпано | — | — | відкладено (чекає реалізації) |
-| AC-ASSIST-10 | Текст із 2001 символу | — | — | відкладено (чекає реалізації) |
-| AC-ASSIST-11 | Працівник відкриває помічника | — | — | відкладено (чекає реалізації) |
+| AC-CAL-16 | Скорочений день без залишку розкладу працівника | `src/lib/leave/closures.ts` (openBlocks), `src/lib/leave/request.ts` (planRequest) | `src/lib/leave/closures.test.ts` | реалізовано |
+| AC-CAL-17 | Кілька перетинів в одному повідомленні | `src/lib/leave/messages.ts` (alreadyClosed), `src/lib/leave/calendar-admin.ts` | `src/lib/leave/calendar-admin.test.ts` | реалізовано |
+| AC-CAL-18 | Порожня назва закриття | `src/lib/leave/messages.ts` (CLOSURE_NAME_REQUIRED), `src/lib/leave/calendar-admin.ts` (parseClosureForm) | `src/lib/leave/calendar-admin.test.ts` | реалізовано |
+| AC-CAL-19 | Назва закриття зі 101 символу | `src/lib/leave/messages.ts` (CLOSURE_NAME_TOO_LONG), `src/lib/leave/calendar-admin.ts` (parseClosureForm) | `src/lib/leave/calendar-admin.test.ts` | реалізовано |
+| AC-CAL-20 | Закриття після погодження не змінює частку дня | — | — | відкладено (частку дня треба фіксувати при погодженні: потрібні ADR і міграція; поза AI-зрізом, після здачі WS10) |
+| AC-ASSIST-01 | Два закриття з тексту, нічого не збережено | `src/lib/calendar-assistant/suggest.ts`, `src/lib/calendar-assistant/rules.ts`, `src/lib/ai/prompts/calendar.ts`, `src/app/calendar/assistant/actions.ts`, `src/app/calendar/assistant/page.tsx` | `src/lib/calendar-assistant/suggest.test.ts`, `src/app/calendar/assistant/actions.test.ts`, `tests/golden.test.ts` | реалізовано |
+| AC-ASSIST-02 | Збереження двох пропозицій | `src/lib/calendar-assistant/suggest.ts`, `src/lib/calendar-assistant/rules.ts`, `src/lib/ai/prompts/calendar.ts`, `src/app/calendar/assistant/actions.ts`, `src/app/calendar/assistant/page.tsx`, `src/lib/calendar-assistant/save.ts` | `src/app/calendar/assistant/actions.test.ts` | реалізовано |
+| AC-ASSIST-03 | Видалення й перейменування пропозицій | `src/lib/calendar-assistant/suggest.ts`, `src/lib/calendar-assistant/rules.ts`, `src/lib/ai/prompts/calendar.ts`, `src/app/calendar/assistant/actions.ts`, `src/app/calendar/assistant/page.tsx`, `src/lib/calendar-assistant/save.ts` | `src/app/calendar/assistant/actions.test.ts` | реалізовано |
+| AC-ASSIST-04 | Одна пропозиція вже закрита | `src/lib/calendar-assistant/suggest.ts`, `src/lib/calendar-assistant/rules.ts`, `src/lib/ai/prompts/calendar.ts`, `src/app/calendar/assistant/actions.ts`, `src/app/calendar/assistant/page.tsx`, `src/lib/calendar-assistant/save.ts` | `src/app/calendar/assistant/actions.test.ts` | реалізовано |
+| AC-ASSIST-05 | Дат закриття немає (needs_info) | `src/lib/calendar-assistant/suggest.ts`, `src/lib/calendar-assistant/rules.ts`, `src/lib/ai/prompts/calendar.ts`, `src/app/calendar/assistant/actions.ts`, `src/app/calendar/assistant/page.tsx` | `src/lib/calendar-assistant/suggest.test.ts`, `tests/golden.test.ts` | реалізовано |
+| AC-ASSIST-06 | Запит про вірш (відмова) | `src/lib/calendar-assistant/suggest.ts`, `src/lib/calendar-assistant/rules.ts`, `src/lib/ai/prompts/calendar.ts`, `src/app/calendar/assistant/actions.ts`, `src/app/calendar/assistant/page.tsx` | `src/lib/calendar-assistant/suggest.test.ts`, `tests/golden.test.ts` | реалізовано |
+| AC-ASSIST-07 | Ін'єкція всередині календаря | `src/lib/calendar-assistant/suggest.ts`, `src/lib/calendar-assistant/rules.ts`, `src/lib/ai/prompts/calendar.ts`, `src/app/calendar/assistant/actions.ts`, `src/app/calendar/assistant/page.tsx` | `src/lib/calendar-assistant/suggest.test.ts`, `tests/golden.test.ts` | реалізовано |
+| AC-ASSIST-08 | Помічник ще не відповів (очікування) | `src/app/calendar/assistant/assistant-panel.tsx` | — | відкладено (стан «Preparing suggestions…» видно лише в браузері: доводить UAT, WS10 D) |
+| AC-ASSIST-09 | Немає відповіді чи ліміт вичерпано | `src/lib/calendar-assistant/suggest.ts`, `src/lib/calendar-assistant/rules.ts`, `src/lib/ai/prompts/calendar.ts`, `src/app/calendar/assistant/actions.ts`, `src/app/calendar/assistant/page.tsx` | `src/lib/calendar-assistant/suggest.test.ts`, `src/app/calendar/assistant/actions.test.ts`, `tests/golden.test.ts` | реалізовано |
+| AC-ASSIST-10 | Текст із 2001 символу | `src/lib/calendar-assistant/suggest.ts`, `src/lib/calendar-assistant/rules.ts`, `src/lib/ai/prompts/calendar.ts`, `src/app/calendar/assistant/actions.ts`, `src/app/calendar/assistant/page.tsx` | `src/lib/calendar-assistant/suggest.test.ts`, `src/app/calendar/assistant/actions.test.ts` | реалізовано |
+| AC-ASSIST-11 | Працівник відкриває помічника | `src/lib/calendar-assistant/suggest.ts`, `src/lib/calendar-assistant/rules.ts`, `src/lib/ai/prompts/calendar.ts`, `src/app/calendar/assistant/actions.ts`, `src/app/calendar/assistant/page.tsx` | `src/app/calendar/assistant/actions.test.ts` | реалізовано |

@@ -59,9 +59,14 @@ export default async function ManageCalendarPage() {
       <PageHeader
         title="Manage calendar"
         actions={
-          <Link href="/calendar" className={buttonVariants({ variant: "outline", size: "sm" })}>
-            School calendar
-          </Link>
+          <>
+            <Link href="/calendar/assistant" className={buttonVariants({ variant: "outline", size: "sm" })}>
+              Calendar assistant
+            </Link>
+            <Link href="/calendar" className={buttonVariants({ variant: "outline", size: "sm" })}>
+              School calendar
+            </Link>
+          </>
         }
       />
       <Tile index={0}>

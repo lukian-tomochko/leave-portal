@@ -163,6 +163,25 @@ describe("planRequest із закриттями школи", () => {
     expect(result).toEqual({ ok: false, code: "NO_WORKING_HOURS", message: "You have no working hours on this day" });
   });
 
+  it("AC-CAL-16: єдиний блок працівника 13:00–17:00 після закриття о 12:00 — дата 2026-11-20 не приймається з назвою закриття", () => {
+    const afternoon: Position = {
+      id: "p-afternoon",
+      kind: "main",
+      division: "Elementary school",
+      jobTitle: "Teacher",
+      blocks: [{ weekday: 5, startsAt: "13:00", endsAt: "17:00" }],
+    };
+    const request: RequestInput = { leaveType: "personal", dates: ["2026-11-20"], positionIds: [afternoon.id] };
+
+    const result = planRequest(request, { positions: [afternoon], closures: [TEACHERS_MEETING] });
+
+    expect(result).toEqual({
+      ok: false,
+      code: "SCHOOL_CLOSED",
+      message: "The school is closed on this day: Teachers' meeting",
+    });
+  });
+
   it("AC-CAL-04: цілий день 2026-11-20 при достроковому закритті з 12:00 дає 1 запис 08:30–12:00 (210 хв)", () => {
     const context = { positions: [FULL_WEEK], closures: [TEACHERS_MEETING] };
 
