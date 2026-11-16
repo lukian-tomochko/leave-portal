@@ -113,6 +113,11 @@ function SuggestionsEditor({ initial }: { initial: SuggestionRow[] }) {
               const result = results.get(row.key);
               return (
                 <li key={row.key} className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-3">
+                  {/* Текстовий підсумок рядка: що саме буде збережено (значення полів нижче не читаються як текст сторінки). */}
+                  <p className="text-sm font-medium tabular-nums" data-testid="suggestion-summary">
+                    {row.name}:{" "}
+                    {row.kind === "early" ? `early dismissal on ${row.startsOn} from ${row.time}` : `whole days ${describeClosure({ name: row.name, startsOn: row.startsOn, endsOn: row.endsOn, closedFrom: null })}`}
+                  </p>
                   <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
                     <div className="flex flex-col gap-1.5">
                       <Label htmlFor={`name-${row.key}`}>Name</Label>
