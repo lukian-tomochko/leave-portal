@@ -148,6 +148,7 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
   `SUPABASE_DB_URL`; секрет репозиторію `SPEC_DENYLIST`); ніколи в git, логах чи чаті.
   У Vercel — лише `NEXT_PUBLIC_SUPABASE_URL` і `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; `SUPABASE_SECRET_KEY` —
   ніколи (лише ваш `.env.local` для скриптів).
+- `OPENROUTER_API_KEY` (AI-функція, ADR 0010) — лише `.env.local` і Vercel (Production + Preview); у `src/` його читає один файл `src/lib/ai/openrouter.ts` з `import "server-only"`; ніколи `NEXT_PUBLIC_`, ніколи в git, логах, звітах, кадрах UAT чи чаті з агентом. Лише моделі `:free`; живий `npm run eval` — вручну, ніколи в CI.
 - Імена: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` лише для скриптів
   (не `NEXT_PUBLIC_`, не `*_ANON_KEY`/`SERVICE_ROLE_KEY`). Шаблон — `.env.example`.
 - `.claude/settings.json` забороняє Claude Code читати `.env*` (крім `.env.example`); Cursor цих правил не читає — у Cursor не відкривай `.env*` агентом і не вставляй значень у чат. Скрипти з секретами запускай

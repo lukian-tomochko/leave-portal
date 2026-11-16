@@ -66,9 +66,14 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
         description="School closures, your leave and the team in one place."
         actions={
           actor?.role === "admin" ? (
-            <Link href="/calendar/manage" className={buttonVariants({ size: "sm" })}>
-              Manage calendar
-            </Link>
+            <>
+              <Link href="/calendar/assistant" className={buttonVariants({ variant: "outline", size: "sm" })}>
+                Calendar assistant
+              </Link>
+              <Link href="/calendar/manage" className={buttonVariants({ size: "sm" })}>
+                Manage calendar
+              </Link>
+            </>
           ) : null
         }
       />

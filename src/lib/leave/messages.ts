@@ -52,12 +52,14 @@ export function closureBlocked(records: { date: string; email: string }[]): stri
 }
 // AC-CAL-11: перша спільна дата й назва закриття, яке її вже закриває.
 export function alreadyClosed(overlaps: { date: string; name: string }[]): string {
-  const [first] = overlaps;
-  return `${first.date} is already closed: ${first.name}`;
+  // AC-CAL-17: по одній частині на кожне закриття з його першою спільною датою, за датами, через «, ».
+  return overlaps.map((overlap) => `${overlap.date} is already closed: ${overlap.name}`).join(", ");
 }
 // PM тексту для цих відмов не дав (питання #24): neutral English phrases.
-export const CLOSURE_NAME_REQUIRED = "Enter a closure name";
-export const CLOSURE_NAME_TOO_LONG = "The closure name can be at most 100 characters";
+// AC-CAL-18
+export const CLOSURE_NAME_REQUIRED = "Enter a name for the closure";
+// AC-CAL-19
+export const CLOSURE_NAME_TOO_LONG = "The name can be at most 100 characters";
 export const CLOSURE_DATE_INVALID = "Enter a valid date";
 // Години відпустки лише з точністю до 5 хвилин (припущення PM у вимозі 01); PM тексту для цього не дав, тож це нейтральна підказка форми.
 export const HOURS_STEP_INVALID = "Minutes must be a multiple of 5 (00, 05, 10…), for example 09:05 or 12:30";
@@ -104,3 +106,16 @@ export const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {
 export function noClosuresInYear(year: number): string {
   return `No closed days in school year ${year}–${year + 1}`;
 }
+
+// ── Вимога 05: помічник календаря (requirements/05-calendar-assistant.md): тексти дослівно з AC ──────────────────────
+// AC-ASSIST-05: після двокрапки — що бракує (його пише модель, коротким англійським рядком).
+export const ASSISTANT_NEEDS_MORE_DETAILS = "The calendar assistant needs more details:";
+// AC-ASSIST-06: відмову завжди беремо з коду, не з тексту моделі (відповідь не розкриє інструкцій).
+export const ASSISTANT_ONLY_CLOSURES = "The calendar assistant only helps to add school closures. Paste the text of the school calendar.";
+// AC-ASSIST-09
+export const ASSISTANT_UNAVAILABLE = "The calendar assistant is unavailable right now. Try again later or add closures manually.";
+// AC-ASSIST-10
+export const ASSISTANT_TEXT_LIMIT = 2000;
+export const ASSISTANT_TEXT_TOO_LONG = "The text can be at most 2000 characters";
+// AC-ASSIST-08
+export const ASSISTANT_PREPARING = "Preparing suggestions…";
