@@ -12,10 +12,13 @@ import { meetsThreshold, passRate, scoreResult, type GoldenCase } from "../tests
 // Перший 429 зупиняє прогін: цей і решта кейсів — NOT RUN з причиною у звіті, у частку успіху не входять.
 // Таймаут, помилка постачальника, відповідь не за схемою чи правилами — FAIL з причиною (входять у частку успіху).
 //   RUNS=2    — кілька прогонів поспіль для частки успіху (pass rate).
+//   CASES=GC-02,GC-09 — лише названі кейси (повтор після ліміту).
 //   RECORD=1  — успішні відповіді дописати в tests/fixtures/golden/recorded.json (для офлайн-реплею в CI).
 // PowerShell: $env:RECORD="1"; npm run eval   (а потім Remove-Item Env:RECORD)
 
-const cases = casesJson as GoldenCase[];
+// CASES=GC-02,GC-09 — прогнати лише названі кейси (повтор після ліміту); без змінної — усі 10.
+const only = process.env.CASES?.split(",").map((id) => id.trim());
+const cases = (casesJson as GoldenCase[]).filter((c) => !only || only.includes(c.id));
 const key = process.env.OPENROUTER_API_KEY?.trim();
 const RECORD = process.env.RECORD === "1";
 const RUNS = Math.max(1, Number(process.env.RUNS ?? 1) || 1);
@@ -25,7 +28,7 @@ const REPORT_DIR = "evals/reports";
 
 // Бюджет: на прогін — 10 викликів моделі з одного денного лічильника акаунта (50/день), без судді: слова PM оцінює код.
 const NEEDED = RUNS * cases.length;
-const GAP_MS = 3_000; // ≤ 20 запитів/хв навіть коли модель відповідає швидко
+const GAP_MS = Number(process.env.GAP_MS ?? 3_000); // ≤ 20 запитів/хв навіть коли модель відповідає швидко (GAP_MS=8000 для ліміту постачальника)
 
 type Recording = { modelId: string; recordedAt: string; promptVersion: string; text: string };
 // notRun — кейс не запускали через ліміт (429): у частку успіху не входить, у звіті — окремим рядком з причиною.

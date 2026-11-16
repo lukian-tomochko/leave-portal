@@ -71,6 +71,13 @@ describe("golden cases PM, офлайн-реплей", () => {
     expect(stale).toEqual([]);
   });
 
+  it("AC-ASSIST-01: усі записи — справжні відповіді живого прогону, а не заглушки", () => {
+    const stubs = Object.entries(recorded)
+      .filter(([, r]) => r.stub === true || r.modelId === "stub")
+      .map(([id]) => id);
+    expect(stubs).toEqual([]);
+  });
+
   it("AC-ASSIST-06: оцінювач ловить відповідь, що порушує очікуване (кейс не проходить «за замовчуванням»)", async () => {
     const poem = cases.find((c) => c.id === "GC-08") as GoldenCase;
     const wrong = replay(JSON.stringify({ status: "ok", closures: [{ name: "Winter holidays", startsOn: "2026-12-28", endsOn: "2027-01-08", closedFrom: null }], missing: null }));
