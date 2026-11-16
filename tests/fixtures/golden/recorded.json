@@ -1,0 +1,62 @@
+{
+  "GC-01": {
+    "modelId": "nvidia/nemotron-3.5-super-vl:free",
+    "recordedAt": "2026-11-16T08:27:03.716Z",
+    "promptVersion": "calendar-v1",
+    "text": "{\"status\":\"ok\",\"closures\":[{\"name\":\"Teachers' meeting\",\"startsOn\":\"2026-11-20\",\"endsOn\":\"2026-11-20\",\"closedFrom\":\"12:00\"}],\"missing\":null}"
+  },
+  "GC-02": {
+    "modelId": "nvidia/nemotron-3.5-super-vl:free",
+    "recordedAt": "2026-11-16T08:30:26.581Z",
+    "promptVersion": "calendar-v1",
+    "text": "{\"status\":\"ok\",\"closures\":[{\"name\":\"Winter break\",\"startsOn\":\"2026-12-28\",\"endsOn\":\"2027-01-08\",\"closedFrom\":null}],\"missing\":null}"
+  },
+  "GC-03": {
+    "modelId": "nvidia/nemotron-3.5-super-vl:free",
+    "recordedAt": "2026-11-16T08:27:29.505Z",
+    "promptVersion": "calendar-v1",
+    "text": "{\"status\":\"ok\",\"closures\":[{\"name\":\"Staff day\",\"startsOn\":\"2027-01-15\",\"endsOn\":\"2027-01-15\",\"closedFrom\":null},{\"name\":\"Spring break\",\"startsOn\":\"2027-03-22\",\"endsOn\":\"2027-03-26\",\"closedFrom\":null},{\"name\":\"Last day of school\",\"startsOn\":\"2027-06-18\",\"endsOn\":\"2027-06-18\",\"closedFrom\":\"13:00\"}],\"missing\":null}"
+  },
+  "GC-04": {
+    "modelId": "nvidia/nemotron-3.5-super-vl:free",
+    "recordedAt": "2026-11-16T08:27:48.576Z",
+    "promptVersion": "calendar-v1",
+    "text": "{\"status\":\"ok\",\"closures\":[{\"name\":\"Exam day\",\"startsOn\":\"2027-04-05\",\"endsOn\":\"2027-04-05\",\"closedFrom\":null}],\"missing\":null}"
+  },
+  "GC-05": {
+    "modelId": "nvidia/nemotron-3.5-super-vl:free",
+    "recordedAt": "2026-11-16T08:27:55.072Z",
+    "promptVersion": "calendar-v1",
+    "text": "{\"status\":\"ok\",\"closures\":[{\"name\":\"Snow day\",\"startsOn\":\"2026-11-12\",\"endsOn\":\"2026-11-12\",\"closedFrom\":null}],\"missing\":null}"
+  },
+  "GC-06": {
+    "modelId": "nvidia/nemotron-3.5-super-vl:free",
+    "recordedAt": "2026-11-16T08:28:00.689Z",
+    "promptVersion": "calendar-v1",
+    "text": "{\"status\":\"needs_info\",\"closures\":[],\"missing\":\"the closing time for 24 December\"}"
+  },
+  "GC-07": {
+    "modelId": "nvidia/nemotron-3.5-super-vl:free",
+    "recordedAt": "2026-11-16T08:28:07.068Z",
+    "promptVersion": "calendar-v1",
+    "text": "{\"status\":\"needs_info\",\"closures\":[],\"missing\":\"31 February does not exist\"}"
+  },
+  "GC-08": {
+    "modelId": "nvidia/nemotron-3.5-super-vl:free",
+    "recordedAt": "2026-11-16T08:28:12.127Z",
+    "promptVersion": "calendar-v1",
+    "text": "{\"status\":\"refused\",\"closures\":[],\"missing\":null}"
+  },
+  "GC-09": {
+    "modelId": "nvidia/nemotron-3.5-super-vl:free",
+    "recordedAt": "2026-11-16T08:30:38.651Z",
+    "promptVersion": "calendar-v1",
+    "text": "{\"status\":\"ok\",\"closures\":[{\"name\":\"Winter break\",\"startsOn\":\"2026-12-28\",\"endsOn\":\"2027-01-08\",\"closedFrom\":null}],\"missing\":null}"
+  },
+  "GC-10": {
+    "modelId": "nvidia/nemotron-3.5-super-vl:free",
+    "recordedAt": "2026-11-16T08:30:48.951Z",
+    "promptVersion": "calendar-v1",
+    "text": "{\"status\":\"refused\",\"closures\":[],\"missing\":null}"
+  }
+}

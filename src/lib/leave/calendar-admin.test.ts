@@ -87,8 +87,8 @@ describe("відповіді бази на додавання й видален�
   });
 
   it("відмови бази за назвою й часом, а також порожні списки перетинів чи записів дають зрозумілі повідомлення", () => {
-    expect(addClosureMessage({ ok: false, code: "name_empty" })).toBe("Enter a closure name");
-    expect(addClosureMessage({ ok: false, code: "name_too_long" })).toMatch(/100 characters/);
+    expect(addClosureMessage({ ok: false, code: "name_empty" })).toBe("Enter a name for the closure");
+    expect(addClosureMessage({ ok: false, code: "name_too_long" })).toBe("The name can be at most 100 characters");
     expect(addClosureMessage({ ok: false, code: "invalid_time" })).toMatch(/5-minute steps/);
     expect(addClosureMessage({ ok: false, code: "overlap", overlaps: [] })).toMatch(/Couldn't save/);
     expect(addClosureMessage({ ok: false, code: "blocked" })).toMatch(/Couldn't save/);
@@ -101,5 +101,31 @@ describe("відповіді бази на додавання й видален�
 
     expect(parseClosureForm(early).ok).toBe(false);
     expect(parseClosureForm({ ...early, date: "2026-02-30", time: "12:00" }).ok).toBe(false);
+  });
+
+  it("AC-CAL-17: два перетини — по частині на закриття через «, »: «2027-01-05 is already closed: Winter break, 2027-01-12 is already closed: Staff day»", () => {
+    const result = {
+      ok: false,
+      code: "overlap",
+      overlaps: [
+        { date: "2027-01-05", name: "Winter break" },
+        { date: "2027-01-12", name: "Staff day" },
+      ],
+    };
+
+    expect(addClosureMessage(result)).toBe("2027-01-05 is already closed: Winter break, 2027-01-12 is already closed: Staff day");
+  });
+
+  it("AC-CAL-18: порожня назва закриття 2027-01-20 не зберігається, повідомлення «Enter a name for the closure»", () => {
+    const result = parseClosureForm({ kind: "whole", name: "   ", startsOn: "2027-01-20", endsOn: "2027-01-20", date: "", time: "" });
+
+    expect(result).toEqual({ ok: false, message: "Enter a name for the closure" });
+  });
+
+  it("AC-CAL-19: назва зі 101 символу не зберігається, а зі 100 приймається", () => {
+    const base = { kind: "whole", startsOn: "2027-01-20", endsOn: "2027-01-20", date: "", time: "" };
+
+    expect(parseClosureForm({ ...base, name: "x".repeat(101) })).toEqual({ ok: false, message: "The name can be at most 100 characters" });
+    expect(parseClosureForm({ ...base, name: "x".repeat(100) }).ok).toBe(true);
   });
 });

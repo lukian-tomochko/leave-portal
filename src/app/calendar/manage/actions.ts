@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
-import { addClosureMessage, parseClosureForm, removeClosureMessage } from "@/lib/leave/calendar-admin";
+import { saveClosure } from "@/lib/calendar-assistant/save";
+import { parseClosureForm, removeClosureMessage } from "@/lib/leave/calendar-admin";
 import { isRecordId } from "@/lib/leave/decision";
 import { CLOSURE_TECHNICAL_ERROR, ONLY_ADMIN_CALENDAR } from "@/lib/leave/messages";
 import { createClient } from "@/lib/supabase/server";
@@ -47,20 +48,9 @@ export async function addClosure(_previous: ClosureFormState, formData: FormData
     if (!parsed.ok) {
       return { status: "error", message: parsed.message, values };
     }
-    const { name, startsOn, endsOn, closedFrom } = parsed.input;
-    const { data, error } = await supabase.rpc("add_school_closure", {
-      p_name: name,
-      p_starts_on: startsOn,
-      p_ends_on: endsOn,
-      ...(closedFrom === null ? {} : { p_closed_from: closedFrom }),
-    });
-    if (error) {
-      // 42501 — база відмовила за роллю (AC-CAL-13).
-      return { status: "error", message: error.code === "42501" ? ONLY_ADMIN_CALENDAR : CLOSURE_TECHNICAL_ERROR, values };
-    }
-    const message = addClosureMessage(data);
-    if (message !== null) {
-      return { status: "error", message, values };
+    const saved = await saveClosure(supabase, parsed.input);
+    if (!saved.ok) {
+      return { status: "error", message: saved.message, values };
     }
   } catch (error) {
     // redirect() усередині try кидає службовий виняток Next.js: його не ковтаємо.
