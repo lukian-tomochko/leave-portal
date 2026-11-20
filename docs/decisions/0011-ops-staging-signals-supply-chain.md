@@ -1,6 +1,6 @@
 # 0011. Експлуатація (WS11): staging з окремою базою, сигнали, ланцюг постачання
 
-- Статус: прийнято
+- Статус: прийнято (рішення). Стан реалізації — у таблиці нижче, її оновлює кожен PR цієї роботи
 - Дата: 2026-11-20
 - AC: — (операційні рішення, окремих AC у вимогах PM немає)
 
@@ -18,16 +18,17 @@ Hobby живуть годину, на Hobby одне посилання дост
   патчів; мажорне оновлення `supabase` ігноруємо (3.x змінює поведінку команд, лишаємось на закріпленій 2.x).
 - `.npmrc`: `min-release-age=7` (npm 11.19 підтримує; версії з `package-lock.json` не змінюються).
 - Усі `uses:` у workflow закріплені за повним SHA з коментарем версії (`# v7.0.1`); Dependabot оновлює їх разом.
-- Безпека репо: push protection і Dependabot security updates увімкнені, CodeQL default setup.
+- Безпека репо: push protection, Dependabot security updates і CodeQL default setup. Це налаштування репозиторію, а не
+  файли: їх вмикає власник у Settings → Code security, файл `dependabot.yml` їх не вмикає.
 
 **Середовища**
 - Гілка `staging` отримує зміни лише з `main` (`git merge --ff-only`). Staging має **власний проєкт Supabase**; Preview
   (усі гілки) і локальна розробка ходять лише в нього, Production — лише в прод-базу. Прод-ключів у Preview немає.
-- Змінна `APP_ENV=staging` задана лише для Preview і гілки `staging`; `/api/health` повертає `appEnv` і `supabaseRef`
-  (ref проєкту з публічної адреси, не секрет).
-- Міграції в обидві бази застосовує лише CI: job `db-deploy-staging` перед `db-deploy`, обидва зі звіркою ref рядка
+- Змінна `APP_ENV=staging` задана лише для Preview і гілки `staging`; `/api/health` повертатиме `appEnv` і `supabaseRef`
+  (ref проєкту з публічної адреси, не секрет) поряд із наявними полями `ok`, `sha`, `env`, `db`, `reason`.
+- Міграції в обидві бази застосовуватиме лише CI: job `db-deploy-staging` перед `db-deploy`, обидва зі звіркою ref рядка
   підключення зі змінними репо `SUPABASE_STAGING_REF` і `SUPABASE_PROD_REF`.
-- Smoke перевіряє кожен деплой за `client_payload.url` із заголовком обходу захисту Vercel (секрет у GitHub Secrets).
+- Smoke перевірятиме кожен деплой за `client_payload.url` із заголовком обходу захисту Vercel (секрет у GitHub Secrets).
 
 **Сигнали**
 - Алерт червоного smoke — повідомлення Telegram-групи команди (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` — лише в
@@ -35,14 +36,27 @@ Hobby живуть годину, на Hobby одне посилання дост
 - Помилки сервера — власний `onRequestError` у `src/instrumentation.ts` у ту саму групу: маршрут, метод, digest, до
   п'яти рядків стека; без заголовків, тіла запиту й тексту помилки. Sentry не беремо: менше залежностей і акаунтів.
 - Журнал AI-функції — один рядок JSON `llm.call` на виклик моделі (`src/lib/ai/llm-log.ts`); тексту користувача,
-  промпту й відповіді в схемі немає, це перевіряє тест.
+  промпту й відповіді в схемі не буде, це перевірятиме тест.
+
+## Стан реалізації (на 2026-11-20)
+
+| Рішення | Стан | Де |
+|---|---|---|
+| `dependabot.yml`, `.npmrc`, дії за SHA | реалізовано в цьому PR | PR «ланцюг постачання» |
+| `next` ≥ 16.4.5 | у PR, чекає злиття | PR «next 16.4.6» |
+| push protection | увімкнено в налаштуваннях репо | Settings → Code security |
+| Dependabot security updates, CodeQL | заплановано (дія власника після злиття) | Settings → Code security |
+| `appEnv`/`supabaseRef` у health, `db-deploy-staging` | заплановано | PR «staging: health і CI» |
+| Smoke кожного деплою з обходом захисту | заплановано; зараз `smoke.yml` перевіряє лише прод-домен (`PROD_URL`) без bypass | PR «smoke кожного деплою» |
+| Telegram-алерт | заплановано; зараз збій видно лише в GitHub Actions | PR «алерт» |
+| `onRequestError`, `llm.call` + тест | заплановано | PR «сигнали» |
 
 ## Розглянуті варіанти
 
 - Staging на прод-базі — відхилено: UAT, preview і дріл зачепили б прод-дані.
 - Sentry замість власного `onRequestError` — відхилено: новий акаунт і пакет на безкоштовному плані заради одного
   повідомлення; курс зараховує обидва шляхи однаково.
-- Прапорці й канарка — не потрібні на цьому масштабі; відкат на Hobby описано в `docs/runbook.md`.
+- Прапорці й канарка — не потрібні на цьому масштабі; відкат на Hobby описано в `docs/runbook.md` (буде додано).
 
 ## Наслідки
 
