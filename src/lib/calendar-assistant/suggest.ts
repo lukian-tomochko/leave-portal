@@ -1,5 +1,7 @@
 import { Output, generateText, type LanguageModel } from "ai";
 import { classifyError, type AiFailure } from "@/lib/ai/errors";
+import { isFallback, logLlmCall, type LlmState } from "@/lib/ai/llm-log";
+import { PRODUCT_MODELS } from "@/lib/ai/models";
 import { CALENDAR_PROMPT_VERSION, calendarInstructions, sanitizeText, wrapDocument } from "@/lib/ai/prompts/calendar";
 import { AssistantAnswerSchema, type Suggestion } from "@/lib/ai/schema";
 import { schoolYearOf } from "@/lib/leave/balance";
@@ -26,7 +28,30 @@ export type SuggestResult =
   // unavailable: немає ключа, 429, таймаут, відповідь не за схемою чи правилами (AC-ASSIST-09). detail — для логів і тестів.
   | { status: "unavailable"; message: string; detail: AiFailure | "no_key" | "rules" };
 
-export type SuggestOptions = { timeoutMs?: number };
+// log — куди писати llm.call (WS11, трек B): немає — журналу немає (так працюють офлайн-тести). У журнал потрапляють лише
+// модель, затримка, токени, стан, fallback, версія промпту й код причини: тексту адміністратора, промпту й відповіді моделі немає.
+export type SuggestOptions = { timeoutMs?: number; log?: { requestId: string; route: string } };
+
+// Один рядок llm.call на виклик моделі (src/lib/ai/llm-log.ts). Без `log` нічого не пише.
+function logCall(
+  opts: SuggestOptions,
+  started: number,
+  call: { model: string; state: LlmState; inputTokens?: number; outputTokens?: number; errorKind?: string },
+): void {
+  if (!opts.log) return;
+  logLlmCall({
+    requestId: opts.log.requestId,
+    route: opts.log.route,
+    model: call.model,
+    fallbackUsed: isFallback(call.model, PRODUCT_MODELS[0]),
+    state: call.state,
+    latencyMs: performance.now() - started,
+    inputTokens: call.inputTokens,
+    outputTokens: call.outputTokens,
+    promptVersion: CALENDAR_PROMPT_VERSION,
+    errorKind: call.errorKind,
+  });
+}
 
 const unavailable = (detail: Extract<SuggestResult, { status: "unavailable" }>["detail"]): SuggestResult => ({
   status: "unavailable",
@@ -57,6 +82,8 @@ export async function suggestClosures(
 
   let answer;
   let modelId: string;
+  let usage: { inputTokens?: number; outputTokens?: number };
+  const started = performance.now();
   try {
     const result = await generateText({
       model,
@@ -70,14 +97,19 @@ export async function suggestClosures(
     });
     answer = result.output;
     modelId = result.response.modelId;
+    usage = { inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens };
   } catch (error) {
-    return unavailable(classifyError(error).reason);
+    const reason = classifyError(error).reason;
+    logCall(opts, started, { model: PRODUCT_MODELS[0], state: "unavailable", errorKind: reason });
+    return unavailable(reason);
   }
 
   const checked = checkAnswer(answer);
   if (!checked.ok) {
+    logCall(opts, started, { model: modelId, state: "unavailable", errorKind: "rules", ...usage });
     return unavailable("rules");
   }
+  logCall(opts, started, { model: modelId, state: answer.status, ...usage });
   if (answer.status === "refused") {
     return { status: "refused", message: ASSISTANT_ONLY_CLOSURES, modelId };
   }

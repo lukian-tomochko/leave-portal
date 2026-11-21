@@ -38,7 +38,7 @@ export async function requestSuggestions(_previous: AssistantState, formData: Fo
     }
     const raw = formData.get("text");
     const text = typeof raw === "string" ? raw : "";
-    const result = await suggestClosures(text, todayInKyiv(), productModel());
+    const result = await suggestClosures(text, todayInKyiv(), productModel(), { log: { requestId: crypto.randomUUID(), route: "/calendar/assistant" } });
     switch (result.status) {
       case "ok":
         return {
