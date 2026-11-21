@@ -26,3 +26,18 @@ export function classifyDbProbe({ status, error }: DbProbe): DbHealth {
   // 0 — мережа (Supabase недоступний або хибний URL), 5xx, PGRST000–003.
   return { db: "down", reason: `status-${status}${code ? `-${code}` : ""}` };
 }
+
+/**
+ * Ref проєкту Supabase з публічної адреси `https://<ref>.supabase.co` (WS11, трек A): так /api/health показує, у яку базу веде
+ * середовище, і staging відрізняється від проду. Ref не секрет (він і так є в адресі, яку бачить браузер). Не схоже на
+ * адресу Supabase (локальна розробка, власний домен) — порожній рядок, а не вигаданий ref.
+ */
+export function supabaseRefFrom(url: string | undefined): string {
+  const match = /^https:\/\/([a-z0-9]+)\.supabase\.co(?:[/:?#]|$)/i.exec((url ?? "").trim());
+  return match ? match[1].toLowerCase() : "";
+}
+
+/** Середовище застосунку: явна змінна APP_ENV (на staging — лише для гілки staging), інакше VERCEL_ENV, інакше local. */
+export function appEnvFrom(vars: { APP_ENV?: string; VERCEL_ENV?: string }): string {
+  return vars.APP_ENV?.trim() || vars.VERCEL_ENV?.trim() || "local";
+}
