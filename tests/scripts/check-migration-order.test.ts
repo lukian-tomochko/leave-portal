@@ -51,7 +51,12 @@ afterAll(() => {
   for (const dir of temps) rmSync(dir, { recursive: true, force: true });
 });
 
-describe("scripts/check-migration-order.mjs", () => {
+// Кожен випадок — це ~10 git-команд і запуск скрипту (які теж викликає git) у новому тимчасовому репозиторії: на Windows
+// це ≈2 с самотужки, а в повному прогоні (паралельні файли, test:coverage) — понад типові 5 с testTimeout.
+// Тести синхронні, тож таймаут не переривав їх, а лише позначав як впалі постфактум. Явний запас — для всього файлу.
+const SLOW_TEST_TIMEOUT_MS = 60_000;
+
+describe("scripts/check-migration-order.mjs", { timeout: SLOW_TEST_TIMEOUT_MS }, () => {
   it("passes when the PR migration is newer than the newest on main", () => {
     const { code, out } = run("newer");
     expect(code).toBe(0);
