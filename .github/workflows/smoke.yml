@@ -66,8 +66,8 @@ jobs:
       PROD_URL: ${{ vars.PROD_URL }}
       # Очікуваний коміт: щойно розгорнутий (status / repository_dispatch) або HEAD main (schedule, ручний запуск з main).
       EXPECT_SHA: ${{ github.event.client_payload.git.sha || github.event.sha || github.sha }}
-      # Прод не за захистом (Standard Protection), але заголовок не шкодить, якщо колись увімкнуть All Deployments.
-      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      # Секрету обходу тут свідомо немає: прод відкритий (Standard Protection), і smoke має бачити його так, як бачать відвідувачі.
+      # Якщо хтось увімкне All Deployments, прод-smoke стане червоним і алерт спрацює.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -125,6 +125,9 @@ jobs:
       DEPLOY_ENV: ${{ github.event.client_payload.environment || 'manual' }}
       DEPLOY_BRANCH: ${{ github.event.client_payload.git.ref || '' }}
       SMOKE_TARGET: deploy
+      # Кому можна надсилати секрет обходу: хост проду (PROD_URL) або суфікс команди Vercel (SMOKE_BYPASS_SUFFIX), див. scripts/lib/bypass-host.mjs.
+      PROD_URL: ${{ vars.PROD_URL }}
+      SMOKE_BYPASS_SUFFIX: ${{ vars.SMOKE_BYPASS_SUFFIX }}
       # Значення — лише з GitHub Secrets; скрипт додає заголовок x-vercel-protection-bypass і не друкує секрет.
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:

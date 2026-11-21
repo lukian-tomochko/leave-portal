@@ -12,11 +12,16 @@
 //   - x-vercel-set-bypass-cookie НЕ надсилаємо: відповідь стала б редіректом із Set-Cookie, а smoke ходить з redirect:"manual";
 //   - SMOKE_TARGET=deploy (ставить workflow для preview і staging) змінює лише підказки в повідомленнях про збій.
 // Код виходу: 0 — усе гаразд, 1 — є збій (рядки ::error:: видно в GitHub Actions), 2 — не вказано адресу.
+import { bypassHostAllowed } from "./lib/bypass-host.mjs";
+
 const [rawBase = process.env.PROD_URL ?? "", expectSha = ""] = process.argv.slice(2);
 // client_payload.url від Vercel може прийти хостом без схеми — додаємо https://.
 const base = (/^https?:\/\//.test(rawBase) ? rawBase : rawBase ? `https://${rawBase}` : "").replace(/\/+$/, "");
 
-const bypass = (process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? "").trim();
+// Секрет обходу надсилаємо лише на довірені адреси (scripts/lib/bypass-host.mjs); інакше — збій без жодного запиту із секретом.
+const bypassSecret = (process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? "").trim();
+const bypassTrusted = !bypassSecret || bypassHostAllowed(base, process.env.PROD_URL, process.env.SMOKE_BYPASS_SUFFIX);
+const bypass = bypassTrusted ? bypassSecret : "";
 const target = process.env.SMOKE_TARGET === "deploy" ? "deploy" : "prod";
 const headers = { "user-agent": "smoke/2.0 (WS11)" };
 if (bypass) headers["x-vercel-protection-bypass"] = bypass;
@@ -61,6 +66,12 @@ const vercelWall = (r) =>
   /vercel\.com\/(sso|login)|_vercel_sso/.test(r.location) || ((r.status === 401 || r.status === 403) && /vercel/i.test(r.text));
 
 async function main() {
+  if (!bypassTrusted) {
+    console.log(
+      `::error title=smoke ${base}::адреса не довірена для секрету обходу — він НЕ надсилався. Потрібні: https, змінна PROD_URL і змінна репо SMOKE_BYPASS_SUFFIX (суфікс команди Vercel, напр. -<команда>.vercel.app); адреса має бути прод-хостом або мати цей суфікс`,
+    );
+    return 1;
+  }
   const fail = [];
   const root = await get("/");
   if (vercelWall(root)) fail.push(`"/": ${wallHint()}`);

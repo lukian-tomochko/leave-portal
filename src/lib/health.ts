@@ -33,8 +33,14 @@ export function classifyDbProbe({ status, error }: DbProbe): DbHealth {
  * адресу Supabase (локальна розробка, власний домен) — порожній рядок, а не вигаданий ref.
  */
 export function supabaseRefFrom(url: string | undefined): string {
-  const match = /^https:\/\/([a-z0-9]+)\.supabase\.co(?:[/:?#]|$)/i.exec((url ?? "").trim());
-  return match ? match[1].toLowerCase() : "";
+  // Розбираємо URL, а не порівнюємо префікс: у "https://x.supabase.co:pw@evil.example" хост — evil.example.
+  try {
+    const parsed = new URL((url ?? "").trim());
+    const match = parsed.protocol === "https:" ? /^([a-z0-9]+)\.supabase\.co$/i.exec(parsed.hostname) : null;
+    return match ? match[1].toLowerCase() : "";
+  } catch {
+    return "";
+  }
 }
 
 /** Середовище застосунку: явна змінна APP_ENV (на staging — лише для гілки staging), інакше VERCEL_ENV, інакше local. */

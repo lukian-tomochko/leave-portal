@@ -68,6 +68,13 @@ describe("supabaseRefFrom і appEnvFrom (/api/health, WS11)", () => {
     expect(supabaseRefFrom("https://abcd1234.supabase.co.evil.example.com")).toBe("");
   });
 
+  it("не бере ref із облікових даних перед @ і не падає на нерозбірливій адресі", () => {
+    expect(supabaseRefFrom("https://abcd1234.supabase.co:pw@evil.example.com")).toBe("");
+    expect(supabaseRefFrom("https://abcd1234.supabase.co@evil.example.com/")).toBe("");
+    expect(supabaseRefFrom("not a url")).toBe("");
+    expect(supabaseRefFrom("https://abcd1234.supabase.co:443/rest/v1")).toBe("abcd1234");
+  });
+
   it("бере APP_ENV з пріоритетом над VERCEL_ENV", () => {
     expect(appEnvFrom({ APP_ENV: "staging", VERCEL_ENV: "preview" })).toBe("staging");
     expect(appEnvFrom({ APP_ENV: "  ", VERCEL_ENV: "preview" })).toBe("preview");
