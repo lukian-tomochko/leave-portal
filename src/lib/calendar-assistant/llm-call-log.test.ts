@@ -34,20 +34,27 @@ const OK_ANSWER = {
   missing: null,
 };
 
-describe("llm.call у suggestClosures", () => {
-  let info: ReturnType<typeof vi.spyOn>;
-  let error: ReturnType<typeof vi.spyOn>;
+// Шпигуни за console.info і console.error: llm.call іде рівнем info, а unavailable — error.
+function consoleSpies() {
+  const spies = {} as { info: ReturnType<typeof vi.spyOn>; error: ReturnType<typeof vi.spyOn> };
   beforeEach(() => {
-    info = vi.spyOn(console, "info").mockImplementation(() => {});
-    error = vi.spyOn(console, "error").mockImplementation(() => {});
+    spies.info = vi.spyOn(console, "info").mockImplementation(() => {});
+    spies.error = vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => vi.restoreAllMocks());
+  return spies;
+}
 
-  it("пише один рядок llm.call зі станом, моделлю й версією промпту, без тексту користувача й відповіді моделі", async () => {
+const lineOf = (spy: ReturnType<typeof vi.spyOn>, index = 0) => String(spy.mock.calls[index][0]);
+
+describe("llm.call у suggestClosures: відповіді моделі", () => {
+  const spies = consoleSpies();
+
+  it("пише один рядок зі станом, моделлю й версією промпту, без тексту користувача й відповіді моделі", async () => {
     await suggestClosures(USER_TEXT, TODAY, answering(OK_ANSWER), { log: LOG });
 
-    expect(info).toHaveBeenCalledTimes(1);
-    const line = String(info.mock.calls[0][0]);
+    expect(spies.info).toHaveBeenCalledTimes(1);
+    const line = lineOf(spies.info);
     expect(JSON.parse(line)).toMatchObject({
       event: "llm.call",
       requestId: LOG.requestId,
@@ -65,17 +72,20 @@ describe("llm.call у suggestClosures", () => {
   it("позначає fallback, коли відповіла не перша модель ланцюжка", async () => {
     await suggestClosures(USER_TEXT, TODAY, answering(OK_ANSWER, "nvidia/nemotron-3.5-super-vl:free"), { log: LOG });
 
-    expect(JSON.parse(String(info.mock.calls[0][0]))).toMatchObject({ fallbackUsed: true, model: "nvidia/nemotron-3.5-super-vl:free" });
+    expect(JSON.parse(lineOf(spies.info))).toMatchObject({ fallbackUsed: true, model: "nvidia/nemotron-3.5-super-vl:free" });
   });
 
-  it("пише стан відмови моделі (refused) і брак даних (needs_info) як відповідь, а не як збій", async () => {
+  it("відмову моделі (refused) і брак даних (needs_info) пише як відповідь, а не як збій", async () => {
     await suggestClosures(USER_TEXT, TODAY, answering({ status: "refused", closures: [], missing: null }), { log: LOG });
     await suggestClosures(USER_TEXT, TODAY, answering({ status: "needs_info", closures: [], missing: "the dates" }), { log: LOG });
 
-    const states = info.mock.calls.map((call) => JSON.parse(String(call[0])).state);
-    expect(states).toEqual(["refused", "needs_info"]);
-    expect(error).not.toHaveBeenCalled();
+    expect([0, 1].map((index) => JSON.parse(lineOf(spies.info, index)).state)).toEqual(["refused", "needs_info"]);
+    expect(spies.error).not.toHaveBeenCalled();
   });
+});
+
+describe("llm.call у suggestClosures: збої й пропуски", () => {
+  const spies = consoleSpies();
 
   it("збій моделі пише рядок рівня error зі станом unavailable і кодом причини, без тексту помилки", async () => {
     const failing = new MockLanguageModelV4({
@@ -92,8 +102,8 @@ describe("llm.call у suggestClosures", () => {
 
     await suggestClosures(USER_TEXT, TODAY, failing, { log: LOG });
 
-    expect(info).not.toHaveBeenCalled();
-    const line = String(error.mock.calls[0][0]);
+    expect(spies.info).not.toHaveBeenCalled();
+    const line = lineOf(spies.error);
     expect(JSON.parse(line)).toMatchObject({ event: "llm.call", state: "unavailable", errorKind: "rate_limited" });
     for (const marker of MARKERS) expect(line).not.toContain(marker);
   });
@@ -103,7 +113,7 @@ describe("llm.call у suggestClosures", () => {
 
     await suggestClosures(USER_TEXT, TODAY, answering(impossibleDate), { log: LOG });
 
-    expect(JSON.parse(String(error.mock.calls[0][0]))).toMatchObject({ state: "unavailable", errorKind: "rules", inputTokens: 612 });
+    expect(JSON.parse(lineOf(spies.error))).toMatchObject({ state: "unavailable", errorKind: "rules", inputTokens: 612 });
   });
 
   it("без налаштування log, без ключа й для задовгого тексту журналу немає", async () => {
@@ -111,7 +121,7 @@ describe("llm.call у suggestClosures", () => {
     await suggestClosures(USER_TEXT, TODAY, null, { log: LOG });
     await suggestClosures("x".repeat(2001), TODAY, answering(OK_ANSWER), { log: LOG });
 
-    expect(info).not.toHaveBeenCalled();
-    expect(error).not.toHaveBeenCalled();
+    expect(spies.info).not.toHaveBeenCalled();
+    expect(spies.error).not.toHaveBeenCalled();
   });
 });
