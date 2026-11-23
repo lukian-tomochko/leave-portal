@@ -1,6 +1,6 @@
 // D0: /api/health відрізняє «база відповіла» від «база недоступна, призупинена чи ключ хибний».
 import { describe, expect, it } from "vitest";
-import { classifyDbProbe } from "@/lib/health";
+import { appEnvFrom, classifyDbProbe, supabaseRefFrom } from "@/lib/health";
 
 describe("classifyDbProbe (/api/health)", () => {
   it("рахує базу живою, коли запит пройшов або Postgres відмовив у правах (42501)", () => {
@@ -50,5 +50,35 @@ describe("classifyDbProbe (/api/health)", () => {
       db: "down",
       reason: "status-500-PGRST300",
     });
+  });
+});
+
+describe("supabaseRefFrom і appEnvFrom (/api/health, WS11)", () => {
+  it("дістає ref проєкту з публічної адреси Supabase", () => {
+    expect(supabaseRefFrom("https://abcdefghijklmnop.supabase.co")).toBe("abcdefghijklmnop");
+    expect(supabaseRefFrom("https://AbCd1234.supabase.co/")).toBe("abcd1234");
+    expect(supabaseRefFrom(" https://abcd1234.supabase.co/rest/v1 ")).toBe("abcd1234");
+  });
+
+  it("не вигадує ref для чужої, локальної чи порожньої адреси", () => {
+    expect(supabaseRefFrom(undefined)).toBe("");
+    expect(supabaseRefFrom("")).toBe("");
+    expect(supabaseRefFrom("http://127.0.0.1:54321")).toBe("");
+    expect(supabaseRefFrom("https://evil.example.com/abcd1234.supabase.co")).toBe("");
+    expect(supabaseRefFrom("https://abcd1234.supabase.co.evil.example.com")).toBe("");
+  });
+
+  it("не бере ref із облікових даних перед @ і не падає на нерозбірливій адресі", () => {
+    expect(supabaseRefFrom("https://abcd1234.supabase.co:pw@evil.example.com")).toBe("");
+    expect(supabaseRefFrom("https://abcd1234.supabase.co@evil.example.com/")).toBe("");
+    expect(supabaseRefFrom("not a url")).toBe("");
+    expect(supabaseRefFrom("https://abcd1234.supabase.co:443/rest/v1")).toBe("abcd1234");
+  });
+
+  it("бере APP_ENV з пріоритетом над VERCEL_ENV", () => {
+    expect(appEnvFrom({ APP_ENV: "staging", VERCEL_ENV: "preview" })).toBe("staging");
+    expect(appEnvFrom({ APP_ENV: "  ", VERCEL_ENV: "preview" })).toBe("preview");
+    expect(appEnvFrom({ VERCEL_ENV: "production" })).toBe("production");
+    expect(appEnvFrom({})).toBe("local");
   });
 });

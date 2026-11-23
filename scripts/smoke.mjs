@@ -1,21 +1,37 @@
 #!/usr/bin/env node
-// D0 smoke розгорнутого застосунку: лише GET, без входу й форм, без секретів (Node 24, без залежностей).
+// Smoke розгорнутого застосунку (D0 + WS11): лише GET, без входу й форм (Node 24, без залежностей). Основа — D0-smoke курсу;
+// у WS11 додано обхід захисту Vercel для preview і staging (набір ops-kit, smoke v2: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/materials/ops-kit/scripts/smoke.mjs).
 // Використання: node scripts/smoke.mjs <base-url> [expected-sha]     (або npm run smoke -- <base-url> [sha])
 //   1) "/"           → редірект на /login або 200 (не 401/404/5xx і не стіна входу Vercel);
 //   2) "/login"      → 200 і поле пароля (застосунок справді віддає сторінку);
 //   3) "/api/health" → 200 {db:"ok"}; з expected-sha — sha збігається (до 6 спроб × 20 с: прод-домен перемикається
 //                      на новий деплой не миттєво).
+// Нове у v2:
+//   - змінна середовища VERCEL_AUTOMATION_BYPASS_SECRET задана → кожен запит несе заголовок x-vercel-protection-bypass, так smoke
+//     відкриває preview і staging за захистом Vercel. Значення секрету скрипт ніколи не друкує: у журналі лише bypass=true/false;
+//   - x-vercel-set-bypass-cookie НЕ надсилаємо: відповідь стала б редіректом із Set-Cookie, а smoke ходить з redirect:"manual";
+//   - SMOKE_TARGET=deploy (ставить workflow для preview і staging) змінює лише підказки в повідомленнях про збій.
 // Код виходу: 0 — усе гаразд, 1 — є збій (рядки ::error:: видно в GitHub Actions), 2 — не вказано адресу.
+import { bypassHostAllowed } from "./lib/bypass-host.mjs";
+
 const [rawBase = process.env.PROD_URL ?? "", expectSha = ""] = process.argv.slice(2);
 // client_payload.url від Vercel може прийти хостом без схеми — додаємо https://.
 const base = (/^https?:\/\//.test(rawBase) ? rawBase : rawBase ? `https://${rawBase}` : "").replace(/\/+$/, "");
+
+// Секрет обходу надсилаємо лише на довірені адреси (scripts/lib/bypass-host.mjs); інакше — збій без жодного запиту із секретом.
+const bypassSecret = (process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? "").trim();
+const bypassTrusted = !bypassSecret || bypassHostAllowed(base, process.env.PROD_URL, process.env.SMOKE_BYPASS_SUFFIX);
+const bypass = bypassTrusted ? bypassSecret : "";
+const target = process.env.SMOKE_TARGET === "deploy" ? "deploy" : "prod";
+const headers = { "user-agent": "smoke/2.0 (WS11)" };
+if (bypass) headers["x-vercel-protection-bypass"] = bypass;
 
 const get = async (path) => {
   try {
     // Без таймауту зависла відповідь чекала б до 300 с, а цикл повторів перевищив би timeout-minutes workflow без діагностики.
     const r = await fetch(base + path, {
       redirect: "manual",
-      headers: { "user-agent": "smoke/1.0 (D0)" },
+      headers,
       signal: AbortSignal.timeout(15_000),
     });
     return {
@@ -35,13 +51,30 @@ const get = async (path) => {
     return { status: 0, location: "", vercelError: "", text };
   }
 };
+// Підказка залежить від того, що перевіряємо і чи є секрет обходу.
+function wallHint() {
+  if (bypass) {
+    return "Vercel не прийняв секрет обходу — його перегенерували чи видалили? Скопіюйте актуальний з Vercel (Settings → Deployment Protection → Protection Bypass for Automation) у GitHub Secrets VERCEL_AUTOMATION_BYPASS_SECRET і зробіть Redeploy";
+  }
+  if (target === "deploy") {
+    return "деплой за захистом Vercel, а секрету обходу немає — увімкніть Protection Bypass for Automation (Vercel → Settings → Deployment Protection) і додайте значення в GitHub Secrets як VERCEL_AUTOMATION_BYPASS_SECRET";
+  }
+  return "прод за стіною входу Vercel — Settings → Deployment Protection: Standard Protection (захищає preview і staging, прод відкритий), не All Deployments";
+}
+
 const vercelWall = (r) =>
   /vercel\.com\/(sso|login)|_vercel_sso/.test(r.location) || ((r.status === 401 || r.status === 403) && /vercel/i.test(r.text));
 
 async function main() {
+  if (!bypassTrusted) {
+    console.log(
+      `::error title=smoke ${base}::адреса не довірена для секрету обходу — він НЕ надсилався. Потрібні: https, змінна PROD_URL і змінна репо SMOKE_BYPASS_SUFFIX (суфікс команди Vercel, напр. -<команда>.vercel.app); адреса має бути прод-хостом або мати цей суфікс`,
+    );
+    return 1;
+  }
   const fail = [];
   const root = await get("/");
-  if (vercelWall(root)) fail.push(`"/": стіна входу Vercel — Settings → Deployment Protection → вимкніть Vercel Authentication`);
+  if (vercelWall(root)) fail.push(`"/": ${wallHint()}`);
   else if (root.status === 0) fail.push(`"/": недоступний (${root.text})`);
   else if (root.status >= 400) {
     const hint = root.vercelError === "MIDDLEWARE_INVOCATION_FAILED" ? " — у Vercel бракує NEXT_PUBLIC_SUPABASE_*?" : "";
@@ -83,12 +116,14 @@ async function main() {
   if (expectSha && health?.sha === "local") {
     fail.push(`"/api/health": sha=local — у Vercel увімкніть Settings → Environment Variables → «Automatically expose System Environment Variables» і зробіть Redeploy`);
   } else if (expectSha && health?.sha && health.sha !== expectSha) {
-    fail.push(`прод показує ${String(health.sha).slice(0, 7)}, а очікувався ${expectSha.slice(0, 7)} — деплой main не пройшов чи зроблено Instant Rollback?`);
+    const why = target === "deploy" ? "адреса деплою показує інший коміт — чи та адреса в client_payload.url?" : "деплой main не пройшов чи зроблено Instant Rollback?";
+    fail.push(`${base} показує ${String(health.sha).slice(0, 7)}, а очікувався ${expectSha.slice(0, 7)} — ${why}`);
   }
 
-  console.log(JSON.stringify({ base, root: root.status, login: login.status, health }));
+  // Лише статуси й відповідь /api/health (вона публічна й без секретів: є supabaseRef і appEnv). Секрет обходу — тільки як true/false.
+  console.log(JSON.stringify({ base, target, bypass: Boolean(bypass), root: root.status, login: login.status, health }));
   for (const f of fail) console.log(`::error title=smoke ${base}::${f}`);
-  if (!fail.length) console.log("OK — прод живий, сторінка входу відкривається, база відповідає.");
+  if (!fail.length) console.log("OK — застосунок живий, сторінка входу відкривається, база відповідає.");
   return fail.length ? 1 : 0;
 }
 
