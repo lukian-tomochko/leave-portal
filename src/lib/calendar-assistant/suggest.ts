@@ -1,7 +1,9 @@
 import { Output, generateText, type LanguageModel } from "ai";
 import { classifyError, type AiFailure } from "@/lib/ai/errors";
+import { isFallback, logLlmCall, type LlmState } from "@/lib/ai/llm-log";
+import { PRODUCT_MODELS } from "@/lib/ai/models";
 import { CALENDAR_PROMPT_VERSION, calendarInstructions, sanitizeText, wrapDocument } from "@/lib/ai/prompts/calendar";
-import { AssistantAnswerSchema, type Suggestion } from "@/lib/ai/schema";
+import { AssistantAnswerSchema, type AssistantAnswer, type Suggestion } from "@/lib/ai/schema";
 import { schoolYearOf } from "@/lib/leave/balance";
 import {
   ASSISTANT_NEEDS_MORE_DETAILS,
@@ -26,7 +28,30 @@ export type SuggestResult =
   // unavailable: немає ключа, 429, таймаут, відповідь не за схемою чи правилами (AC-ASSIST-09). detail — для логів і тестів.
   | { status: "unavailable"; message: string; detail: AiFailure | "no_key" | "rules" };
 
-export type SuggestOptions = { timeoutMs?: number };
+// log — куди писати llm.call (WS11, трек B): немає — журналу немає (так працюють офлайн-тести). У журнал потрапляють лише
+// модель, затримка, токени, стан, fallback, версія промпту й код причини: тексту адміністратора, промпту й відповіді моделі немає.
+export type SuggestOptions = { timeoutMs?: number; log?: { requestId: string; route: string } };
+
+// Один рядок llm.call на виклик моделі (src/lib/ai/llm-log.ts). Без `log` нічого не пише.
+function logCall(
+  opts: SuggestOptions,
+  started: number,
+  call: { model: string; state: LlmState; inputTokens?: number; outputTokens?: number; errorKind?: string },
+): void {
+  if (!opts.log) return;
+  logLlmCall({
+    requestId: opts.log.requestId,
+    route: opts.log.route,
+    model: call.model,
+    fallbackUsed: isFallback(call.model, PRODUCT_MODELS[0]),
+    state: call.state,
+    latencyMs: performance.now() - started,
+    inputTokens: call.inputTokens,
+    outputTokens: call.outputTokens,
+    promptVersion: CALENDAR_PROMPT_VERSION,
+    errorKind: call.errorKind,
+  });
+}
 
 const unavailable = (detail: Extract<SuggestResult, { status: "unavailable" }>["detail"]): SuggestResult => ({
   status: "unavailable",
@@ -55,25 +80,44 @@ export async function suggestClosures(
     return unavailable("no_key");
   }
 
-  let answer;
-  let modelId: string;
+  const started = performance.now();
+  let reply: ModelReply;
   try {
-    const result = await generateText({
-      model,
-      instructions: calendarInstructions(today, schoolYearOf(today)), // `system` в AI SDK 7 застаріле
-      messages: [{ role: "user", content: [{ type: "text", text: wrapDocument(text) }] }],
-      output: Output.object({ name: "closures", schema: AssistantAnswerSchema }),
-      temperature: 0,
-      // На безкоштовному тарифі повтор витрачає той самий денний ліміт: без повторів у циклі.
-      maxRetries: 0,
-      timeout: opts.timeoutMs ?? 30_000, // AC-ASSIST-09: понад 30 секунд — недоступний
-    });
-    answer = result.output;
-    modelId = result.response.modelId;
+    reply = await askModel(model, today, text, opts.timeoutMs ?? 30_000);
   } catch (error) {
-    return unavailable(classifyError(error).reason);
+    const reason = classifyError(error).reason;
+    logCall(opts, started, { model: PRODUCT_MODELS[0], state: "unavailable", errorKind: reason });
+    return unavailable(reason);
   }
 
+  const result = interpret(reply.answer, reply.modelId);
+  logCall(opts, started, { model: reply.modelId, ...llmOutcome(result), ...reply.usage });
+  return result;
+}
+
+type ModelReply = { answer: AssistantAnswer; modelId: string; usage: { inputTokens?: number; outputTokens?: number } };
+
+// Один виклик моделі (AC-ASSIST-09: понад 30 секунд — недоступний). Помилки не ловимо: їх класифікує й логує викликач.
+async function askModel(model: LanguageModel, today: string, text: string, timeout: number): Promise<ModelReply> {
+  const result = await generateText({
+    model,
+    instructions: calendarInstructions(today, schoolYearOf(today)), // `system` в AI SDK 7 застаріле
+    messages: [{ role: "user", content: [{ type: "text", text: wrapDocument(text) }] }],
+    output: Output.object({ name: "closures", schema: AssistantAnswerSchema }),
+    temperature: 0,
+    // На безкоштовному тарифі повтор витрачає той самий денний ліміт: без повторів у циклі.
+    maxRetries: 0,
+    timeout,
+  });
+  return {
+    answer: result.output,
+    modelId: result.response.modelId,
+    usage: { inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens },
+  };
+}
+
+// Правила після моделі (rules.ts) і переклад відповіді в результат для інтерфейсу.
+function interpret(answer: AssistantAnswer, modelId: string): SuggestResult {
   const checked = checkAnswer(answer);
   if (!checked.ok) {
     return unavailable("rules");
@@ -86,4 +130,9 @@ export async function suggestClosures(
     return { status: "needs_info", message: `${ASSISTANT_NEEDS_MORE_DETAILS} ${missing}`, modelId };
   }
   return { status: "ok", closures: checked.closures, modelId };
+}
+
+// Стан і код причини для llm.call: модель відповіла, але відповідь не пройшла правила — це unavailable з кодом rules.
+function llmOutcome(result: SuggestResult): { state: LlmState; errorKind?: string } {
+  return result.status === "unavailable" ? { state: "unavailable", errorKind: result.detail } : { state: result.status as LlmState };
 }
