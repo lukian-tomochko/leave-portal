@@ -154,6 +154,20 @@ jobs:
             echo "::error title=db-deploy-staging::SUPABASE_DB_URL не схожий на рядок Session pooler (postgres.<ref>:…@…:5432). Скопіюйте його з Connect у проєкті staging."
             exit 1
           fi
+          # Параметри рядка підключення можуть змінити ціль в обхід користувача postgres.<ref>: лишаємо лише TLS (sslmode тощо).
+          query=""
+          case "$SUPABASE_DB_URL" in *\?*) query="${SUPABASE_DB_URL#*\?}" ;; esac
+          if [ -n "$query" ]; then
+            IFS="&" read -ra pairs <<< "$query"
+            for pair in "${pairs[@]}"; do
+              key=$(printf '%s' "${pair%%=*}" | tr 'A-Z' 'a-z')
+              case "$key" in
+                user|host|hostaddr|port|dbname|database|options|service|servicefile)
+                  echo "::error title=db-deploy-staging::SUPABASE_DB_URL містить параметр «$key», що змінює ціль підключення. Лишіть лише параметри TLS (sslmode)."
+                  exit 1 ;;
+              esac
+            done
+          fi
           if [ -z "$STAGING_REF" ] || [ -z "$PROD_REF" ] || [ "$STAGING_REF" = "$PROD_REF" ]; then
             echo "::error title=db-deploy-staging::Задайте змінні репо SUPABASE_STAGING_REF і SUPABASE_PROD_REF (різні)."
             exit 1
@@ -221,6 +235,20 @@ jobs:
             if [ -z "$ref" ]; then
               echo "::error title=db-deploy::SUPABASE_DB_URL в environment production не схожий на рядок Session pooler (postgres.<ref>:…@…:5432). Скопіюйте його з Connect у прод-проєкті."
               exit 1
+            fi
+            # Параметри рядка підключення можуть змінити ціль в обхід користувача postgres.<ref>: лишаємо лише TLS (sslmode тощо).
+            query=""
+            case "$SUPABASE_DB_URL" in *\?*) query="${SUPABASE_DB_URL#*\?}" ;; esac
+            if [ -n "$query" ]; then
+              IFS="&" read -ra pairs <<< "$query"
+              for pair in "${pairs[@]}"; do
+                key=$(printf '%s' "${pair%%=*}" | tr 'A-Z' 'a-z')
+                case "$key" in
+                  user|host|hostaddr|port|dbname|database|options|service|servicefile)
+                    echo "::error title=db-deploy::SUPABASE_DB_URL містить параметр «$key», що змінює ціль підключення. Лишіть лише параметри TLS (sslmode)."
+                    exit 1 ;;
+                esac
+              done
             fi
             if [ "$ref" != "$PROD_REF" ]; then
               echo "::error title=db-deploy::Рядок підключення production веде не в прод-проєкт. Міграцію зупинено."
