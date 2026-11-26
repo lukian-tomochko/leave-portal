@@ -81,7 +81,7 @@ describe("схвалення з урахуванням балансу", () => {
     const outcome = await decideWithBalance(repository, async () => inputsWithRemaining(), MANAGER, "r1", "approved", undefined, true);
 
     expect(outcome).toEqual({ ok: true, status: "approved" });
-    expect(decide).toHaveBeenCalledWith("r1", "approved", null, { paidCents: 50, unpaidCents: 50 });
+    expect(decide).toHaveBeenCalledWith("r1", "approved", null, { paidCents: 50, unpaidCents: 50 }, { countedMinutes: 420, dayMinutes: 420 });
   });
 
   it("AC-BALANCE-10: у межах залишку схвалення йде без розподілу", async () => {
@@ -89,17 +89,26 @@ describe("схвалення з урахуванням балансу", () => {
 
     await decideWithBalance(repository, async () => inputsWithRemaining(), MANAGER, "r1", "approved", undefined, false);
 
-    expect(decide).toHaveBeenCalledWith("r1", "approved", null, undefined);
+    expect(decide).toHaveBeenCalledWith("r1", "approved", null, undefined, { countedMinutes: 210, dayMinutes: 420 });
   });
 
-  it("AC-BALANCE-10: схвалення «Sick leave» не читає баланс", async () => {
-    const { repository, decide } = setup({ ...target, leaveType: "sick" });
+  it("AC-CAL-20: схвалення «Sick leave» до закриття фіксує частку 150 із 420 хвилин, без розподілу", async () => {
+    const { repository, decide } = setup({ ...target, leaveType: "sick", date: "2026-11-20", startsAt: "08:30", endsAt: "11:00" });
     const loadInputs = vi.fn(async () => inputsWithRemaining());
 
     await decideWithBalance(repository, loadInputs, MANAGER, "r1", "approved", undefined, false);
 
-    expect(loadInputs).not.toHaveBeenCalled();
-    expect(decide).toHaveBeenCalledOnce();
+    expect(loadInputs).toHaveBeenCalledOnce();
+    expect(decide).toHaveBeenCalledWith("r1", "approved", null, undefined, { countedMinutes: 150, dayMinutes: 420 });
+  });
+
+  it("AC-CAL-20: схвалення після закриття від 12:00 фіксує знаменник 210, а не 420", async () => {
+    const { repository, decide } = setup({ ...target, leaveType: "sick", date: "2026-11-20", startsAt: "08:30", endsAt: "11:00" });
+    const closure = { name: "Teachers' meeting", startsOn: "2026-11-20", endsOn: "2026-11-20", closedFrom: "12:00" };
+
+    await decideWithBalance(repository, async () => ({ ...inputsWithRemaining(), closures: [closure] }), MANAGER, "r1", "approved", undefined, false);
+
+    expect(decide).toHaveBeenCalledWith("r1", "approved", null, undefined, { countedMinutes: 150, dayMinutes: 210 });
   });
 
   it("AC-DECIDE-07: уже схвалений запис не читає баланс і не дає SPLIT_REQUIRED, рішення йде в базу", async () => {

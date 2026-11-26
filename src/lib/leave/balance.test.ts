@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   type ApprovedRecord,
   type BalanceInputs,
+  approvalSnapshot,
   balancesForYear,
   balancesOn,
   planApproval,
@@ -34,7 +35,15 @@ const ADDITIONAL: Position = {
 function approved(
   date: string,
   leaveType: LeaveType,
-  options: { positionId?: string; startsAt?: string; endsAt?: string; unpaidCents?: number; paidCents?: number | null } = {},
+  options: {
+    positionId?: string;
+    startsAt?: string;
+    endsAt?: string;
+    unpaidCents?: number;
+    paidCents?: number | null;
+    countedMinutes?: number;
+    dayMinutes?: number;
+  } = {},
 ): ApprovedRecord {
   return {
     id: `${leaveType}-${date}-${options.positionId ?? "main"}`,
@@ -45,6 +54,8 @@ function approved(
     leaveType,
     paidCents: options.paidCents ?? null,
     unpaidCents: options.unpaidCents ?? 0,
+    countedMinutes: options.countedMinutes ?? null,
+    dayMinutes: options.dayMinutes ?? null,
   };
 }
 
@@ -307,5 +318,64 @@ describe("схвалення з розподілом", () => {
     expect(requestWarning(state, "personal", [WHOLE_DAY_EARLY("2026-11-20")])).toBe(
       "Your Personal leave balance is 0.00 day. Another 1.00 day will be counted as Unpaid leave",
     );
+  });
+});
+
+describe("частка дня погодженого запису фіксується при погодженні", () => {
+  const FRIDAY = "2026-11-20";
+  const teachersMeeting: Closure = { name: "Teachers' meeting", startsOn: FRIDAY, endsOn: FRIDAY, closedFrom: "12:00" };
+  // «Sick leave» 08:30–11:00: 150 із 420 робочих хвилин п'ятниці 08:30–15:30 (приклад PM).
+  const sickMorning = (snapshot: { countedMinutes: number; dayMinutes: number } | null) =>
+    approved(FRIDAY, "sick", { startsAt: "08:30", endsAt: "11:00", ...(snapshot ?? {}) });
+
+  it("AC-CAL-20: погоджений «Sick leave» 0.36 лишається 0.36 після того, як адміністратор додав скорочений день з 12:00", () => {
+    const record = sickMorning({ countedMinutes: 150, dayMinutes: 420 });
+
+    expect(balancesForYear(inputs([record]), 2026).sick.used).toBe(0.36);
+    expect(balancesForYear(inputs([record], [MAIN], [teachersMeeting]), 2026).sick.used).toBe(0.36);
+  });
+
+  it("AC-CAL-20: запис без знімка (погоджений до фіксації) рахується за поточним календарем: 150 із 210 хвилин дає 0.71", () => {
+    expect(balancesForYear(inputs([sickMorning(null)], [MAIN], [teachersMeeting]), 2026).sick.used).toBe(0.71);
+  });
+
+  it("AC-CAL-20: закриття, видалене після погодження, не змінює частку: 1.00 (210 із 210) лишається 1.00, а не 0.50 (210 із 420)", () => {
+    const record = approved(FRIDAY, "sick", { startsAt: "08:30", endsAt: "12:00", countedMinutes: 210, dayMinutes: 210 });
+
+    expect(balancesForYear(inputs([record], [MAIN], [teachersMeeting]), 2026).sick.used).toBe(1);
+    expect(balancesForYear(inputs([record]), 2026).sick.used).toBe(1);
+    // Той самий запис без знімка після видалення закриття став би 0.50.
+    expect(balancesForYear(inputs([approved(FRIDAY, "sick", { startsAt: "08:30", endsAt: "12:00" })]), 2026).sick.used).toBe(0.5);
+  });
+
+  it("AC-CAL-20: знімок погодження дає 150 із 420 до закриття, 150 із 210 після закриття й 210 із 210 для цілого дня на скороченому дні", () => {
+    const morning = { leaveType: "sick" as const, positionId: "main", date: FRIDAY, startsAt: "08:30", endsAt: "11:00" };
+    const wholeDay = { ...morning, endsAt: "15:30" };
+
+    expect(approvalSnapshot(inputs([]), morning)).toEqual({ countedMinutes: 150, dayMinutes: 420 });
+    expect(approvalSnapshot(inputs([], [MAIN], [teachersMeeting]), morning)).toEqual({ countedMinutes: 150, dayMinutes: 210 });
+    expect(approvalSnapshot(inputs([], [MAIN], [teachersMeeting]), wholeDay)).toEqual({ countedMinutes: 210, dayMinutes: 210 });
+  });
+
+  it("AC-CAL-20: без знімка, коли в дати немає робочих хвилин (вихідний чи закритий день)", () => {
+    const closedAllDay: Closure = { name: "Staff day", startsOn: FRIDAY, endsOn: FRIDAY, closedFrom: null };
+    const record = { leaveType: "sick" as const, positionId: "main", date: FRIDAY, startsAt: "08:30", endsAt: "11:00" };
+
+    expect(approvalSnapshot(inputs([], [MAIN], [closedAllDay]), record)).toBeNull();
+    expect(approvalSnapshot(inputs([]), { ...record, date: "2026-11-21" })).toBeNull();
+  });
+
+  it("AC-CAL-20: другий запис, погоджений після закриття, має власний знаменник: 0.36 (150 із 420) + 0.29 (60 із 210) = 0.65", () => {
+    const first = sickMorning({ countedMinutes: 150, dayMinutes: 420 });
+    const second = { ...approved(FRIDAY, "sick", { startsAt: "11:00", endsAt: "12:00", countedMinutes: 60, dayMinutes: 210 }), id: "second" };
+
+    expect(balancesForYear(inputs([first, second], [MAIN], [teachersMeeting]), 2026).sick.used).toBe(0.65);
+  });
+
+  it("AC-CAL-20: записи з однаковим знаменником додаються до округлення, як і раніше: 0.36 + 0.14 дає 0.50", () => {
+    const first = sickMorning({ countedMinutes: 150, dayMinutes: 420 });
+    const second = { ...approved(FRIDAY, "sick", { startsAt: "11:00", endsAt: "12:00", countedMinutes: 60, dayMinutes: 420 }), id: "second" };
+
+    expect(balancesForYear(inputs([first, second]), 2026).sick.used).toBe(0.5);
   });
 });

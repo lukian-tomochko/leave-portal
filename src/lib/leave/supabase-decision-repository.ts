@@ -10,6 +10,7 @@ import {
   type DecisionRepository,
   type RecordsView,
 } from "./decision";
+import type { ApprovalSnapshot } from "./balance";
 import { positionLabel } from "./schedule";
 import { trimSeconds } from "./time";
 import type { LeaveType, RecordStatus } from "./types";
@@ -25,6 +26,20 @@ const unique = <T>(values: T[]): T[] => [...new Set(values)];
 
 // Адаптер порту DecisionRepository для Supabase. Усе читання йде клієнтом користувача, тож діє RLS (менеджер бачить
 // лише записи своїх посад), а рішення — однією функцією Postgres decide_leave_record із перевіркою ролі всередині.
+// Аргументи функції бази decide_leave_record. Розподіл (AC-BALANCE-10, AC-BALANCE-19): частки дня, без розподілу база отримує
+// null і 0. Знімок частки дня при погодженні (AC-CAL-20): без знімка null, і запис рахується за поточним календарем.
+export function decideArgs(recordId: string, decision: Decision, comment: string | null, split?: ApprovalSplit, snapshot?: ApprovalSnapshot) {
+  return {
+    p_record_id: recordId,
+    p_decision: decision,
+    p_comment: comment ?? undefined,
+    p_paid_share: split && split.paidCents !== null ? split.paidCents / 100 : undefined,
+    p_unpaid_share: split ? split.unpaidCents / 100 : 0,
+    p_counted_minutes: snapshot?.countedMinutes,
+    p_day_minutes: snapshot?.dayMinutes,
+  };
+}
+
 export function createSupabaseDecisionRepository(supabase: SupabaseClient<Database>): DecisionRepository {
   // Збирає записи з заявок, посад, профілів і журналу рішень; кожен запит під RLS.
   async function hydrate(rows: RecordRow[]): Promise<DecisionRecord[]> {
@@ -138,15 +153,8 @@ export function createSupabaseDecisionRepository(supabase: SupabaseClient<Databa
       return record ?? null;
     },
 
-    async decide(recordId: string, decision: Decision, comment: string | null, split?: ApprovalSplit) {
-      const { data, error } = await supabase.rpc("decide_leave_record", {
-        p_record_id: recordId,
-        p_decision: decision,
-        p_comment: comment ?? undefined,
-        // Розподіл (AC-BALANCE-10, AC-BALANCE-19): частки дня; без розподілу база отримує null і 0.
-        p_paid_share: split && split.paidCents !== null ? split.paidCents / 100 : undefined,
-        p_unpaid_share: split ? split.unpaidCents / 100 : 0,
-      });
+    async decide(recordId: string, decision: Decision, comment: string | null, split?: ApprovalSplit, snapshot?: ApprovalSnapshot) {
+      const { data, error } = await supabase.rpc("decide_leave_record", decideArgs(recordId, decision, comment, split, snapshot));
       if (error) {
         // 42501 — відмова за правами: «own_record» (власний запис менеджера) або «forbidden» (решта).
         if (error.code === "42501") {
