@@ -78,13 +78,30 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
+      # Дія з postmortem 2026-11-26: статус Vercel приходить і від деплою staging, чий коміт уже є в історії main, але вже не HEAD
+      # main (staging відстає після нових злиттів). Тоді «прод має показувати цей коміт» хибне — прод вже на новішому. Пропускаємо.
+      - name: Статус від коміту, що вже не HEAD main, — пропуск (це не прод-деплой)
+        id: head
+        if: github.event_name == 'status'
+        env:
+          EVENT_SHA: ${{ github.event.sha }}
+        run: |
+          head=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ -z "$head" ]; then
+            echo "::warning title=smoke::Не вдалося дізнатися HEAD main — перевіряємо без пропуску."
+          elif [ "$head" != "$EVENT_SHA" ]; then
+            echo "::notice title=smoke::Статус Vercel стосується коміту ${EVENT_SHA:0:7}, а HEAD main — ${head:0:7} (напр. деплой staging на старішому коміті). Прод-smoke пропущено: це не прод-деплой."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Змінна PROD_URL задана
+        if: steps.head.outputs.skip != 'true'
         run: |
           if [ -z "$PROD_URL" ]; then
             echo "::error title=smoke::Немає змінної репо PROD_URL — Settings → Secrets and variables → Actions → Variables → PROD_URL = https://<проєкт>.vercel.app"
             exit 1
           fi
       - name: Прод = main, сторінка входу відкривається, база відповідає
+        if: steps.head.outputs.skip != 'true'
         run: node scripts/smoke.mjs "$PROD_URL" "$EXPECT_SHA"
       - name: Алерт людині в Telegram (лише якщо щось червоне)
         if: failure()
