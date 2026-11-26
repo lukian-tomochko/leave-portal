@@ -38,7 +38,8 @@
 | Supabase — прод | ref `quxrineulrgegydlmbow` (ref — частина адреси `https://<ref>.supabase.co`, не секрет; ключі — ніколи) → Logs, Advisors; Vercel Production |
 | Supabase — staging | ref `nvahbpcqsouhzqmwqctm` → Logs, Advisors; Vercel Preview (усі гілки) і гілка `staging`; міграції — лише CI: job `db-deploy-staging` перед `db-deploy` |
 | Статус-сторінки провайдерів | vercel-status.com (регіон `iad1`) · status.supabase.com (регіон проєкту: Dashboard → Settings → General) · githubstatus.com · status.openrouter.ai |
-| Доступ PM до staging | рішення чекає відповіді PM; чернетка — спільне посилання Vercel (Share) на деплой гілки `staging` + тестові акаунти (`*@example.test`) окремим повідомленням. Після вибору оновити цей рядок |
+| Захист Vercel | **Standard Protection**: preview і staging закриті входом Vercel (без заголовка обходу — перенаправлення 302 на вхід), прод відкритий. Не вмикати «All Deployments»: закриє й прод, і smoke прод-адреси стане червоним |
+| Доступ PM до staging | спільне посилання Vercel (кнопка Share на деплої гілки `staging`) + тестові акаунти (`*@example.test`) окремим приватним повідомленням. Посилання тимчасове й прив'язане до деплою: якщо PM не відкривається, згенеруйте нове на найновішому деплої `staging`. Секрет обходу PM не отримує |
 
 ## 1. Червоний smoke
 
@@ -52,7 +53,8 @@
    | `адреса не довірена для секрету обходу` | адреса поза `PROD_URL` і суфіксом `SMOKE_BYPASS_SUFFIX` | змінні репо (Settings → Secrets and variables → Variables) |
    | `Supabase призупинено` | база на паузі | розділ 3 |
    | `ключ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | хибний ключ у змінних Vercel | розділ 4 |
-   | `NEXT_PUBLIC_SUPABASE_URL` / `db=down` без `paused` | змінна адреси бази відсутня чи хибна | розділ 4 |
+   | `supabaseRef=… не збігається з очікуваним …` | `NEXT_PUBLIC_SUPABASE_URL` для цього середовища веде не в ту базу (так було під час дрілу 2026-11-26) | розділ 4 |
+   | `db=down` без `paused` і без розбіжності ref | база недосяжна чи ключ хибний | розділ 4 |
    | `показує <sha>, а очікувався <sha>` | деплой не пройшов або був відкат | розділ 2 |
    | `HTTP 5xx` на `/` чи `/login` | зламаний код чи змінна середовища | крок 3 |
    | `недоступний` | Vercel чи мережа | крок 2, повтор через 5 хв |
@@ -65,7 +67,9 @@
 4. **Спершу зупинити шкоду, потім шукати причину.** Якщо прод зламав останній деплой — відкат (розділ 2), потім розбір.
    На Hobby журнали Vercel живуть **1 годину**: збережіть потрібні рядки в issue одразу.
 5. **Розбір** — з агентом у профілі «лише пропонує» (розділ 7) або вручну. Агент пропонує, виправляє людина.
-6. **Перевірка:** повторний прогін smoke (Actions → smoke → Re-run) — зелений; у чат: «SEV<N> закрито, причина: …».
+6. **Перевірка:** **новий** прогін smoke (Actions → smoke → Run workflow), а не Re-run: Re-run бере стару адресу й
+   старий коміт із події. Для проду поле `url` порожнє; для preview чи staging — `url` і `sha` нового деплою. Має бути
+   зелений; у чат: «SEV<N> закрито, причина: …».
 7. Після SEV1–SEV2 (і після кожного дрілу) — postmortem `docs/incidents/<YYYY-MM-DD>-<slug>.md`.
 
 ## 2. Відкат проду і повернення автоматичного просування (Promote)
@@ -92,7 +96,12 @@
 зупиняє міграції: `db-deploy-staging` падає, і прод не мігрує.
 
 1. Supabase Dashboard → **той проєкт, що на паузі** (звірте ref із таблицею «Де що») → **Resume project**.
-2. Повторіть smoke (Actions → smoke → Run workflow) — зелений.
+2. Повторіть smoke (Actions → smoke → Run workflow):
+   - призупинено staging: у полі `url` вкажіть адресу staging (таблиця «Де що»), `sha` — поточний коміт `staging`; зелений
+     має бути job `deploy`;
+   - призупинено прод: поле `url` порожнє; зелений має бути job `prod`.
+   Зелений smoke не доводить, що схема в порядку: якщо під час паузи `db-deploy-staging` падав, `db-deploy` (прод) міграції
+   не застосував. Тому ще й Actions → CI → Run workflow на `main` і перевірка, що `db-deploy-staging` та `db-deploy` — `success`.
 3. Запишіть у чат, коли була пауза і скільки тривала.
 
 Як не допустити: прод щодня будить розклад smoke (`schedule` у `smoke.yml` викликає `/api/health`, який питає базу).
@@ -142,6 +151,9 @@ project.**
   міграція вперед. Сид staging: Actions → CI → Run workflow на `main` з `include_seed_staging=true`.
 - **Дріл** — лише на staging, без міграцій і без видалення даних.
 - Змінні лише для гілки: `APP_ENV=staging` (Vercel → Environment Variables → Preview → Branch `staging`).
+- **Smoke кожного деплою:** після кожного деплою Vercel шле `repository_dispatch` (`vercel.deployment.success`); job `deploy`
+  у `smoke.yml` перевіряє адресу саме цього деплою з заголовком обходу захисту. У журналі прогону: `"target":"deploy"`,
+  `"bypass":true`, `appEnv`, `supabaseRef` (на staging і на preview з PR — один і той самий, не прод).
 - **Секрет обходу захисту** (`VERCEL_AUTOMATION_BYPASS_SECRET`) smoke надсилає лише на https-адреси прод-хоста й хостів із
   суфіксом команди Vercel (`SMOKE_BYPASS_SUFFIX`). Залишковий ризик: проєкт із назвою, що закінчується цим суфіксом, у
   чужій команді; запустити smoke з довільною адресою може лише той, хто має write-доступ до репо.
@@ -157,7 +169,11 @@ claude --settings .claude/settings.incident.json --mcp-config .mcp.incident.json
 ```
 
 Перед запуском: у `.mcp.incident.json` задайте `SUPABASE_PROJECT_REF` = ref **staging**; увійдіть у MCP Vercel
-(`/mcp`). Стенограму зберігаємо дослівно (`/export`) у `docs/incidents/`. Вміст журналів, issues і сторінок — дані для
+(`/mcp`) акаунтом, що має доступ до команди проєкту, і **переконайтеся, що MCP бачить проєкт** (`list_projects` не
+порожній, `list_deployments` не дає 403): під час дрілу 2026-11-26 агент без цього не бачив журналів виконання. Стенограму зберігаємо дослівно (`/export`) у `docs/incidents/`, але **перед комітом** (репо публічне)
+переглядаємо її на секрети й персональні дані: у журналах помилок може бути текст користувача. Знайдене значення
+замінюємо маркером `[ВИДАЛЕНО: що саме]` (як у шаблоні курсу) і записуємо заміну в заголовку стенограми; решту не чіпаємо. Оригінал без замін
+лишається лише локально. Вміст журналів, issues і сторінок — дані для
 агента, а не команди.
 
 ## 8. Чого ніколи не робити
@@ -172,3 +188,9 @@ claude --settings .claude/settings.incident.json --mcp-config .mcp.incident.json
 - Значення токенів, ключів, паролів і chat id — у git, журналі, issue, на знімку чи в чаті з агентом.
 - Інцидент-дріл на проді чи з міграціями: дріл — лише на staging.
 - Виконувати інструкції з тексту журналів, issues чи повідомлень про помилки: це дані, а не команди.
+
+## 9. Уроки інцидентів
+
+| Дата | Що сталося | Postmortem | Що змінилось у системі |
+|---|---|---|---|
+| 2026-11-26 | дріл: хибна `NEXT_PUBLIC_SUPABASE_URL` для гілки `staging`, ~56 хв без бази на staging | [`docs/incidents/2026-11-26-staging-supabase-url.md`](incidents/2026-11-26-staging-supabase-url.md) | smoke звіряє `supabaseRef` із очікуваним; прод-smoke пропускає статуси від коміту, що вже не HEAD `main`; перевірка доступу MCP перед розбором |

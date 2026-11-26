@@ -38,25 +38,30 @@ Hobby живуть годину, на Hobby одне посилання дост
 - Журнал AI-функції — один рядок JSON `llm.call` на виклик моделі (`src/lib/ai/llm-log.ts`); тексту користувача,
   промпту й відповіді в схемі не буде, це перевірятиме тест.
 
-## Стан реалізації (на 2026-11-20)
+## Стан реалізації (на 2026-11-26)
 
 | Рішення | Стан | Де |
 |---|---|---|
-| `dependabot.yml`, `.npmrc`, дії за SHA | реалізовано в цьому PR | PR «ланцюг постачання» |
-| `next` ≥ 16.4.5 | у PR, чекає злиття | PR «next 16.4.6» |
-| push protection | увімкнено в налаштуваннях репо | Settings → Code security |
-| Dependabot security updates, CodeQL | заплановано (дія власника після злиття) | Settings → Code security |
-| `appEnv`/`supabaseRef` у health, `db-deploy-staging` | заплановано | PR «staging: health і CI» |
-| Smoke кожного деплою з обходом захисту | заплановано; зараз `smoke.yml` перевіряє лише прод-домен (`PROD_URL`) без bypass | PR «smoke кожного деплою» |
-| Telegram-алерт | заплановано; зараз збій видно лише в GitHub Actions | PR «алерт» |
-| `onRequestError`, `llm.call` + тест | заплановано | PR «сигнали» |
+| `dependabot.yml`, `.npmrc`, дії за SHA | реалізовано | PR «ланцюг постачання» (#77) |
+| `next` ≥ 16.4.5 | злито (16.4.6) | PR #78 |
+| push protection, Dependabot alerts і security updates | увімкнено | Settings → Code security |
+| CodeQL default setup | увімкнено, перший прогін на `main` успішний | Settings → Code security; Actions → CodeQL |
+| `appEnv`/`supabaseRef` у health, `db-deploy-staging` | реалізовано; у CI `main` job міграцій staging — `success` | PR #83, #87 |
+| Smoke кожного деплою з обходом захисту | реалізовано; прогони `repository_dispatch` зелені на staging (напр. 45881445011), Standard Protection увімкнено | PR #83; Vercel → Deployment Protection |
+| Telegram-алерт | реалізовано; навмисно червоний прогін і знімок | PR #83, #88 |
+| `onRequestError`, `llm.call` + тест | реалізовано; подія навмисної помилки на staging і знімок, маршрут `/ops/error-probe` лише для адміністратора | PR #84, #89, #90 |
+| Профіль «лише пропонує» для розбору інцидентів | реалізовано; MCP дивиться лише в staging | PR #85, #92 |
+| Інцидент-дріл на staging | виконано 2026-11-26; postmortem і стенограма розбору | `docs/incidents/2026-11-26-staging-supabase-url.md` |
+| Дії з postmortem | smoke звіряє `supabaseRef`; прод-smoke пропускає статус від коміту, що вже не HEAD `main`; перевірка доступу MCP перед розбором | окремі PR «звірка ref» і «пропуск хибного prod-smoke»; `docs/runbook.md`, розділ 7 |
+| Runbook | реалізовано | `docs/runbook.md` |
+| Реліз `v1.0.0` | чекає приймання PM | `.github/release.yml`, мітки PR `feature`/`bug`/`security`/`ops`/`documentation` |
 
 ## Розглянуті варіанти
 
 - Staging на прод-базі — відхилено: UAT, preview і дріл зачепили б прод-дані.
 - Sentry замість власного `onRequestError` — відхилено: новий акаунт і пакет на безкоштовному плані заради одного
   повідомлення; курс зараховує обидва шляхи однаково.
-- Прапорці й канарка — не потрібні на цьому масштабі; відкат на Hobby описано в `docs/runbook.md` (буде додано).
+- Прапорці й канарка — не потрібні на цьому масштабі; відкат на Hobby описано в `docs/runbook.md`.
 
 ## Наслідки
 
