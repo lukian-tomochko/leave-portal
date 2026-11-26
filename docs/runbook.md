@@ -38,7 +38,8 @@
 | Supabase — прод | ref `quxrineulrgegydlmbow` (ref — частина адреси `https://<ref>.supabase.co`, не секрет; ключі — ніколи) → Logs, Advisors; Vercel Production |
 | Supabase — staging | ref `nvahbpcqsouhzqmwqctm` → Logs, Advisors; Vercel Preview (усі гілки) і гілка `staging`; міграції — лише CI: job `db-deploy-staging` перед `db-deploy` |
 | Статус-сторінки провайдерів | vercel-status.com (регіон `iad1`) · status.supabase.com (регіон проєкту: Dashboard → Settings → General) · githubstatus.com · status.openrouter.ai |
-| Доступ PM до staging | рішення чекає відповіді PM; чернетка — спільне посилання Vercel (Share) на деплой гілки `staging` + тестові акаунти (`*@example.test`) окремим повідомленням. Після вибору оновити цей рядок |
+| Захист Vercel | **Standard Protection**: preview і staging закриті входом Vercel (без заголовка обходу — перенаправлення 302 на вхід), прод відкритий. Не вмикати «All Deployments»: закриє й прод, і smoke прод-адреси стане червоним |
+| Доступ PM до staging | спільне посилання Vercel (кнопка Share на деплої гілки `staging`) + тестові акаунти (`*@example.test`) окремим приватним повідомленням. Посилання тимчасове й прив'язане до деплою: якщо PM не відкривається, згенеруйте нове на найновішому деплої `staging`. Секрет обходу PM не отримує |
 
 ## 1. Червоний smoke
 
@@ -142,6 +143,9 @@ project.**
   міграція вперед. Сид staging: Actions → CI → Run workflow на `main` з `include_seed_staging=true`.
 - **Дріл** — лише на staging, без міграцій і без видалення даних.
 - Змінні лише для гілки: `APP_ENV=staging` (Vercel → Environment Variables → Preview → Branch `staging`).
+- **Smoke кожного деплою:** після кожного деплою Vercel шле `repository_dispatch` (`vercel.deployment.success`); job `deploy`
+  у `smoke.yml` перевіряє адресу саме цього деплою з заголовком обходу захисту. У журналі прогону: `"target":"deploy"`,
+  `"bypass":true`, `appEnv`, `supabaseRef` (на staging і на preview з PR — один і той самий, не прод).
 - **Секрет обходу захисту** (`VERCEL_AUTOMATION_BYPASS_SECRET`) smoke надсилає лише на https-адреси прод-хоста й хостів із
   суфіксом команди Vercel (`SMOKE_BYPASS_SUFFIX`). Залишковий ризик: проєкт із назвою, що закінчується цим суфіксом, у
   чужій команді; запустити smoke з довільною адресою може лише той, хто має write-доступ до репо.
