@@ -82,7 +82,6 @@
     "deny": [
       "Read(.env)",
       "Read(.env.*)",
-      "Read(!.env.example)",
       "Read(product/denylist.local*)",
       "Bash(*supabase db push*)",
       "Bash(*supabase db reset*--linked*)",
@@ -96,6 +95,7 @@
       "PowerShell(*supabase migration repair*)",
       "Read(.env*)",
       "Read(**/.env*)",
+      "Read(!.env.example)",
       "Read(accounts.txt)",
       "Read(**/accounts.txt)",
       "Read(accounts.zip)",
