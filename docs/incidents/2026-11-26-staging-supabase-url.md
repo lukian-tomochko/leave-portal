@@ -109,8 +109,8 @@
 
 | Дія | Власник | Перевірка, якою вона стала | Посилання |
 |---|---|---|---|
-| 1. Smoke звіряє `supabaseRef` із очікуваним ref середовища (`SUPABASE_PROD_REF` для проду, `SUPABASE_STAGING_REF` для staging і preview) і називає змінну та розбіжність | розробник | Крок у `smoke.yml` (`EXPECT_SUPABASE_REF`) + тест `tests/scripts/expected-ref.test.ts` | {{PR_REF}} |
-| 2. Job `prod` пропускає подію `status`, коли коміт уже не HEAD `main` (це деплой staging, а не прод) | розробник | Крок `head` у `smoke.yml`; поведінку перевірено на комітах `d57c95b` (пропуск) і HEAD `main` (перевірка) | {{PR_HEAD}} |
+| 1. Smoke звіряє `supabaseRef` із очікуваним ref середовища (`SUPABASE_PROD_REF` для проду, `SUPABASE_STAGING_REF` для staging і preview) і називає змінну та розбіжність | розробник | Крок у `smoke.yml` (`EXPECT_SUPABASE_REF`) + тест `tests/scripts/expected-ref.test.ts` | [PR #94](https://github.com/lukian-tomochko/leave-portal/pull/94) |
+| 2. Job `prod` пропускає подію `status`, коли коміт уже не HEAD `main` (це деплой staging, а не прод) | розробник | Крок `head` у `smoke.yml`; поведінку перевірено на комітах `d57c95b` (пропуск) і HEAD `main` (перевірка) | [PR #95](https://github.com/lukian-tomochko/leave-portal/pull/95) |
 | 3. Перед дрілом чи розбором перевірити, що Vercel MCP бачить проєкт (`/mcp` → `list_projects` не порожній; акаунт із доступом до команди) | розробник | Пункт у `docs/runbook.md`, розділ 7 | цей PR |
 
 ## Додатки
