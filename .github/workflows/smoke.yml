@@ -64,6 +64,8 @@ jobs:
     timeout-minutes: 6
     env:
       PROD_URL: ${{ vars.PROD_URL }}
+      # Очікуваний ref бази (не секрет): health проду має показувати саме його (дія з postmortem 2026-11-26).
+      EXPECT_SUPABASE_REF: ${{ vars.SUPABASE_PROD_REF }}
       # Очікуваний коміт: щойно розгорнутий (status / repository_dispatch) або HEAD main (schedule, ручний запуск з main).
       EXPECT_SHA: ${{ github.event.client_payload.git.sha || github.event.sha || github.sha }}
       # Секрету обходу тут свідомо немає: прод відкритий (Standard Protection), і smoke має бачити його так, як бачать відвідувачі.
@@ -128,6 +130,8 @@ jobs:
       # Кому можна надсилати секрет обходу: хост проду (PROD_URL) або суфікс команди Vercel (SMOKE_BYPASS_SUFFIX), див. scripts/lib/bypass-host.mjs.
       PROD_URL: ${{ vars.PROD_URL }}
       SMOKE_BYPASS_SUFFIX: ${{ vars.SMOKE_BYPASS_SUFFIX }}
+      # Усі непродові деплої (staging, preview з PR) ходять у базу staging: health має показувати її ref (дія з postmortem 2026-11-26).
+      EXPECT_SUPABASE_REF: ${{ vars.SUPABASE_STAGING_REF }}
       # Значення — лише з GitHub Secrets; скрипт додає заголовок x-vercel-protection-bypass і не друкує секрет.
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:

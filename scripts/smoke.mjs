@@ -13,6 +13,7 @@
 //   - SMOKE_TARGET=deploy (ставить workflow для preview і staging) змінює лише підказки в повідомленнях про збій.
 // Код виходу: 0 — усе гаразд, 1 — є збій (рядки ::error:: видно в GitHub Actions), 2 — не вказано адресу.
 import { bypassHostAllowed } from "./lib/bypass-host.mjs";
+import { supabaseRefProblem } from "./lib/expected-ref.mjs";
 
 const [rawBase = process.env.PROD_URL ?? "", expectSha = ""] = process.argv.slice(2);
 // client_payload.url від Vercel може прийти хостом без схеми — додаємо https://.
@@ -98,6 +99,9 @@ async function main() {
     if (!expectSha || health.sha === expectSha || health.sha === "local") break;
     if (attempt < 6) await new Promise((res) => setTimeout(res, 20_000));
   }
+  // EXPECT_SUPABASE_REF (ref не секрет) ставить workflow: прод — SUPABASE_PROD_REF, staging і preview — SUPABASE_STAGING_REF.
+  const refProblem = supabaseRefProblem(health?.supabaseRef, process.env.EXPECT_SUPABASE_REF);
+  if (refProblem) fail.push(`"/api/health": ${refProblem}`);
   if (!health) {
     // прод не відкрився — причина вже у fail
   } else if (health.status === 404) {
