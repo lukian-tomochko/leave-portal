@@ -29,6 +29,10 @@ export type ApprovedRecord = {
   // Розподіл при схваленні (AC-BALANCE-10, AC-BALANCE-19): частки дня в сотих; без розподілу — null й 0.
   paidCents: number | null;
   unpaidCents: number;
+  // Знімок частки дня при погодженні (AC-CAL-20, ADR 0012): скільки хвилин запису порахувалось і скільки незакритих робочих
+  // хвилин мала дата. null/відсутні — запис погоджено до знімка: тоді частка рахується за поточним календарем.
+  countedMinutes?: number | null;
+  dayMinutes?: number | null;
 };
 
 export type BalanceInputs = {
@@ -107,6 +111,46 @@ export function recordMinutes(
   );
 }
 
+// Частина частки дня: хвилини й знаменник (робочі хвилини дати). Погоджений запис зі знімком несе свої числа з моменту
+// погодження, тож пізніше закриття його не змінює (AC-CAL-20); без знімка — за поточним календарем.
+type SharePart = { minutes: number; denominator: number };
+
+const approvedPart = (inputs: BalanceInputs, record: ApprovedRecord, positionById: Map<string, Position>): SharePart =>
+  record.countedMinutes != null && record.dayMinutes != null && record.dayMinutes > 0
+    ? { minutes: record.countedMinutes, denominator: record.dayMinutes }
+    : {
+        minutes: recordMinutes(positionById.get(record.positionId), record, inputs.closures),
+        denominator: workingMinutes(inputs.positions, record.date, inputs.closures),
+      };
+
+// Сотих дня з частин: хвилини з однаковим знаменником додаються (round half up один раз), частини з різними знаменниками —
+// окремо; разом не більше 1.00. Для записів з одним знаменником це рівно minutes ÷ denominator, як було.
+const sharePartsCents = (parts: SharePart[]): number => {
+  const minutesByDenominator = new Map<number, number>();
+  for (const part of parts) {
+    minutesByDenominator.set(part.denominator, (minutesByDenominator.get(part.denominator) ?? 0) + part.minutes);
+  }
+  let total = 0;
+  for (const [denominator, minutes] of minutesByDenominator) {
+    total += shareCents(minutes, denominator);
+  }
+  return Math.min(100, total);
+};
+
+// Знімок частки дня для погодження (AC-CAL-20): рахується за календарем на момент погодження. Без знімка (null), якщо в дати
+// немає незакритих робочих хвилин — база приймає лише 1…1440 хвилин.
+export type ApprovalSnapshot = { countedMinutes: number; dayMinutes: number };
+
+export function approvalSnapshot(inputs: BalanceInputs, record: RecordForDecision): ApprovalSnapshot | null {
+  const position = inputs.positions.find((item) => item.id === record.positionId);
+  const dayMinutes = workingMinutes(inputs.positions, record.date, inputs.closures);
+  const countedMinutes = recordMinutes(position, record, inputs.closures);
+  if (dayMinutes <= 0 || countedMinutes < 0 || countedMinutes > dayMinutes) {
+    return null;
+  }
+  return { countedMinutes, dayMinutes };
+}
+
 type Usage = { sick: number; personal: number; unpaid: number; family: number };
 const emptyUsage = (): Usage => ({ sick: 0, personal: 0, unpaid: 0, family: 0 });
 
@@ -115,11 +159,11 @@ const emptyUsage = (): Usage => ({ sick: 0, personal: 0, unpaid: 0, family: 0 })
 // Розподіл при схваленні переносить частину з "Personal leave" у "Unpaid leave".
 export function usageByYear(inputs: BalanceInputs): Map<number, Usage> {
   const positionById = new Map(inputs.positions.map((position) => [position.id, position]));
-  const groups = new Map<string, { date: string; type: LeaveType; minutes: number; unpaid: number }>();
+  const groups = new Map<string, { date: string; type: LeaveType; parts: SharePart[]; unpaid: number }>();
   for (const record of inputs.records) {
     const key = `${record.date}|${record.leaveType}`;
-    const group = groups.get(key) ?? { date: record.date, type: record.leaveType, minutes: 0, unpaid: 0 };
-    group.minutes += recordMinutes(positionById.get(record.positionId), record, inputs.closures);
+    const group = groups.get(key) ?? { date: record.date, type: record.leaveType, parts: [], unpaid: 0 };
+    group.parts.push(approvedPart(inputs, record, positionById));
     group.unpaid += record.unpaidCents;
     groups.set(key, group);
   }
@@ -128,7 +172,7 @@ export function usageByYear(inputs: BalanceInputs): Map<number, Usage> {
   for (const group of groups.values()) {
     const year = schoolYearOf(group.date);
     const current = usage.get(year) ?? emptyUsage();
-    const total = shareCents(group.minutes, workingMinutes(inputs.positions, group.date, inputs.closures));
+    const total = sharePartsCents(group.parts);
     const unpaid = Math.min(group.unpaid, total);
     current[group.type] += total - unpaid;
     current.unpaid += unpaid;
@@ -193,17 +237,17 @@ function requestOverBalance(inputs: BalanceInputs, planned: PlannedHours[]) {
     minutesByDate.set(item.date, (minutesByDate.get(item.date) ?? 0) + recordMinutes(positionById.get(item.positionId), item, inputs.closures));
   }
   // Приріст частки дня: частка (схвалені + запит) мінус частка схвалених того ж дня, бо частка дня не перевищує 1.00 (AC-BALANCE-05).
-  const approvedMinutes = (date: string) =>
+  const approvedParts = (date: string): SharePart[] =>
     inputs.records
       .filter((item) => item.date === date && item.leaveType === "personal")
-      .reduce((sum, item) => sum + recordMinutes(positionById.get(item.positionId), item, inputs.closures), 0);
+      .map((item) => approvedPart(inputs, item, positionById));
   const requestedByYear = new Map<number, number>();
   let totalRequested = 0;
   for (const [date, minutes] of minutesByDate) {
     const year = schoolYearOf(date);
     const working = workingMinutes(inputs.positions, date, inputs.closures);
-    const before = approvedMinutes(date);
-    const increment = shareCents(before + minutes, working) - shareCents(before, working);
+    const before = approvedParts(date);
+    const increment = sharePartsCents([...before, { minutes, denominator: working }]) - sharePartsCents(before);
     totalRequested += increment;
     requestedByYear.set(year, (requestedByYear.get(year) ?? 0) + increment);
   }

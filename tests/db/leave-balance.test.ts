@@ -9,7 +9,14 @@ const POSITION_PM = "00000000-0000-4000-8000-000000000104"; // pm-employee, ме
 
 type Inputs = {
   positions: { id: string; blocks: { weekday: number }[] }[];
-  records: { id: string; leave_type: string; paid_share: string | null; unpaid_share: string }[];
+  records: {
+    id: string;
+    leave_type: string;
+    paid_share: string | null;
+    unpaid_share: string;
+    counted_minutes: number | null;
+    day_minutes: number | null;
+  }[];
 };
 
 let t: LeaveDb;
@@ -131,4 +138,72 @@ it("AC-BALANCE-19: розподіл можливий лише при схвал�
   );
   expect(row.status).toBe("awaiting_decision");
   expect(Number(row.unpaid_share)).toBe(0);
+});
+
+// Знімок частки дня при погодженні (AC-CAL-20, ADR 0012): застосунок передає хвилини, база зберігає й перевіряє межі.
+const decideWithSnapshot = (viewer: string, record: string, decision: string, counted: number | null, day: number | null) =>
+  t.asUser<{ r: { ok: boolean; status: string } }>(
+    user(viewer),
+    "select public.decide_leave_record($1, $2, null, null, 0, $3, $4) as r",
+    [record, decision, counted, day],
+  );
+
+const recordRow = (id: string) =>
+  t.asService<{ status: string; counted_minutes: number | null; day_minutes: number | null }>(
+    "select status, counted_minutes, day_minutes from public.leave_records where id = $1",
+    [id],
+  );
+
+it("AC-CAL-20: схвалення зі знімком зберігає хвилини й віддає їх у вхідних даних балансу", async () => {
+  const record = await makeRecord("teacher1", POSITION_T1_MAIN, "sick");
+
+  await decideWithSnapshot("manager1", record, "approved", 150, 420);
+
+  const [row] = await recordRow(record);
+  expect(row).toMatchObject({ status: "approved", counted_minutes: 150, day_minutes: 420 });
+  const inputs = await inputsFor("teacher1", "teacher1");
+  expect(inputs.records.find((item) => item.id === record)).toMatchObject({ counted_minutes: 150, day_minutes: 420 });
+});
+
+it("AC-CAL-20: схвалення без знімка лишає хвилини порожніми, запис рахується за поточним календарем", async () => {
+  const record = await makeRecord("teacher1", POSITION_T1_MAIN, "sick");
+
+  await decide("manager1", record, "approved", null, null, 0);
+
+  const inputs = await inputsFor("teacher1", "teacher1");
+  expect(inputs.records.find((item) => item.id === record)).toMatchObject({ counted_minutes: null, day_minutes: null });
+});
+
+it("AC-CAL-20: некоректний знімок відхилено, запис лишається в очікуванні", async () => {
+  const record = await makeRecord("teacher1", POSITION_T1_MAIN, "sick");
+
+  await expect(decideWithSnapshot("manager1", record, "approved", 500, 420)).rejects.toThrow(/invalid snapshot/); // більше за день
+  await expect(decideWithSnapshot("manager1", record, "approved", 0, 0)).rejects.toThrow(/invalid snapshot/); // день без хвилин
+  await expect(decideWithSnapshot("manager1", record, "approved", 10, 1441)).rejects.toThrow(/invalid snapshot/); // понад добу
+  await expect(decideWithSnapshot("manager1", record, "approved", -1, 420)).rejects.toThrow(/invalid snapshot/);
+  await expect(decideWithSnapshot("manager1", record, "approved", 150, null)).rejects.toThrow(/invalid snapshot/); // лише одне число
+  await expect(decideWithSnapshot("manager1", record, "rejected", 150, 420)).rejects.toThrow(/invalid snapshot/); // не схвалення
+
+  const [row] = await recordRow(record);
+  expect(row).toMatchObject({ status: "awaiting_decision", counted_minutes: null, day_minutes: null });
+});
+
+it("AC-CAL-20: відхилення без знімка не залишає хвилин у записі", async () => {
+  const record = await makeRecord("teacher1", POSITION_T1_MAIN, "sick");
+
+  await decideWithSnapshot("manager1", record, "rejected", null, null);
+
+  const [row] = await recordRow(record);
+  expect(row).toMatchObject({ status: "rejected", counted_minutes: null, day_minutes: null });
+});
+
+it("AC-CAL-20: таблиця не приймає знімок поза межами навіть напряму (обмеження leave_records)", async () => {
+  const record = await makeRecord("teacher1", POSITION_T1_MAIN, "sick");
+
+  await expect(t.asService("update public.leave_records set counted_minutes = 10 where id = $1", [record])).rejects.toThrow(
+    /leave_records_day_share_pair/,
+  );
+  await expect(
+    t.asService("update public.leave_records set counted_minutes = 500, day_minutes = 420 where id = $1", [record]),
+  ).rejects.toThrow(/leave_records_day_share_bounds/);
 });

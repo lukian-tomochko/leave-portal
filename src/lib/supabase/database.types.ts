@@ -183,6 +183,8 @@ export type Database = {
           created_at: string;
           paid_share: number | null;
           unpaid_share: number;
+          counted_minutes: number | null;
+          day_minutes: number | null;
         };
         Insert: {
           id?: string;
@@ -196,6 +198,8 @@ export type Database = {
           created_at?: string;
           paid_share?: number | null;
           unpaid_share?: number;
+          counted_minutes?: number | null;
+          day_minutes?: number | null;
         };
         Update: {
           id?: string;
@@ -209,6 +213,8 @@ export type Database = {
           created_at?: string;
           paid_share?: number | null;
           unpaid_share?: number;
+          counted_minutes?: number | null;
+          day_minutes?: number | null;
         };
         Relationships: [
           {
@@ -348,6 +354,8 @@ export type Database = {
           p_comment?: string;
           p_paid_share?: number;
           p_unpaid_share?: number;
+          p_counted_minutes?: number;
+          p_day_minutes?: number;
         };
         Returns: Json;
       };

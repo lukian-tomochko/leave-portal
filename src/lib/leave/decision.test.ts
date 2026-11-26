@@ -180,7 +180,7 @@ describe("рішення менеджера", () => {
     const outcome = await decideRecord(repository, "r1", "rejected");
 
     expect(outcome).toEqual({ ok: true, status: "rejected" });
-    expect(decide).toHaveBeenCalledWith("r1", "rejected", null, undefined);
+    expect(decide).toHaveBeenCalledWith("r1", "rejected", null, undefined, undefined);
     expect(records[0].status).toBe("rejected");
   });
 

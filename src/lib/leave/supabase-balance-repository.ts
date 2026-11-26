@@ -22,6 +22,8 @@ type RawInputs = {
     leave_type: string;
     paid_share: number | string | null;
     unpaid_share: number | string;
+    counted_minutes: number | null;
+    day_minutes: number | null;
   }[];
 };
 
@@ -60,6 +62,8 @@ export async function loadBalanceInputs(supabase: SupabaseClient<Database>, empl
     leaveType: record.leave_type as LeaveType,
     paidCents: record.paid_share === null ? null : cents(record.paid_share),
     unpaidCents: cents(record.unpaid_share),
+    countedMinutes: record.counted_minutes,
+    dayMinutes: record.day_minutes,
   }));
 
   // Усі закриття календаря (AC-CAL-06): їх мало, а розрахунок потребує й дат нової заявки чи запису, не лише схвалених.
