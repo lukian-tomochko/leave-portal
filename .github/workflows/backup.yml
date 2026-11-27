@@ -75,11 +75,28 @@ jobs:
             -x storage.buckets_vectors -x storage.vector_indexes -f "$d/data.sql"
           # Запасний варіант для відновлення лише ваших таблиць (-s public разом з --data-only не перевірено).
           supabase db dump --db-url "$SUPABASE_DB_URL" --data-only --use-copy -s public -f "$d/data-public.sql"
+          # Історія застосованих міграцій (supabase_migrations): CLI виключає її зі звичайного дампу. Без неї після відновлення
+          # у новий проєкт наступний db-deploy спробував би накотити міграції з нуля й упав на вже наявних таблицях.
+          supabase db dump --db-url "$SUPABASE_DB_URL" --schema supabase_migrations -f "$d/history-schema.sql"
+          supabase db dump --db-url "$SUPABASE_DB_URL" --schema supabase_migrations --data-only --use-copy -f "$d/history-data.sql"
           # Кількість рядків кожної таблиці — з блоків COPY самого дампу (лише назви таблиць і числа).
-          for f in data data-public; do
+          for f in data data-public history-data; do
             awk '/^COPY /{t=$2; n=0; inside=1; next} inside && /^\\\.$/{print t"|"n; inside=0; next} inside{n++}' \
               "$d/$f.sql" | sort > "$d/$f.counts"
           done
+          # Схема й дані знімаються окремими з'єднаннями без спільного знімка. Якщо між ними пройшов db-deploy, схема в копії
+          # не відповідала б блокам COPY даних: знімаємо схему вдруге й порівнюємо, інакше копія не вважається придатною.
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f "$d/schema-check.sql"
+          if ! cmp -s "$d/schema.sql" "$d/schema-check.sql"; then
+            echo "::error title=backup::Схема змінилась під час копіювання (імовірно db-deploy): копія могла вийти неузгодженою. Повторіть запуск."
+            exit 1
+          fi
+          rm -f "$d/schema-check.sql"
+          # Історія міграцій має бути в копії: інакше відновлення не можна буде продовжити звичайним db-deploy.
+          applied=$(awk -F'|' '/schema_migrations/{print $2}' "$d/history-data.counts")
+          files=$(ls supabase/migrations/*.sql | wc -l)
+          echo "Історія міграцій у копії: ${applied:-0} записів; файлів міграцій у репо: $files"
+          [ "${applied:-0}" -gt 0 ] || { echo "::error title=backup::У копії немає історії міграцій (supabase_migrations)"; exit 1; }
           echo "Розміри файлів (вміст не друкуємо):"; wc -c "$d"/*.sql
           echo "Таблиць у дампі: $(wc -l < "$d/data.counts")"
       - name: Шифрування (gpg, AES256) і видалення відкритих файлів
