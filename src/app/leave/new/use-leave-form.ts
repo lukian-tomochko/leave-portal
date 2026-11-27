@@ -4,45 +4,15 @@ import { type FormEvent, useActionState, useState, useTransition } from "react";
 import type { Closure } from "@/lib/leave/closures";
 import { clickDay } from "@/lib/leave/date-selection";
 import { dateError as checkDate, hoursStepError, positionsError } from "@/lib/leave/form-checks";
+import { type FormMode, formKey, summaryKey } from "@/lib/leave/form-key";
 import { previewLeaveRequest, submitLeaveRequest } from "../actions";
 import type { LeaveFormState } from "../state";
 
 export type PositionOption = { id: string; label: string; weekdays: number[] };
 export type LeaveTypeOption = { value: string; label: string };
-export type Mode = "whole-day" | "hours";
+export type Mode = FormMode;
 
 const IDLE: LeaveFormState = { status: "idle" };
-
-type KeyValues = {
-  leaveType: string;
-  dates: string[];
-  positionIds: string[];
-  mode: Mode;
-  startsAt: string;
-  endsAt: string;
-  relationship: string;
-  comment: string;
-};
-
-// Стабільний ключ значень форми: за ним відрізняємо підсумок для поточних даних від застарілого.
-function keyOf(values: KeyValues) {
-  return JSON.stringify({ ...values, dates: [...new Set(values.dates)].sort(), positionIds: [...new Set(values.positionIds)].sort() });
-}
-
-// Ключ значень, з якими сервер порахував підсумок (форма подання відправляє їх знову).
-function summaryKey(preview: Extract<LeaveFormState, { status: "summary" }>) {
-  const { values } = preview;
-  return keyOf({
-    leaveType: values.leaveType,
-    dates: values.dates,
-    positionIds: values.positionIds,
-    mode: values.hours ? "hours" : "whole-day",
-    startsAt: values.hours?.startsAt ?? "",
-    endsAt: values.hours?.endsAt ?? "",
-    relationship: values.relationship ?? "",
-    comment: (values.comment ?? "").trim(),
-  });
-}
 
 // Що не так із формою до запиту на сервер: жодної посади (AC-LEAVE-10) або жодної прийнятої дати (тоді показуємо першу помилку дати).
 function previewProblem(
@@ -93,7 +63,7 @@ function toFormData(values: PreviewValues): FormData {
 
 const toggled = (selected: string[], id: string, checked: boolean): string[] => (checked ? [...selected, id] : selected.filter((value) => value !== id));
 
-const freshSummary = (preview: LeaveFormState, key: string) => (preview.status === "summary" && summaryKey(preview) === key ? preview : null);
+const freshSummary = (preview: LeaveFormState, key: string) => (preview.status === "summary" && summaryKey(preview.values) === key ? preview : null);
 
 // Стан і правила форми «Нова заявка». Значення тримаємо в стані React, тож вони не скидаються після помилки чи підсумку
 // (AC-LEAVE-11). Дату не приймаємо, якщо жодна з обраних посад не має розкладу в цей день тижня (AC-LEAVE-06) чи день закритий
@@ -126,11 +96,19 @@ export function useLeaveForm({ positions, leaveTypes, closures }: { positions: P
   const isFamily = leaveType === "family";
   const dateError = (date: string): string | null => checkDate(date, positions, selected, closures);
   const acceptedDates = dates.filter((date) => date !== "" && dateError(date) === null);
-  const currentKey = keyOf({ ...current(), dates: acceptedDates });
+  const currentKey = formKey({ ...current(), dates: acceptedDates });
   // Підсумок показуємо лише для тих значень, що зараз у формі; після змін він застаріває.
   const summary = freshSummary(preview, currentKey);
 
   const pickDay = (day: string) => {
+    // Закритий чи недоступний день не обираємо, але пояснюємо чому (AC-CAL-03, AC-LEAVE-06): раніше такі кнопки були
+    // вимкнені, клік не спрацьовував і повідомлення з'являлось лише тоді, коли дату вводили вручну в поле.
+    const reason = dates.includes(day) ? null : dateError(day);
+    if (reason !== null) {
+      setLocalError(reason);
+      return;
+    }
+    setLocalError(null);
     const next = clickDay(dates, anchor, day, (date) => dateError(date) === null);
     setDates(next.dates);
     setAnchor(next.anchor);

@@ -17,7 +17,7 @@ function DayButton({ date, day, form, closures, today }: { date: string; day: nu
   return (
     <button
       type="button"
-      disabled={blocked}
+      aria-disabled={blocked}
       aria-pressed={picked}
       aria-label={`${dayLabel(date)}${closed ? ", school closed" : ""}`}
       onClick={() => form.pickDay(date)}
